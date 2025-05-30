@@ -13,7 +13,6 @@ class ContentViewModel: ObservableObject {
     
     private var context: ModelContext?
     private var entries: [MuscleEntry] = []
-    let defaultGroups = ["Pecho", "Espalda", "Piernas", "Hombros", "Bíceps", "Tríceps", "Abdomen"]
     
     @Published var currentWeekEntries: [MuscleEntry] = []
     
@@ -38,15 +37,13 @@ class ContentViewModel: ObservableObject {
     }
     
     func createMissingEntriesIfNeeded() {
-        let customGroups = entries
-            .filter { $0.isCustom }
-            .map { $0.name }
+        let customGroups = entries.map { $0.name }
         
         let calendar = Calendar.current
         let currentWeek = calendar.component(.weekOfYear, from: Date())
         let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
         
-        let allGroups = defaultGroups + customGroups
+        let allGroups = customGroups
         
         for name in allGroups {
             let exists = entries.contains {
@@ -54,12 +51,11 @@ class ContentViewModel: ObservableObject {
             }
             
             if !exists {
-                let newEntry = MuscleEntry(name: name, isCustom: !defaultGroups.contains(name))
+                let newEntry = MuscleEntry(name: name)
                 context?.insert(newEntry)
             }
         }
         
-        // Refresh
         try? context?.save()
         entries = (try? context?.fetch(FetchDescriptor<MuscleEntry>())) ?? []
         updateCurrentEntries()
@@ -67,13 +63,13 @@ class ContentViewModel: ObservableObject {
     
     func emoji(for muscle: String) -> String {
         switch muscle {
-        case "Pecho": return "🏋️"
-        case "Espalda": return "🦾"
-        case "Piernas": return "🦵"
-        case "Hombros": return "🧍‍♂️"
-        case "Bíceps": return "💪"
-        case "Tríceps": return "🔩"
-        case "Abdomen": return "🧘"
+        case NSLocalizedString("group_chest", comment: ""): return "🏋️"
+        case NSLocalizedString("group_back", comment: ""): return "🦾"
+        case NSLocalizedString("group_legs", comment: ""): return "🦵"
+        case NSLocalizedString("group_shoulders", comment: ""): return "🧍‍♂️"
+        case NSLocalizedString("group_biceps", comment: ""): return "💪"
+        case NSLocalizedString("group_triceps", comment: ""): return "🔩"
+        case NSLocalizedString("group_abdomen", comment: ""): return "🧘"
         default: return "🏋️"
         }
     }

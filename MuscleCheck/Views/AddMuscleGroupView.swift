@@ -16,22 +16,22 @@ struct AddMuscleGroupView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Nuevo grupo") {
-                    TextField("Ej: Pilates", text: $muscleName)
+                Section("new_exercise_name") {
+                    TextField("new_excersise_placeholder", text: $muscleName)
                 }
             }
-            .navigationTitle("Agregar grupo")
+            .navigationTitle("add_group")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Guardar") {
+                    Button("save") {
                         guard !muscleName.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-                        let entry = MuscleEntry(name: muscleName, isCustom: true)
+                        let entry = MuscleEntry(name: muscleName)
                         context.insert(entry)
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar", role: .cancel) {
+                    Button("cancel", role: .cancel) {
                         dismiss()
                     }
                 }

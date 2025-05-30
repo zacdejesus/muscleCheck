@@ -1,0 +1,62 @@
+# Xcode
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+DerivedData/
+*.hmap
+*.ipa
+*.app
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+# Xcode SPM integration
+.xcodeproj/project.xcworkspace/
+.xcodeproj/xcshareddata/swiftpm/
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/.env
+.env
+
+# Build artifacts
+build/
+*.dSYM
+*.bc
+*.o
+*.ll
+*.a
+*.so
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# User-specific
+*.swp
+*~.nib
+*.orig
+*.rej
+*.bak
+*.tmp
+
+# Simulator logs and states
+*.simstate

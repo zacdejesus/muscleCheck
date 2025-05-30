@@ -8,8 +8,13 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    
+    @State private var entriesToDelete: IndexSet?
+    
     @Environment(\.modelContext) private var context
     @Query private var entries: [MuscleEntry]
+    @AppStorage("hasInsertedInitialData") private var hasInsertedInitialData: Bool = false
+    @State private var showFullScreen = false
     
     @StateObject private var viewModel = ContentViewModel()
     @State private var showingAddSheet = false
@@ -29,10 +34,11 @@ struct ContentView: View {
                         }
                     }
                 }
+                .onDelete(perform: deleteEntries)
             }
-            .navigationTitle("Muscle check")
+            .navigationTitle("home_title")
             .toolbar {
-                NavigationLink("Historial") {
+                NavigationLink("workout_history") {
                     HistoryView()
                 }
             }
@@ -47,9 +53,13 @@ struct ContentView: View {
             }
             .onAppear {
                 viewModel.setup(context: context, entries: entries)
+                if !hasInsertedInitialData {
+                    insertDefaultMuscleEntries(context: context)
+                    hasInsertedInitialData = true
+                }
                 viewModel.createMissingEntriesIfNeeded()
             }
-            .onChange(of: entries) {  oldEntries, newEntries in
+            .onChange(of: entries) { oldEntries, newEntries in
                 viewModel.setup(context: context, entries: newEntries)
             }
             .sheet(isPresented: $showingAddSheet) {
@@ -57,4 +67,39 @@ struct ContentView: View {
             }
         }
     }
+
+    func insertDefaultMuscleEntries(context: ModelContext) {
+        let now = Date()
+        let week = Calendar.current.component(.weekOfYear, from: now)
+        let year = Calendar.current.component(.yearForWeekOfYear, from: now)
+        let defaultGroups = [
+            NSLocalizedString("group_chest", comment: ""),
+            NSLocalizedString("group_back", comment: ""),
+            NSLocalizedString("group_legs", comment: ""),
+            NSLocalizedString("group_shoulders", comment: ""),
+            NSLocalizedString("group_biceps", comment: ""),
+            NSLocalizedString("group_triceps", comment: ""),
+            NSLocalizedString("group_abdomen", comment: "")
+        ]
+
+        for group in defaultGroups {
+            let entry = MuscleEntry(name: group)
+            entry.date = now
+            entry.weekOfYear = week
+            entry.year = year
+            entry.isChecked = false
+            context.insert(entry)
+        }
+        
+        try? context.save()
+    }
+    
+  func deleteEntries(at offsets: IndexSet) {
+      for index in offsets {
+          let entry = entries[index]
+          context.delete(entry)
+      }
+      try? context.save()
+  }
+
 }
