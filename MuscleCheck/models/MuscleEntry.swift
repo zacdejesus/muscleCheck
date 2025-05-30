@@ -15,10 +15,10 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
     var isChecked: Bool
     var weekOfYear: Int
     var year: Int
-    var isCustom: Bool
     var date: Date
+    var activityDates: [Date]
 
-    init(name: String, isCustom: Bool = false) {
+    init(name: String) {
         self.id = UUID()
         let now = Date()
         self.date = now
@@ -26,7 +26,7 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
         self.isChecked = false
         self.weekOfYear = Calendar.current.component(.weekOfYear, from: now)
         self.year = Calendar.current.component(.yearForWeekOfYear, from: now)
-        self.isCustom = isCustom
+        self.activityDates = []
     }
     
     static func == (lhs: MuscleEntry, rhs: MuscleEntry) -> Bool {
@@ -35,5 +35,11 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+    }
+    
+    func addActivityDate(_ date: Date) {
+        if !activityDates.contains(where: { Calendar.current.isDate($0, inSameDayAs: date) }) {
+            activityDates.append(date)
+        }
     }
 }
