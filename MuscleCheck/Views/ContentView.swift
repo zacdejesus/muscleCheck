@@ -10,14 +10,13 @@ import SwiftData
 struct ContentView: View {
     
     @State private var entriesToDelete: IndexSet?
-    
+    @State private var showFullScreen = false
+    @StateObject private var viewModel = ContentViewModel()
+    @State private var showingAddSheet = false
+  
     @Environment(\.modelContext) private var context
     @Query private var entries: [MuscleEntry]
     @AppStorage("hasInsertedInitialData") private var hasInsertedInitialData: Bool = false
-    @State private var showFullScreen = false
-    
-    @StateObject private var viewModel = ContentViewModel()
-    @State private var showingAddSheet = false
     
     var body: some View {
         NavigationStack {
@@ -26,12 +25,12 @@ struct ContentView: View {
                     HStack {
                         Text("\(viewModel.emoji(for: entry.name))  \(entry.name)")
                         Spacer()
-                        Button {
-                            entry.isChecked.toggle()
-                        } label: {
-                            Image(systemName: entry.isChecked ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(entry.isChecked ? .green : .gray)
-                        }
+                        Button(action: {
+                           handleTapItemActivity?(entry)
+                       }) {
+                           Image(systemName: entry.isChecked ? "checkmark.circle.fill" : "circle")
+                               .foregroundColor(entry.isChecked ? .green : .gray)
+                       }
                     }
                 }
                 .onDelete(perform: deleteEntries)
@@ -67,6 +66,13 @@ struct ContentView: View {
             }
         }
     }
+  
+  var handleTapItemActivity: ((MuscleEntry) -> Void)? = { entry in
+    let today = Date()
+    entry.isChecked ? entry.addActivityDate(today) : entry.removeActivityDate(today)
+    
+    entry.isChecked.toggle()
+  }
 
     func insertDefaultMuscleEntries(context: ModelContext) {
         let now = Date()
