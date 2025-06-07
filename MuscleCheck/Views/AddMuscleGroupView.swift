@@ -34,6 +34,7 @@ struct AddMuscleGroupView: View {
           }
         }
       }
+      .tint(Color("PrimaryButtonColor"))
     }
   }
 }

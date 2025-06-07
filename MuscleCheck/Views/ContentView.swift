@@ -29,10 +29,12 @@ struct ContentView: View {
               .onDelete(perform: viewModel.deleteEntries)
             }
             .navigationTitle("home_title")
+            .tint(Color("PrimaryButtonColor"))
             .toolbar {
                 NavigationLink("workout_history") {
-                  HistoryView()
+                  HistoryView(entries: entries)
                 }
+                .foregroundColor(Color("PrimaryButtonColor"))
                 .font(.headline.bold())
             }
             .toolbar {
@@ -44,7 +46,7 @@ struct ContentView: View {
                     .font(.headline)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(Color.blue.opacity(0.1))
+                    .foregroundColor(Color("PrimaryButtonColor"))
                     .cornerRadius(8)
                 }
                 .accessibilityLabel("add_new_muscle_group")

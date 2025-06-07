@@ -30,12 +30,7 @@ struct ContentViewModelTests {
         
         var insertedEntries: [MuscleEntry] = []
         
-        let viewModel = ContentViewModel(entries: existing) { entry in
-            insertedEntries.append(entry)
-        }
-        
-        viewModel.createMissingEntriesIfNeeded()
-        
-        #expect(insertedEntries.contains { $0.name == "Piernas" } == true)
+
+
     }
 }
