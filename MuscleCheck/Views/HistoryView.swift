@@ -31,7 +31,7 @@ struct HistoryView: View {
         Button {
           showPicker = true
         } label: {
-          Text("Semana \(viewModel.weekOf(selectedDate)): \(viewModel.weekRangeString(for: selectedDate))")
+          Text("Week \(viewModel.weekOf(selectedDate)): \(viewModel.weekRangeString(for: selectedDate))")
             .font(.headline.bold())
             .foregroundColor(Color("PrimaryButtonColor"))
         }

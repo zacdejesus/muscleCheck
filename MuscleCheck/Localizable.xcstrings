@@ -379,16 +379,6 @@
     "Selecciona una semana" : {
 
     },
-    "Semana %lld: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Semana %1$lld: %2$@"
-          }
-        }
-      }
-    },
     "week" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -408,6 +398,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Semaine"
+          }
+        }
+      }
+    },
+    "Week %lld: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Week %1$lld: %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semana %1$lld: %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semaine %1$lld: %2$@"
           }
         }
       }
