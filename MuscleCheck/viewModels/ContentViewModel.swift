@@ -28,6 +28,11 @@ class ContentViewModel: ObservableObject {
   }
   
   func updateCurrentEntries() {
+    
+    guard let fetchEntries = try? (muscleEntryManager?.fetchAll()) else { return }
+    
+    entries = fetchEntries
+    
     let calendar = Calendar.current
     let currentWeek = calendar.component(.weekOfYear, from: Date())
     let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
@@ -40,7 +45,31 @@ class ContentViewModel: ObservableObject {
     updateCurrentEntries()
   }
   
-  
+  func insertDefaultMuscleEntries(context: ModelContext) {
+      let now = Date()
+      let week = Calendar.current.component(.weekOfYear, from: now)
+      let year = Calendar.current.component(.yearForWeekOfYear, from: now)
+      let defaultGroups = [
+          NSLocalizedString("group_chest", comment: ""),
+          NSLocalizedString("group_back", comment: ""),
+          NSLocalizedString("group_legs", comment: ""),
+          NSLocalizedString("group_shoulders", comment: ""),
+          NSLocalizedString("group_biceps", comment: ""),
+          NSLocalizedString("group_triceps", comment: ""),
+          NSLocalizedString("group_abdomen", comment: "")
+      ]
+
+      for group in defaultGroups {
+          let entry = MuscleEntry(name: group)
+          entry.date = now
+          entry.weekOfYear = week
+          entry.year = year
+          entry.isChecked = false
+          context.insert(entry)
+      }
+      
+      try? context.save()
+  }
   
   func createMissingEntriesIfNeeded() {
     let customGroups = entries.map { $0.name }
@@ -61,8 +90,15 @@ class ContentViewModel: ObservableObject {
       }
     }
     
-    entries = try! (muscleEntryManager?.fetchAll())!
     updateCurrentEntries()
+  }
+  
+  func deleteEntries(at offsets: IndexSet) {
+    for index in offsets {
+      let entry = entries[index]
+      context?.delete(entry)
+    }
+    try? context?.save()
   }
   
   func emoji(for muscle: String) -> String {
