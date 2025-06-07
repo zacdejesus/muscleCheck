@@ -60,3 +60,8 @@ Thumbs.db
 
 # Simulator logs and states
 *.simstate
+
+MuscleCheck.xcodeproj/xcuserdata/adjesus.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
+MuscleCheck/GoogleService-Info.plist
+/GoogleService-Info.plist
+*/GoogleService-Info.plist
