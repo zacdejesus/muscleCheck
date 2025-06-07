@@ -23,7 +23,7 @@ struct ContentView: View {
                   MuscleEntryRowView(
                       entry: entry,
                       emoji: viewModel.emoji(for: entry.name),
-                      onTap: { handleTapItemActivity?($0) }
+                      onTap: { _ in viewModel.toggleActivity(for: entry) }
                   )
               }
               .onDelete(perform: viewModel.deleteEntries)
@@ -31,17 +31,24 @@ struct ContentView: View {
             .navigationTitle("home_title")
             .toolbar {
                 NavigationLink("workout_history") {
-                    HistoryView()
+                  HistoryView()
                 }
+                .font(.headline.bold())
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showingAddSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
+              ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                  showingAddSheet = true
+                } label: {
+                  Image(systemName: "plus.circle")
+                    .font(.headline)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(8)
                 }
+                .accessibilityLabel("add_new_muscle_group")
+              }
             }
             .onAppear {
                 viewModel.setup(context: context, entries: entries)
@@ -59,11 +66,21 @@ struct ContentView: View {
             }
         }
     }
-  
-  var handleTapItemActivity: ((MuscleEntry) -> Void)? = { entry in
-    let today = Date()
-    entry.isChecked ? entry.addActivityDate(today) : entry.removeActivityDate(today)
-    
-    entry.isChecked.toggle()
+}
+
+extension MuscleEntry {
+  static func sample(name: String = "Pecho") -> MuscleEntry {
+    let entry = MuscleEntry(name: name)
+    entry.isChecked = true
+    entry.addActivityDate(Date())
+    return entry
   }
+}
+
+
+#Preview {
+  let container = try! ModelContainer(for: MuscleEntry.self, configurations: ModelConfiguration())
+  let context = container.mainContext
+
+  ContentView().modelContainer(container)
 }
