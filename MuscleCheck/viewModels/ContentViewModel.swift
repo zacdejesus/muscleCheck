@@ -29,7 +29,7 @@ class ContentViewModel: ObservableObject {
   
   func updateCurrentEntries() {
     
-    guard let fetchEntries = try? (muscleEntryManager?.fetchAll()) else { return }
+    guard let fetchEntries = try? (muscleEntryManager?.fetchAllEntries()) else { return }
     
     entries = fetchEntries
     
@@ -46,29 +46,29 @@ class ContentViewModel: ObservableObject {
   }
   
   func insertDefaultMuscleEntries(context: ModelContext) {
-      let now = Date()
-      let week = Calendar.current.component(.weekOfYear, from: now)
-      let year = Calendar.current.component(.yearForWeekOfYear, from: now)
-      let defaultGroups = [
-          NSLocalizedString("group_chest", comment: ""),
-          NSLocalizedString("group_back", comment: ""),
-          NSLocalizedString("group_legs", comment: ""),
-          NSLocalizedString("group_shoulders", comment: ""),
-          NSLocalizedString("group_biceps", comment: ""),
-          NSLocalizedString("group_triceps", comment: ""),
-          NSLocalizedString("group_abdomen", comment: "")
-      ]
-
-      for group in defaultGroups {
-          let entry = MuscleEntry(name: group)
-          entry.date = now
-          entry.weekOfYear = week
-          entry.year = year
-          entry.isChecked = false
-          context.insert(entry)
-      }
-      
-      try? context.save()
+    let now = Date()
+    let week = Calendar.current.component(.weekOfYear, from: now)
+    let year = Calendar.current.component(.yearForWeekOfYear, from: now)
+    let defaultGroups = [
+      NSLocalizedString("group_chest", comment: ""),
+      NSLocalizedString("group_back", comment: ""),
+      NSLocalizedString("group_legs", comment: ""),
+      NSLocalizedString("group_shoulders", comment: ""),
+      NSLocalizedString("group_biceps", comment: ""),
+      NSLocalizedString("group_triceps", comment: ""),
+      NSLocalizedString("group_abdomen", comment: "")
+    ]
+    
+    for group in defaultGroups {
+      let entry = MuscleEntry(name: group)
+      entry.date = now
+      entry.weekOfYear = week
+      entry.year = year
+      entry.isChecked = false
+      context.insert(entry)
+    }
+    
+    try? context.save()
   }
   
   func createMissingEntriesIfNeeded() {
@@ -86,10 +86,22 @@ class ContentViewModel: ObservableObject {
       }
       
       if !exists {
-        muscleEntryManager?.addEntry(name: name)
+        try? muscleEntryManager?.addEntry(name: name)
       }
     }
     
+    updateCurrentEntries()
+  }
+  
+  func toggleActivity(for entry: MuscleEntry) {
+    let today = Date()
+      if entry.isChecked {
+        entry.removeActivityDate(today)
+      } else {
+        entry.addActivityDate(today)
+      }
+    entry.isChecked.toggle()
+    try? context?.save()
     updateCurrentEntries()
   }
   

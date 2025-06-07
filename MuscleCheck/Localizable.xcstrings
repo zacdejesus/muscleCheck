@@ -12,16 +12,27 @@
       },
       "shouldTranslate" : false
     },
-    "%@ - %@" : {
+    "add_exercise" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ - %2$@"
+            "state" : "translated",
+            "value" : "Add exercise"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar ejercicio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un exercice"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "add_group" : {
       "extractionState" : "manual",
@@ -42,6 +53,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajouter un groupe"
+          }
+        }
+      }
+    },
+    "add_new_muscle_group" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add new muscle group"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar nuevo grupo muscular"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un nouveau groupe musculaire"
           }
         }
       }
@@ -71,6 +105,12 @@
     },
     "Done" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -313,28 +353,6 @@
         }
       }
     },
-    "new_exercise_name" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New excersice"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuevo ejercicio"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nouveau groupe"
-          }
-        }
-      }
-    },
     "save" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -358,24 +376,15 @@
         }
       }
     },
-    "select_week" : {
+    "Selecciona una semana" : {
+
+    },
+    "Semana %lld: %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select week"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selecciona la semana"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sélectionner la semaine"
+            "state" : "new",
+            "value" : "Semana %1$lld: %2$@"
           }
         }
       }
@@ -399,28 +408,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Semaine"
-          }
-        }
-      }
-    },
-    "week %lld, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "week %1$lld, %2$@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "semana %1$lld, %2$@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "semaine %1$lld, %2$@"
           }
         }
       }
