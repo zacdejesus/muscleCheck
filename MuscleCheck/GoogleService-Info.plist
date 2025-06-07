@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyDZ9NcgKnmTkx8IsWtiSpe1_2FRA-HdU9E</string>
+	<string></string>
 	<key>GCM_SENDER_ID</key>
 	<string>270940771458</string>
 	<key>PLIST_VERSION</key>
@@ -15,16 +15,16 @@
 	<key>STORAGE_BUCKET</key>
 	<string>muscle-check.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:270940771458:ios:f2f9e7be1a143fd69a509b</string>
+	<string></string>
 </dict>
 </plist>
