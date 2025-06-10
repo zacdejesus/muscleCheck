@@ -2,7 +2,6 @@ import SwiftUI
 import SwiftData
 
 struct HistoryView: View {
-  @State private var selectedDate = Date()
   @State private var showPicker = false
   
   let entries: [MuscleEntry]
@@ -18,7 +17,7 @@ struct HistoryView: View {
       ForEach(viewModel.groupedEntries.keys.sorted(), id: \.self) { muscleName in
         Section(header: Text(muscleName).font(.headline)) {
           ForEach(viewModel.groupedEntries[muscleName] ?? [], id: \.self) { entry in
-            Text(entry.date.formatted(date: .abbreviated, time: .omitted))
+            Text(entry.dateCreated.formatted(date: .abbreviated, time: .omitted))
               .font(.subheadline)
               .foregroundColor(.secondary)
           }
@@ -31,7 +30,7 @@ struct HistoryView: View {
         Button {
           showPicker = true
         } label: {
-          Text("Week \(viewModel.weekOf(selectedDate)): \(viewModel.weekRangeString(for: selectedDate))")
+          Text("Week \(viewModel.weekOf(viewModel.selectedDate)): \(viewModel.weekRangeString(for: viewModel.selectedDate))")
             .font(.headline.bold())
             .foregroundColor(Color("PrimaryButtonColor"))
         }
@@ -39,7 +38,7 @@ struct HistoryView: View {
     }
     .sheet(isPresented: $showPicker) {
       VStack {
-        DatePicker("Selecciona una semana", selection: $selectedDate, displayedComponents: .date)
+        DatePicker("Selecciona una semana", selection: $viewModel.selectedDate, displayedComponents: .date)
           .datePickerStyle(.graphical)
           .padding()
         Button("Done") {

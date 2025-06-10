@@ -14,7 +14,7 @@ struct ContentViewModelTests {
     func coddso()
     {
         let now = Date()
-        let calendar = Calendar.current
+        let calendar = Date.appCalendar
         let currentWeek = calendar.component(.weekOfYear, from: now)
         let currentYear = calendar.component(.yearForWeekOfYear, from: now)
         

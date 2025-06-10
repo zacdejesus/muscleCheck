@@ -25,25 +25,26 @@ class HistoryViewModel: ObservableObject {
   }
   
   var groupedEntries: [String: [MuscleEntry]] {
-    let calendar = Calendar.current
-    let selectedWeek = calendar.component(.weekOfYear, from: selectedDate)
-    let selectedYear = calendar.component(.yearForWeekOfYear, from: selectedDate)
-    
-    let filtered = entries.filter {
-      $0.weekOfYear == selectedWeek &&
-      $0.year == selectedYear &&
-      $0.isChecked
-    }
-    
-    return Dictionary(grouping: filtered, by: { $0.name })
+      let calendar = Date.appCalendar
+      guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: selectedDate) else {
+          return [:]
+      }
+
+      let filtered = entries.filter { entry in
+          entry.activityDates.contains { activityDate in
+              weekInterval.contains(activityDate)
+          }
+      }
+
+      return Dictionary(grouping: filtered, by: { $0.name })
   }
   
   func weekOf(_ date: Date) -> Int {
-    Calendar.current.component(.weekOfYear, from: date)
+    Date.appCalendar.component(.weekOfYear, from: date)
   }
   
   func weekRangeString(for date: Date) -> String {
-    let calendar = Calendar.current
+    let calendar = Date.appCalendar
     guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: date) else { return "" }
     
     let formatter = DateFormatter()

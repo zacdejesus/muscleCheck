@@ -23,8 +23,27 @@ class ContentViewModel: ObservableObject {
     
     self.muscleEntryManager = .init(context: context)
     
-    createMissingEntriesIfNeeded()
+    insertDefaultMuscleEntries()
+
+    resetCheckedEntriesIfnewWeek()
+    
     updateCurrentEntries()
+  }
+  
+  func resetCheckedEntriesIfnewWeek() {
+    let calendar = Date.appCalendar
+    let currentWeek = calendar.component(.weekOfYear, from: Date())
+    let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
+
+    if currentWeek != UserDefaultsManager.shared.lastResetWeek ||
+       currentYear != UserDefaultsManager.shared.lastResetYear {
+        
+        entries.forEach { $0.isChecked = false }
+        try? context?.save()
+
+        UserDefaultsManager.shared.lastResetWeek = currentWeek
+        UserDefaultsManager.shared.lastResetYear = currentYear
+    }
   }
   
   func updateCurrentEntries() {
@@ -33,7 +52,7 @@ class ContentViewModel: ObservableObject {
     
     entries = fetchEntries
     
-    let calendar = Calendar.current
+    let calendar = Date.appCalendar
     let currentWeek = calendar.component(.weekOfYear, from: Date())
     let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
     
@@ -45,10 +64,10 @@ class ContentViewModel: ObservableObject {
     updateCurrentEntries()
   }
   
-  func insertDefaultMuscleEntries(context: ModelContext) {
-    let now = Date()
-    let week = Calendar.current.component(.weekOfYear, from: now)
-    let year = Calendar.current.component(.yearForWeekOfYear, from: now)
+  func insertDefaultMuscleEntries() {
+
+    guard !UserDefaultsManager.shared.defaultEntriesCreated else { return }
+    
     let defaultGroups = [
       NSLocalizedString("group_chest", comment: ""),
       NSLocalizedString("group_back", comment: ""),
@@ -61,36 +80,12 @@ class ContentViewModel: ObservableObject {
     
     for group in defaultGroups {
       let entry = MuscleEntry(name: group)
-      entry.date = now
-      entry.weekOfYear = week
-      entry.year = year
       entry.isChecked = false
-      context.insert(entry)
+      context?.insert(entry)
     }
     
-    try? context.save()
-  }
-  
-  func createMissingEntriesIfNeeded() {
-    let customGroups = entries.map { $0.name }
-    
-    let calendar = Calendar.current
-    let currentWeek = calendar.component(.weekOfYear, from: Date())
-    let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
-    
-    let allGroups = customGroups
-    
-    allGroups.forEach { name in
-      let exists = entries.contains {
-        $0.name == name && $0.weekOfYear == currentWeek && $0.year == currentYear
-      }
-      
-      if !exists {
-        try? muscleEntryManager?.addEntry(name: name)
-      }
-    }
-    
-    updateCurrentEntries()
+    UserDefaultsManager.shared.defaultEntriesCreated = true
+    try? context?.save()
   }
   
   func toggleActivity(for entry: MuscleEntry) {

@@ -15,17 +15,20 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
   var isChecked: Bool
   var weekOfYear: Int
   var year: Int
-  var date: Date
+  var dateCreated: Date
   var activityDates: [Date]
   
   init(name: String) {
     self.id = UUID()
+    
     let now = Date()
-    self.date = now
+    let startOfWeek = now.startOfWeek() ?? now
+    
+    self.dateCreated = now
     self.name = name
     self.isChecked = false
-    self.weekOfYear = Calendar.current.component(.weekOfYear, from: now)
-    self.year = Calendar.current.component(.yearForWeekOfYear, from: now)
+    self.weekOfYear = Date.appCalendar.component(.weekOfYear, from: startOfWeek)
+    self.year = Date.appCalendar.component(.yearForWeekOfYear, from: startOfWeek)
     self.activityDates = []
   }
   
@@ -38,12 +41,12 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
   }
   
   func addActivityDate(_ date: Date) {
-    if !activityDates.contains(where: { Calendar.current.isDate($0, inSameDayAs: date) }) {
+    if !activityDates.contains(where: { Date.appCalendar.isDate($0, inSameDayAs: date) }) {
       activityDates.append(date)
     }
   }
   
   func removeActivityDate(_ date: Date) {
-    activityDates.removeAll(where: { Calendar.current.isDate($0, inSameDayAs: date) })
+    activityDates.removeAll(where: { Date.appCalendar.isDate($0, inSameDayAs: date) })
   }
 }

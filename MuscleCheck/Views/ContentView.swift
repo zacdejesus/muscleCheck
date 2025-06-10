@@ -54,11 +54,6 @@ struct ContentView: View {
             }
             .onAppear {
                 viewModel.setup(context: context, entries: entries)
-                if !hasInsertedInitialData {
-                    viewModel.insertDefaultMuscleEntries(context: context)
-                    hasInsertedInitialData = true
-                }
-                viewModel.createMissingEntriesIfNeeded()
             }
             .onChange(of: entries) { oldEntries, newEntries in
               viewModel.updateCurrentEntries()
