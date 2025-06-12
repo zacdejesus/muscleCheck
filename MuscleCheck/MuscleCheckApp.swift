@@ -13,7 +13,23 @@ import Firebase
 struct MuscleCheckApp: App {
   
   init() {
+    setNavalBarAppearance()
+    
     FirebaseApp.configure()
+  }
+  
+  private func setNavalBarAppearance() {
+    let appearance = UINavigationBarAppearance()
+    appearance.configureWithOpaqueBackground()
+    appearance.titleTextAttributes = [.foregroundColor: UIColor.black]
+    appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.black]
+    appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.clear]
+    appearance.setBackIndicatorImage(UIImage(systemName: "chevron.backward")?.withTintColor(UIColor(Color("PrimaryButtonColor")), renderingMode: .alwaysOriginal), transitionMaskImage: UIImage(systemName: "chevron.backward"))
+    
+    UINavigationBar.appearance().standardAppearance = appearance
+    UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    UINavigationBar.appearance().compactAppearance = appearance
+    UINavigationBar.appearance().tintColor = UIColor(Color("PrimaryButtonColor"))
   }
   
   var sharedModelContainer: ModelContainer = {

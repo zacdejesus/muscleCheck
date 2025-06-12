@@ -19,19 +19,18 @@ struct HistoryView: View {
           ForEach(viewModel.groupedEntries[muscleName] ?? [], id: \.self) { entry in
             Text(entry.dateCreated.formatted(date: .abbreviated, time: .omitted))
               .font(.subheadline)
-              .foregroundColor(.secondary)
+              .foregroundColor(.primary)
           }
         }
       }
     }
-    .navigationBarTitleDisplayMode(.inline)
     .toolbar {
       ToolbarItem(placement: .principal) {
         Button {
           showPicker = true
         } label: {
           Text("Week \(viewModel.weekOf(viewModel.selectedDate)): \(viewModel.weekRangeString(for: viewModel.selectedDate))")
-            .font(.headline.bold())
+            .font(.subheadline.bold())
             .foregroundColor(Color("PrimaryButtonColor"))
         }
       }

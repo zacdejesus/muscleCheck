@@ -12,8 +12,7 @@ import _SwiftData_SwiftUI
 
 class HistoryViewModel: ObservableObject {
   
-  var selectedDate: Date = Date()
-
+  @Published var selectedDate: Date = Date()
   @Published var entries: [MuscleEntry]
 
   init(entries: [MuscleEntry]) {

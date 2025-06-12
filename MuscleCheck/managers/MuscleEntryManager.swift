@@ -10,9 +10,9 @@ import SwiftData
 
 @MainActor
 final class MuscleEntryManager {
-    private let context: ModelContext
+    private let context: ModelContextProtocol
 
-    init(context: ModelContext) {
+    init(context: ModelContextProtocol) {
         self.context = context
     }
 

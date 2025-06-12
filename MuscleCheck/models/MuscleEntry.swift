@@ -18,7 +18,7 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
   var dateCreated: Date
   var activityDates: [Date]
   
-  init(name: String) {
+  init(name: String, activityDates: [Date] = []) {
     self.id = UUID()
     
     let now = Date()
@@ -29,7 +29,7 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
     self.isChecked = false
     self.weekOfYear = Date.appCalendar.component(.weekOfYear, from: startOfWeek)
     self.year = Date.appCalendar.component(.yearForWeekOfYear, from: startOfWeek)
-    self.activityDates = []
+    self.activityDates = activityDates
   }
   
   static func == (lhs: MuscleEntry, rhs: MuscleEntry) -> Bool {

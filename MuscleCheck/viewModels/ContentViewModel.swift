@@ -11,13 +11,13 @@ import SwiftData
 @MainActor
 class ContentViewModel: ObservableObject {
   
-  private var context: ModelContext?
-  private var entries: [MuscleEntry] = []
+  private var context: ModelContextProtocol?
+  private(set) var entries: [MuscleEntry] = []
   private var muscleEntryManager: MuscleEntryManager?
   
   @Published var currentWeekEntries: [MuscleEntry] = []
   
-  func setup(context: ModelContext, entries: [MuscleEntry]) {
+  func setup(context: ModelContextProtocol, entries: [MuscleEntry]) {
     self.context = context
     self.entries = entries
     
@@ -102,7 +102,7 @@ class ContentViewModel: ObservableObject {
   
   func deleteEntries(at offsets: IndexSet) {
     for index in offsets {
-      let entry = entries[index]
+      guard let entry = entries[safe: index] else { return  }
       context?.delete(entry)
     }
     try? context?.save()
@@ -120,4 +120,18 @@ class ContentViewModel: ObservableObject {
     default: return "🏋️"
     }
   }
+}
+
+extension Array {
+    mutating func appendIfNotNil(_ element: Element?) {
+        if let element = element {
+            self.append(element)
+        }
+    }
+    
+    
+
+    subscript(safe index: Int) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
 }
