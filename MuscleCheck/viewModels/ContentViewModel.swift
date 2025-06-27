@@ -90,11 +90,11 @@ class ContentViewModel: ObservableObject {
   
   func toggleActivity(for entry: MuscleEntry) {
     let today = Date()
-      if entry.isChecked {
-        entry.removeActivityDate(today)
-      } else {
-        entry.addActivityDate(today)
-      }
+    if entry.isChecked {
+      entry.removeActivityDate(today)
+    } else {
+      entry.addActivityDate(today)
+    }
     entry.isChecked.toggle()
     try? context?.save()
     updateCurrentEntries()
@@ -120,18 +120,4 @@ class ContentViewModel: ObservableObject {
     default: return "🏋️"
     }
   }
-}
-
-extension Array {
-    mutating func appendIfNotNil(_ element: Element?) {
-        if let element = element {
-            self.append(element)
-        }
-    }
-    
-    
-
-    subscript(safe index: Int) -> Element? {
-        return indices.contains(index) ? self[index] : nil
-    }
 }

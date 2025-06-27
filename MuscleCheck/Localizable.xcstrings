@@ -291,18 +291,18 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Muscle Check"
+            "value" : "Activity Check"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Muscle Check"
+            "value" : "Activity Check"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Muscle Check"
           }
         }

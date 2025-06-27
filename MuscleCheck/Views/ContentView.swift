@@ -28,9 +28,10 @@ struct ContentView: View {
         }
         .onDelete(perform: viewModel.deleteEntries)
       }
+      .background(Color(.systemGray6))
       .navigationTitle("home_title")
       .tint(Color("PrimaryButtonColor"))
-      
+      .navigationBarTitleDisplayMode(.automatic)
       .toolbar {
         ToolbarItem(placement: .navigationBarLeading) {
           NavigationLink("workout_history") {
@@ -54,12 +55,9 @@ struct ContentView: View {
           .accessibilityLabel("add_new_muscle_group")
         }
       }
+      .padding(0.5)
       .onAppear {
-          if let context = context as? ModelContextProtocol {
-              viewModel.setup(context: context, entries: entries)
-          } else {
-              assertionFailure("ModelContext does not conform to ModelContextProtocol")
-          }
+          viewModel.setup(context: context, entries: entries)
       }
       .onChange(of: entries) { oldEntries, newEntries in
         viewModel.updateCurrentEntries()

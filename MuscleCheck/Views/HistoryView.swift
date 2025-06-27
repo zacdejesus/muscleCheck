@@ -24,6 +24,7 @@ struct HistoryView: View {
         }
       }
     }
+    .navigationBarTitleDisplayMode(.inline)
     .toolbar {
       ToolbarItem(placement: .principal) {
         Button {

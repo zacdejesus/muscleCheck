@@ -38,3 +38,7 @@ struct AddMuscleGroupView: View {
     }
   }
 }
+
+#Preview {
+    AddMuscleGroupView().modelContainer(for: MuscleEntry.self)
+}

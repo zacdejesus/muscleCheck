@@ -21,9 +21,9 @@ struct MuscleCheckApp: App {
   private func setNavalBarAppearance() {
     let appearance = UINavigationBarAppearance()
     appearance.configureWithOpaqueBackground()
-    appearance.titleTextAttributes = [.foregroundColor: UIColor.black]
-    appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.black]
-    appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.clear]
+    appearance.titleTextAttributes = [.foregroundColor: UIColor(Color("PrimaryButtonColor"))]
+    appearance.largeTitleTextAttributes = [.foregroundColor: UIColor(Color("PrimaryButtonColor"))]
+    appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor(Color("PrimaryButtonColor"))]
     appearance.setBackIndicatorImage(UIImage(systemName: "chevron.backward")?.withTintColor(UIColor(Color("PrimaryButtonColor")), renderingMode: .alwaysOriginal), transitionMaskImage: UIImage(systemName: "chevron.backward"))
     
     UINavigationBar.appearance().standardAppearance = appearance
