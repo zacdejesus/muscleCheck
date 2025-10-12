@@ -18,6 +18,9 @@ struct ContentView: View {
   
   var body: some View {
     NavigationStack {
+      Button("Review last month workouts") {
+        viewModel.reviewLastMonthWorkouts()
+      }
       List {
         ForEach(viewModel.currentWeekEntries, id: \.name) { entry in
           MuscleEntryRowView(

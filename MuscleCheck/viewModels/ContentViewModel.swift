@@ -14,8 +14,14 @@ class ContentViewModel: ObservableObject {
   private var context: ModelContextProtocol?
   private(set) var entries: [MuscleEntry] = []
   private var muscleEntryManager: MuscleEntryManager?
+  @State private var itineraryGenerator: ItineraryGenerator?
+  
   
   @Published var currentWeekEntries: [MuscleEntry] = []
+  
+  func reviewLastMonthWorkouts() {
+    itineraryGenerator?.generateItinerary()
+  }
   
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) {
     self.context = context
