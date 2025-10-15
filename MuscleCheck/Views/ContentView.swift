@@ -10,17 +10,15 @@ import SwiftData
 struct ContentView: View {
   
   @StateObject private var viewModel = ContentViewModel()
-  @State private var showingAddSheet = false
-  
   @Environment(\.modelContext) private var context
   @Query private var entries: [MuscleEntry]
   @AppStorage("hasInsertedInitialData") private var hasInsertedInitialData: Bool = false
+  @State private var showingReviewModal = false
+  @State private var showingAddSheet = false
   
   var body: some View {
     NavigationStack {
-      Button("Review last month workouts") {
-        viewModel.reviewLastMonthWorkouts()
-      }
+      Spacer()
       List {
         ForEach(viewModel.currentWeekEntries, id: \.name) { entry in
           MuscleEntryRowView(
@@ -49,18 +47,20 @@ struct ContentView: View {
             showingAddSheet = true
           } label: {
             Image(systemName: "plus.circle")
-                              .font(.headline)
-                              .padding(.horizontal, 12)
-                              .padding(.vertical, 8)
-                              .foregroundColor(Color("PrimaryButtonColor"))
-                              .cornerRadius(8)
+              .font(.headline)
+              .padding(.horizontal, 12)
+              .padding(.vertical, 8)
+              .foregroundColor(Color("PrimaryButtonColor"))
+              .cornerRadius(8)
           }
           .accessibilityLabel("add_new_muscle_group")
         }
       }
       .padding(0.5)
       .onAppear {
-          viewModel.setup(context: context, entries: entries)
+        Task {
+          await viewModel.setup(context: context, entries: entries)
+        }
       }
       .onChange(of: entries) { oldEntries, newEntries in
         viewModel.updateCurrentEntries()
@@ -68,6 +68,38 @@ struct ContentView: View {
       .sheet(isPresented: $showingAddSheet) {
         AddMuscleGroupView()
       }
+      .sheet(isPresented: $showingReviewModal) {
+        if let reviewText = viewModel.workoutSuggested {
+          VStack {
+            Text("Review")
+              .font(.headline)
+            Text(reviewText)
+              .padding()
+            Button("Close") {
+              showingReviewModal = false
+            }
+          }
+          .padding()
+        }
+      }
+      Button {
+          Task {
+            await viewModel.reviewLastMonthWorkouts()
+            showingReviewModal = true
+          }
+      } label: {
+          HStack {
+              Image(systemName: "chart.bar.xaxis")
+              Text("Musculo recomendado por Apple Intelligence")
+                  .fontWeight(.medium)
+          }
+          .padding(.vertical, 10)
+          .frame(maxWidth: .infinity)
+      }
+      .buttonStyle(.borderedProminent)
+      .controlSize(.regular)
+      .tint(Color("PrimaryButtonColor"))
+      .padding(.horizontal)
     }
   }
 }
@@ -90,5 +122,5 @@ extension MuscleEntry {
 }
 
 extension ModelContext: ModelContextProtocol {
-
+  
 }

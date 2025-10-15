@@ -15,6 +15,7 @@ struct AddMuscleGroupView: View {
   
   var body: some View {
     NavigationStack {
+      Spacer(minLength: 10)
       Form {
         TextField("new_excersise_placeholder", text: $muscleName)
       }

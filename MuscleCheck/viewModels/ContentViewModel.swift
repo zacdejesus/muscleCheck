@@ -7,23 +7,27 @@
 
 import Foundation
 import SwiftData
+import FoundationModels
 
 @MainActor
-class ContentViewModel: ObservableObject {
+final class ContentViewModel: ObservableObject {
   
   private var context: ModelContextProtocol?
   private(set) var entries: [MuscleEntry] = []
   private var muscleEntryManager: MuscleEntryManager?
-  @State private var itineraryGenerator: ItineraryGenerator?
-  
-  
   @Published var currentWeekEntries: [MuscleEntry] = []
+  @Published var workoutSuggested: String.PartiallyGenerated?
   
-  func reviewLastMonthWorkouts() {
-    itineraryGenerator?.generateItinerary()
+  let muscleCheckAI = MuscleCheckAI()
+  let session = LanguageModelSession()
+  
+  func reviewLastMonthWorkouts() async {
+    workoutSuggested = await muscleCheckAI.generateReview(entries: entries)
   }
   
-  func setup(context: ModelContextProtocol, entries: [MuscleEntry]) {
+  func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
+    muscleCheckAI.prewarmModel()
+    
     self.context = context
     self.entries = entries
     

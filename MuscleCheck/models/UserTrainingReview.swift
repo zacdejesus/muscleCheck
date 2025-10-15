@@ -8,14 +8,7 @@
 import FoundationModels
 
 @Generable
-struct UserTrainingReview: Identifiable, Hashable, Equatable {
-  @Guide(description: "An exciting name for the review.")
-  let title: String
-  
-  let description: String
-  let review: String
-  let goodPoints: String
-  
-  @Guide(description: "An explanation of how the itinerary meets the user's special requests.")
-  let rationale: String
+struct UserTrainingReview: Hashable, Equatable {
+  @Guide(description: "El grupo muscular principal recomendado y la razon por la cual se recomienda.")
+  var musculo: String
 }
