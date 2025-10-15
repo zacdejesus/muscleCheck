@@ -22,7 +22,11 @@ final class ContentViewModel: ObservableObject {
   let session = LanguageModelSession()
   
   func reviewLastMonthWorkouts() async {
-    workoutSuggested = await muscleCheckAI.generateReview(entries: entries)
+    do {
+      workoutSuggested = try await muscleCheckAI.generateReview(entries: entries)
+    } catch {
+      workoutSuggested = "Hubo un error al generar la revisión."
+    }
   }
   
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {

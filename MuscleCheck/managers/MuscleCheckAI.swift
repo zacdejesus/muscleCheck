@@ -16,7 +16,7 @@ final class MuscleCheckAI {
   private var options: GenerationOptions = {
       var opts = GenerationOptions()
       opts.sampling = .greedy
-      opts.temperature = 10
+      opts.temperature = 0
       opts.maximumResponseTokens = 150
       return opts
   }()
@@ -32,9 +32,10 @@ final class MuscleCheckAI {
     session = LanguageModelSession(instructions: systemInstructions)
   }
   
-  func generateReview(daysReviwed: Int = 30, entries: [MuscleEntry]) async -> String {
+  func generateReview(daysReviwed: Int = 30, entries: [MuscleEntry]) async throws -> String {
     let today = Date()
     let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
     
     let finalPrompt = """
     Analisa los ultimos entrenamientos del usuario (hoy es \(formatter.string(from: today))):
@@ -43,24 +44,29 @@ final class MuscleCheckAI {
     \(createHistoryString(from: entries))
     --- FIN DEL HISTORIAL ---
     
-    Based on muscular balance and the user training muscles \(String(describing: getEntriesString(entries: entries))), Cual musculo recomendarle para que haga hoy?
+    Basado en los ultimos musculos entrenados recientemente por el usuario \(String(describing: getEntriesString(entries: entries))), Cual musculo recomendarle para que haga hoy?
     """
-    dump(finalPrompt)
-    let response = try! await session.respond(to: finalPrompt,
-                                              options: options)
-    dump(response)
-    return response.content
+    do {
+      dump(finalPrompt)
+      let response = try await session.respond(to: finalPrompt,
+                                                options: options)
+      
+      dump(response)
+      return response.content
+    } catch let err {
+      dump(err)
+      throw err
+    }
   }
   
   func prewarmModel() {
     let promtPrefix = Prompt("""
-    Analisa los ultimos entrenamientos del usuario (hoy es "07/10/2025"))):
-    
+    Analisa los ultimos entrenamientos del usuario (hoy es 2025-10-15):
     --- HISTORIAL DE EJERCICIOS ---
-    
+    Músculo: Espalda. Última sesión: 2025-10-15. Días de descanso: 0.
+    Músculo: Hombros. Última sesión: 2025-10-15. Días de descanso: 0.
     --- FIN DEL HISTORIAL ---
-    
-    Based on muscular balance and the user training muscles , Cual musculo recomendarle para que haga hoy?
+    Basado en los ultimos musculos entrenados por el usuario Optional("Espalda, Hombros, Biceps, Piernas"), Cual musculo recomendarle para que haga hoy?
     """)
     
     session.prewarm(promptPrefix: promtPrefix)
