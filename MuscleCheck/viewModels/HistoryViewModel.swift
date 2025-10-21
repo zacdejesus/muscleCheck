@@ -10,7 +10,7 @@ import Foundation
 import SwiftData
 import _SwiftData_SwiftUI
 
-class HistoryViewModel: ObservableObject {
+final class HistoryViewModel: ObservableObject {
   
   @Published var selectedDate: Date = Date()
   @Published var entries: [MuscleEntry]

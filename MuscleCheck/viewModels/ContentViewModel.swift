@@ -7,17 +7,31 @@
 
 import Foundation
 import SwiftData
+import FoundationModels
 
 @MainActor
-class ContentViewModel: ObservableObject {
+final class ContentViewModel: ObservableObject {
   
   private var context: ModelContextProtocol?
   private(set) var entries: [MuscleEntry] = []
   private var muscleEntryManager: MuscleEntryManager?
-  
   @Published var currentWeekEntries: [MuscleEntry] = []
+  @Published var workoutSuggested: String.PartiallyGenerated?
   
-  func setup(context: ModelContextProtocol, entries: [MuscleEntry]) {
+  let muscleCheckAI = MuscleCheckAI()
+  let session = LanguageModelSession()
+  
+  func reviewLastMonthWorkouts() async {
+    do {
+      workoutSuggested = try await muscleCheckAI.generateReview(entries: entries)
+    } catch {
+      workoutSuggested = "Hubo un error al generar la revisión."
+    }
+  }
+  
+  func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
+    muscleCheckAI.prewarmModel()
+    
     self.context = context
     self.entries = entries
     
@@ -119,5 +133,9 @@ class ContentViewModel: ObservableObject {
     case NSLocalizedString("group_abdomen", comment: ""): return "🧘"
     default: return "🏋️"
     }
+  }
+  
+  func isAppleIntelligenceAvailable() -> Bool {
+    return muscleCheckAI.isAppleIntelligenceAvailable()
   }
 }
