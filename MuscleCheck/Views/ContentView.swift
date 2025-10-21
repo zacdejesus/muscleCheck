@@ -82,24 +82,26 @@ struct ContentView: View {
           .padding()
         }
       }
-      Button {
+      if viewModel.isAppleIntelligenceAvailable() {
+        Button {
           Task {
             await viewModel.reviewLastMonthWorkouts()
             showingReviewModal = true
           }
-      } label: {
+        } label: {
           HStack {
-              Image(systemName: "chart.bar.xaxis")
-              Text("Musculo recomendado por Apple Intelligence")
-                  .fontWeight(.medium)
+            Image(systemName: "chart.bar.xaxis")
+            Text("Musculo recomendado por Apple Intelligence")
+              .fontWeight(.medium)
           }
           .padding(.vertical, 10)
           .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .controlSize(.regular)
+        .tint(Color("PrimaryButtonColor"))
+        .padding(.horizontal)
       }
-      .buttonStyle(.borderedProminent)
-      .controlSize(.regular)
-      .tint(Color("PrimaryButtonColor"))
-      .padding(.horizontal)
     }
   }
 }

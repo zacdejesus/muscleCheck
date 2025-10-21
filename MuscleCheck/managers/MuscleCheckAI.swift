@@ -17,7 +17,7 @@ final class MuscleCheckAI {
       var opts = GenerationOptions()
       opts.sampling = .greedy
       opts.temperature = 0
-      opts.maximumResponseTokens = 150
+      opts.maximumResponseTokens = 100
       return opts
   }()
   
@@ -94,5 +94,17 @@ final class MuscleCheckAI {
       return "\(entry.name)"
     }
     return historyLines.joined(separator: ", ")
+  }
+  
+  func isAppleIntelligenceAvailable() -> Bool {
+    let model = SystemLanguageModel.default
+    
+    switch model.availability {
+    case .available: return true
+    case .unavailable(.deviceNotEligible): return false
+    case .unavailable(.appleIntelligenceNotEnabled): return false
+    case .unavailable(.modelNotReady): return true
+    case .unavailable(let other): return false
+    }
   }
 }

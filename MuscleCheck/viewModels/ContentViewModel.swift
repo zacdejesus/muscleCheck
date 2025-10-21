@@ -134,4 +134,8 @@ final class ContentViewModel: ObservableObject {
     default: return "🏋️"
     }
   }
+  
+  func isAppleIntelligenceAvailable() -> Bool {
+    return muscleCheckAI.isAppleIntelligenceAvailable()
+  }
 }
