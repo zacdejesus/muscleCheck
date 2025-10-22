@@ -23,7 +23,6 @@ struct ContentView: View {
         ForEach(viewModel.currentWeekEntries, id: \.name) { entry in
           MuscleEntryRowView(
             entry: entry,
-            emoji: viewModel.emoji(for: entry.name),
             onTap: { _ in viewModel.toggleActivity(for: entry) }
           )
         }
@@ -101,6 +100,7 @@ struct ContentView: View {
         .controlSize(.regular)
         .tint(Color("PrimaryButtonColor"))
         .padding(.horizontal)
+        .padding(.bottom, 15) 
       }
     }
   }

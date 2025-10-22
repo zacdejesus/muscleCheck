@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CB1DFA832EA828AC00B2047E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA822EA828AC00B2047E /* WidgetKit.framework */; };
+		CB1DFA852EA828AC00B2047E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA842EA828AC00B2047E /* SwiftUI.framework */; };
+		CB1DFA962EA828AD00B2047E /* MuscleCheckWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CB1DFA802EA828AC00B2047E /* MuscleCheckWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CB6772D42DF48CDA00A683BC /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = CB6772D32DF48CDA00A683BC /* FirebaseAnalytics */; };
 		CB6772D62DF48CDA00A683BC /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = CB6772D52DF48CDA00A683BC /* FirebaseAnalyticsCore */; };
 		CB6772D82DF48CDA00A683BC /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = CB6772D72DF48CDA00A683BC /* FirebaseAppCheck */; };
@@ -14,6 +17,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		CB1DFA942EA828AD00B2047E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CBE912522DD93DE0001F511B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CB1DFA7F2EA828AC00B2047E;
+			remoteInfo = MuscleCheckWidgetExtension;
+		};
 		CBE9126D2DD93DE1001F511B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CBE912522DD93DE0001F511B /* Project object */;
@@ -30,13 +40,49 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		CB1DFA972EA828AD00B2047E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				CB1DFA962EA828AD00B2047E /* MuscleCheckWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		CB1DFA802EA828AC00B2047E /* MuscleCheckWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MuscleCheckWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB1DFA822EA828AC00B2047E /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		CB1DFA842EA828AC00B2047E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		CB1DFA9D2EA8296D00B2047E /* MuscleCheckWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MuscleCheckWidgetExtension.entitlements; sourceTree = "<group>"; };
 		CBE9125A2DD93DE0001F511B /* MuscleCheck.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MuscleCheck.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CBE9126C2DD93DE1001F511B /* MuscleCheckTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MuscleCheckTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CBE912762DD93DE1001F511B /* MuscleCheckUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MuscleCheckUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		CB1DFA9A2EA828AD00B2047E /* Exceptions for "MuscleCheckWidget" folder in "MuscleCheckWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = CB1DFA7F2EA828AC00B2047E /* MuscleCheckWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		CB1DFA862EA828AC00B2047E /* MuscleCheckWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				CB1DFA9A2EA828AD00B2047E /* Exceptions for "MuscleCheckWidget" folder in "MuscleCheckWidgetExtension" target */,
+			);
+			path = MuscleCheckWidget;
+			sourceTree = "<group>";
+		};
 		CBE9125C2DD93DE0001F511B /* MuscleCheck */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MuscleCheck;
@@ -55,6 +101,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		CB1DFA7D2EA828AC00B2047E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB1DFA852EA828AC00B2047E /* SwiftUI.framework in Frameworks */,
+				CB1DFA832EA828AC00B2047E /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CBE912572DD93DE0001F511B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -83,12 +138,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CB1DFA812EA828AC00B2047E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CB1DFA822EA828AC00B2047E /* WidgetKit.framework */,
+				CB1DFA842EA828AC00B2047E /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		CBE912512DD93DE0001F511B = {
 			isa = PBXGroup;
 			children = (
+				CB1DFA9D2EA8296D00B2047E /* MuscleCheckWidgetExtension.entitlements */,
 				CBE9125C2DD93DE0001F511B /* MuscleCheck */,
 				CBE9126F2DD93DE1001F511B /* MuscleCheckTests */,
 				CBE912792DD93DE1001F511B /* MuscleCheckUITests */,
+				CB1DFA862EA828AC00B2047E /* MuscleCheckWidget */,
+				CB1DFA812EA828AC00B2047E /* Frameworks */,
 				CBE9125B2DD93DE0001F511B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -99,6 +166,7 @@
 				CBE9125A2DD93DE0001F511B /* MuscleCheck.app */,
 				CBE9126C2DD93DE1001F511B /* MuscleCheckTests.xctest */,
 				CBE912762DD93DE1001F511B /* MuscleCheckUITests.xctest */,
+				CB1DFA802EA828AC00B2047E /* MuscleCheckWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -106,6 +174,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		CB1DFA7F2EA828AC00B2047E /* MuscleCheckWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CB1DFA9B2EA828AD00B2047E /* Build configuration list for PBXNativeTarget "MuscleCheckWidgetExtension" */;
+			buildPhases = (
+				CB1DFA7C2EA828AC00B2047E /* Sources */,
+				CB1DFA7D2EA828AC00B2047E /* Frameworks */,
+				CB1DFA7E2EA828AC00B2047E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				CB1DFA862EA828AC00B2047E /* MuscleCheckWidget */,
+			);
+			name = MuscleCheckWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = MuscleCheckWidgetExtension;
+			productReference = CB1DFA802EA828AC00B2047E /* MuscleCheckWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		CBE912592DD93DE0001F511B /* MuscleCheck */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CBE912802DD93DE1001F511B /* Build configuration list for PBXNativeTarget "MuscleCheck" */;
@@ -114,10 +204,12 @@
 				CBE912572DD93DE0001F511B /* Frameworks */,
 				CBE912582DD93DE0001F511B /* Resources */,
 				CB6772DB2DF48FA300A683BC /* ShellScript */,
+				CB1DFA972EA828AD00B2047E /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				CB1DFA952EA828AD00B2047E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				CBE9125C2DD93DE0001F511B /* MuscleCheck */,
@@ -186,9 +278,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1610;
+				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
+					CB1DFA7F2EA828AC00B2047E = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
 					CBE912592DD93DE0001F511B = {
 						CreatedOnToolsVersion = 16.1;
 					};
@@ -224,11 +319,19 @@
 				CBE912592DD93DE0001F511B /* MuscleCheck */,
 				CBE9126B2DD93DE1001F511B /* MuscleCheckTests */,
 				CBE912752DD93DE1001F511B /* MuscleCheckUITests */,
+				CB1DFA7F2EA828AC00B2047E /* MuscleCheckWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		CB1DFA7E2EA828AC00B2047E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CBE912582DD93DE0001F511B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -278,6 +381,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		CB1DFA7C2EA828AC00B2047E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CBE912562DD93DE0001F511B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -302,6 +412,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		CB1DFA952EA828AD00B2047E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CB1DFA7F2EA828AC00B2047E /* MuscleCheckWidgetExtension */;
+			targetProxy = CB1DFA942EA828AD00B2047E /* PBXContainerItemProxy */;
+		};
 		CBE9126E2DD93DE1001F511B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = CBE912592DD93DE0001F511B /* MuscleCheck */;
@@ -315,6 +430,72 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		CB1DFA982EA828AD00B2047E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MuscleCheckWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DTJLZH295U;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MuscleCheckWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MuscleCheckWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zadkiel.musclecheck.MuscleCheckWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CB1DFA992EA828AD00B2047E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MuscleCheckWidgetExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DTJLZH295U;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MuscleCheckWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MuscleCheckWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zadkiel.musclecheck.MuscleCheckWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		CBE9127E2DD93DE1001F511B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -441,6 +622,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MuscleCheck/MuscleCheck.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -479,6 +661,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MuscleCheck/MuscleCheck.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -519,7 +702,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5CB8537JK6;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 26;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.muscleCheck.com.MuscleCheckTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -542,7 +725,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5CB8537JK6;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 26;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.muscleCheck.com.MuscleCheckTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -564,7 +747,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5CB8537JK6;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 26;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.muscleCheck.com.MuscleCheckUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -586,7 +769,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5CB8537JK6;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 26;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.muscleCheck.com.MuscleCheckUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -604,6 +787,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		CB1DFA9B2EA828AD00B2047E /* Build configuration list for PBXNativeTarget "MuscleCheckWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CB1DFA982EA828AD00B2047E /* Debug */,
+				CB1DFA992EA828AD00B2047E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		CBE912552DD93DE0001F511B /* Build configuration list for PBXProject "MuscleCheck" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
