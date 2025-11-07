@@ -71,6 +71,12 @@ final class ContentViewModel: ObservableObject {
     let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
     
     currentWeekEntries = entries.filter { $0.weekOfYear == currentWeek && $0.year == currentYear }
+    
+    let sharedEntries = currentWeekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked) }
+    if let data = try? JSONEncoder().encode(sharedEntries) {
+        let defaults = UserDefaults(suiteName: "group.zadkiel.musclecheck")
+        defaults?.set(data, forKey: "widgetEntries")
+    }
   }
   
   func toggleCheck(for entry: MuscleEntry) {
@@ -120,19 +126,6 @@ final class ContentViewModel: ObservableObject {
       context?.delete(entry)
     }
     try? context?.save()
-  }
-  
-  func emoji(for muscle: String) -> String {
-    switch muscle {
-    case NSLocalizedString("group_chest", comment: ""): return "🏋️"
-    case NSLocalizedString("group_back", comment: ""): return "🦾"
-    case NSLocalizedString("group_legs", comment: ""): return "🦵"
-    case NSLocalizedString("group_shoulders", comment: ""): return "🧍‍♂️"
-    case NSLocalizedString("group_biceps", comment: ""): return "💪"
-    case NSLocalizedString("group_triceps", comment: ""): return "🔩"
-    case NSLocalizedString("group_abdomen", comment: ""): return "🧘"
-    default: return "🏋️"
-    }
   }
   
   func isAppleIntelligenceAvailable() -> Bool {

@@ -10,12 +10,11 @@ import SwiftUI
 
 struct MuscleEntryRowView: View {
     var entry: MuscleEntry
-    var emoji: String
     var onTap: (MuscleEntry) -> Void
 
     var body: some View {
         HStack {
-            Text("\(emoji)  \(entry.name)")
+            Text("  \(entry.name)")
             Spacer()
             Button(action: {
                 onTap(entry)
