@@ -11,22 +11,29 @@ struct ContentView: View {
   
   @StateObject private var viewModel = ContentViewModel()
   @Environment(\.modelContext) private var context
-  @Query private var entries: [MuscleEntry]
   @AppStorage("hasInsertedInitialData") private var hasInsertedInitialData: Bool = false
+  
   @State private var showingReviewModal = false
   @State private var showingAddSheet = false
+  
+  @Query private var entries: [MuscleEntry]
   
   var body: some View {
     NavigationStack {
       Spacer()
       List {
-        ForEach(viewModel.currentWeekEntries, id: \.name) { entry in
-          MuscleEntryRowView(
-            entry: entry,
-            onTap: { _ in viewModel.toggleActivity(for: entry) }
-          )
+        if viewModel.currentWeekEntries.isEmpty {
+          EmptyStateView()
+        } else {
+          ForEach(viewModel.currentWeekEntries, id: \.name) { entry in
+            MuscleEntryRowView(
+              entry: entry,
+              onTap: { _ in viewModel.toggleActivity(for: entry) }
+            )
+          }
+          .onDelete(perform: viewModel.deleteEntries)
+          .id(viewModel.currentWeekEntries.count)
         }
-        .onDelete(perform: viewModel.deleteEntries)
       }
       .background(Color(.systemGray6))
       .navigationTitle("home_title")
@@ -74,7 +81,7 @@ struct ContentView: View {
               .font(.headline)
             Text(reviewText)
               .padding()
-            Button("Close") {
+            Button("BUTTON_CLOSE") {
               showingReviewModal = false
             }
           }
@@ -90,7 +97,7 @@ struct ContentView: View {
         } label: {
           HStack {
             Image(systemName: "chart.bar.xaxis")
-            Text("Musculo recomendado por Apple Intelligence")
+            Text("muscle_recommend_by_ai")
               .fontWeight(.medium)
           }
           .padding(.vertical, 10)
@@ -100,7 +107,7 @@ struct ContentView: View {
         .controlSize(.regular)
         .tint(Color("PrimaryButtonColor"))
         .padding(.horizontal)
-        .padding(.bottom, 15) 
+        .padding(.bottom, 15)
       }
     }
   }
