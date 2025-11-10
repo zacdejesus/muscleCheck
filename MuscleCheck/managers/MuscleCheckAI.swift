@@ -24,12 +24,7 @@ final class MuscleCheckAI {
   let session: LanguageModelSession
   
   init() {
-    let systemInstructions = Instructions {
-      "Eres un entrenador personal con conocimiento en principios de balance muscular y recuperación"
-      "Tu objetivo es analizar el historial de entrenamiento para sugerir *solo un* grupo muscular principal para el entrenamiento de hoy si el usuario ya entreno un musculo hoy no recomendar ese musculo."
-      "Genera *solo* el nombre del grupo muscular, con una breve explicación de por qué."
-    }
-    session = LanguageModelSession(instructions: systemInstructions)
+    session = LanguageModelSession(instructions: LocalizedStrings.intructions)
   }
   
   func generateReview(daysReviwed: Int = 30, entries: [MuscleEntry]) async throws -> String {
@@ -37,37 +32,24 @@ final class MuscleCheckAI {
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy-MM-dd"
     
-    let finalPrompt = """
-    Analisa los ultimos entrenamientos del usuario (hoy es \(formatter.string(from: today))):
+    let prompt = LocalizedStrings.reviewPrompt(
+        today: formatter.string(from: today),
+        history: createHistoryString(from: entries),
+        muscles: String(describing: getEntriesString(entries: entries))
+    )
     
-    --- HISTORIAL DE EJERCICIOS ---
-    \(createHistoryString(from: entries))
-    --- FIN DEL HISTORIAL ---
-    
-    Basado en los ultimos musculos entrenados recientemente por el usuario \(String(describing: getEntriesString(entries: entries))), Cual musculo recomendarle para que haga hoy?
-    """
     do {
-      dump(finalPrompt)
-      let response = try await session.respond(to: finalPrompt,
-                                                options: options)
+      let response = try await session.respond(to: prompt,
+                                               options: options).content.replacingOccurrences(of: "**", with: " ")
       
-      dump(response)
-      return response.content
+      return response
     } catch let err {
-      dump(err)
       throw err
     }
   }
   
   func prewarmModel() {
-    let promtPrefix = Prompt("""
-    Analisa los ultimos entrenamientos del usuario (hoy es 2025-10-15):
-    --- HISTORIAL DE EJERCICIOS ---
-    Músculo: Espalda. Última sesión: 2025-10-15. Días de descanso: 0.
-    Músculo: Hombros. Última sesión: 2025-10-15. Días de descanso: 0.
-    --- FIN DEL HISTORIAL ---
-    Basado en los ultimos musculos entrenados por el usuario Optional("Espalda, Hombros, Biceps, Piernas"), Cual musculo recomendarle para que haga hoy?
-    """)
+    let promtPrefix = LocalizedStrings.promtPrefix
     
     session.prewarm(promptPrefix: promtPrefix)
   }

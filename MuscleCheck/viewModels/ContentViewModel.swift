@@ -15,7 +15,7 @@ final class ContentViewModel: ObservableObject {
   private var context: ModelContextProtocol?
   private(set) var entries: [MuscleEntry] = []
   private var muscleEntryManager: MuscleEntryManager?
-  @Published var currentWeekEntries: [MuscleEntry] = []
+  @Published private(set) var currentWeekEntries: [MuscleEntry] = []
   @Published var workoutSuggested: String.PartiallyGenerated?
   
   let muscleCheckAI = MuscleCheckAI()
@@ -25,7 +25,7 @@ final class ContentViewModel: ObservableObject {
     do {
       workoutSuggested = try await muscleCheckAI.generateReview(entries: entries)
     } catch {
-      workoutSuggested = "Hubo un error al generar la revisión."
+      workoutSuggested = String(localized: "ERROR_GENERATING_REVIEW")
     }
   }
   
@@ -48,35 +48,49 @@ final class ContentViewModel: ObservableObject {
     let calendar = Date.appCalendar
     let currentWeek = calendar.component(.weekOfYear, from: Date())
     let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
-
+    
     if currentWeek != UserDefaultsManager.shared.lastResetWeek ||
-       currentYear != UserDefaultsManager.shared.lastResetYear {
-        
-        entries.forEach { $0.isChecked = false }
-        try? context?.save()
-
-        UserDefaultsManager.shared.lastResetWeek = currentWeek
-        UserDefaultsManager.shared.lastResetYear = currentYear
+        currentYear != UserDefaultsManager.shared.lastResetYear {
+      
+      entries.forEach { $0.isChecked = false }
+      do {
+        try context?.save()
+      } catch {
+        assertionFailure("Failed to save context after resetting entries: \(error)")
+      }
+      
+      UserDefaultsManager.shared.lastResetWeek = currentWeek
+      UserDefaultsManager.shared.lastResetYear = currentYear
     }
   }
   
   func updateCurrentEntries() {
-    
-    guard let fetchEntries = try? (muscleEntryManager?.fetchAllEntries()) else { return }
-    
-    entries = fetchEntries
-    
-    let calendar = Date.appCalendar
-    let currentWeek = calendar.component(.weekOfYear, from: Date())
-    let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
-    
-    currentWeekEntries = entries.filter { $0.weekOfYear == currentWeek && $0.year == currentYear }
-    
-    let sharedEntries = currentWeekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked) }
-    if let data = try? JSONEncoder().encode(sharedEntries) {
-        let defaults = UserDefaults(suiteName: "group.zadkiel.musclecheck")
-        defaults?.set(data, forKey: "widgetEntries")
-    }
+      do {
+          guard let fetchEntries = try muscleEntryManager?.fetchAllEntries() else { return }
+          entries = fetchEntries
+
+          let calendar = Date.appCalendar
+          let currentWeek = calendar.component(.weekOfYear, from: Date())
+          let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
+
+          let filtered = entries.filter { $0.weekOfYear == currentWeek && $0.year == currentYear }
+          if currentWeekEntries != filtered {
+              currentWeekEntries = filtered
+          }
+
+          let sharedEntries = currentWeekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked) }
+          Task.detached {
+              do {
+                  let data = try JSONEncoder().encode(sharedEntries)
+                  let defaults = UserDefaults(suiteName: "group.zadkiel.musclecheck")
+                  defaults?.set(data, forKey: "widgetEntries")
+              } catch {
+                  assertionFailure("Failed to encode sharedEntries: \(error)")
+              }
+          }
+      } catch {
+          assertionFailure("Failed to fetch entries: \(error)")
+      }
   }
   
   func toggleCheck(for entry: MuscleEntry) {
@@ -105,7 +119,11 @@ final class ContentViewModel: ObservableObject {
     }
     
     UserDefaultsManager.shared.defaultEntriesCreated = true
-    try? context?.save()
+    do {
+      try context?.save()
+    } catch  {
+      assertionFailure("Failed to save context after resetting entries: \(error)")
+    }
   }
   
   func toggleActivity(for entry: MuscleEntry) {
@@ -116,7 +134,11 @@ final class ContentViewModel: ObservableObject {
       entry.addActivityDate(today)
     }
     entry.isChecked.toggle()
-    try? context?.save()
+    do {
+      try context?.save()
+    } catch  {
+      assertionFailure("Failed to save context after resetting entries: \(error)")
+    }
     updateCurrentEntries()
   }
   

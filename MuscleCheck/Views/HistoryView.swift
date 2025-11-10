@@ -38,7 +38,7 @@ struct HistoryView: View {
     }
     .sheet(isPresented: $showPicker) {
       VStack {
-        DatePicker("Selecciona una semana", selection: $viewModel.selectedDate, displayedComponents: .date)
+        DatePicker("PROMPT_SELECT_WEEK", selection: $viewModel.selectedDate, displayedComponents: .date)
           .datePickerStyle(.graphical)
           .padding()
         Button("Done") {
