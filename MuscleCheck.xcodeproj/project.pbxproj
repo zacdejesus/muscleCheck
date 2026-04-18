@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		19C99F812F942D22007BD023 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 19C99F802F942D22007BD023 /* RevenueCat */; };
 		CB1DFA832EA828AC00B2047E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA822EA828AC00B2047E /* WidgetKit.framework */; };
 		CB1DFA852EA828AC00B2047E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA842EA828AC00B2047E /* SwiftUI.framework */; };
 		CB1DFA962EA828AD00B2047E /* MuscleCheckWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CB1DFA802EA828AC00B2047E /* MuscleCheckWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -116,6 +117,7 @@
 			files = (
 				CB6772D42DF48CDA00A683BC /* FirebaseAnalytics in Frameworks */,
 				CB6772DA2DF48CDA00A683BC /* FirebaseCrashlytics in Frameworks */,
+				19C99F812F942D22007BD023 /* RevenueCat in Frameworks */,
 				CB6772D82DF48CDA00A683BC /* FirebaseAppCheck in Frameworks */,
 				CB6772D62DF48CDA00A683BC /* FirebaseAnalyticsCore in Frameworks */,
 			);
@@ -220,6 +222,7 @@
 				CB6772D52DF48CDA00A683BC /* FirebaseAnalyticsCore */,
 				CB6772D72DF48CDA00A683BC /* FirebaseAppCheck */,
 				CB6772D92DF48CDA00A683BC /* FirebaseCrashlytics */,
+				19C99F802F942D22007BD023 /* RevenueCat */,
 			);
 			productName = MuscleCheck;
 			productReference = CBE9125A2DD93DE0001F511B /* MuscleCheck.app */;
@@ -310,6 +313,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				CB6772D22DF48CDA00A683BC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				19C99F7F2F942D22007BD023 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CBE9125B2DD93DE0001F511B /* Products */;
@@ -835,6 +839,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		19C99F7F2F942D22007BD023 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.68.0;
+			};
+		};
 		CB6772D22DF48CDA00A683BC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
@@ -846,6 +858,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		19C99F802F942D22007BD023 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 19C99F7F2F942D22007BD023 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
 		CB6772D32DF48CDA00A683BC /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = CB6772D22DF48CDA00A683BC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
