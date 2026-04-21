@@ -12,10 +12,13 @@ import Firebase
 @main
 struct MuscleCheckApp: App {
   
+  @StateObject private var storeManager = StoreManager.shared
+  
   init() {
     setNavalBarAppearance()
     
     FirebaseApp.configure()
+    StoreManager.shared.configure()
   }
   
   private func setNavalBarAppearance() {
@@ -48,6 +51,7 @@ struct MuscleCheckApp: App {
   var body: some Scene {
     WindowGroup {
       ContentView()
+        .environmentObject(storeManager)
     }
     .modelContainer(for: MuscleEntry.self)
   }

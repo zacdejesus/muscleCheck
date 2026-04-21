@@ -52,7 +52,11 @@ final class ContentViewModel: ObservableObject {
     if currentWeek != UserDefaultsManager.shared.lastResetWeek ||
         currentYear != UserDefaultsManager.shared.lastResetYear {
       
-      entries.forEach { $0.isChecked = false }
+      entries.forEach {
+        $0.isChecked = false
+        $0.weekOfYear = currentWeek
+        $0.year = currentYear
+      }
       do {
         try context?.save()
       } catch {

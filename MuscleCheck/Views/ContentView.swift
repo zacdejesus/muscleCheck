@@ -10,11 +10,13 @@ import SwiftData
 struct ContentView: View {
   
   @StateObject private var viewModel = ContentViewModel()
+  @EnvironmentObject var storeManager: StoreManager
   @Environment(\.modelContext) private var context
   @AppStorage("hasInsertedInitialData") private var hasInsertedInitialData: Bool = false
   
   @State private var showingReviewModal = false
   @State private var showingAddSheet = false
+  @State private var showingPaywall = false
   
   @Query private var entries: [MuscleEntry]
   
@@ -89,25 +91,33 @@ struct ContentView: View {
         }
       }
       if viewModel.isAppleIntelligenceAvailable() {
-        Button {
-          Task {
-            await viewModel.reviewLastMonthWorkouts()
-            showingReviewModal = true
+        if storeManager.isPro {
+          Button {
+            Task {
+              await viewModel.reviewLastMonthWorkouts()
+              showingReviewModal = true
+            }
+          } label: {
+            HStack {
+              Image(systemName: "chart.bar.xaxis")
+              Text("muscle_recommend_by_ai")
+                .fontWeight(.medium)
+            }
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity)
           }
-        } label: {
-          HStack {
-            Image(systemName: "chart.bar.xaxis")
-            Text("muscle_recommend_by_ai")
-              .fontWeight(.medium)
+          .buttonStyle(.borderedProminent)
+          .controlSize(.regular)
+          .tint(Color("PrimaryButtonColor"))
+          .padding(.horizontal)
+          .padding(.bottom, 15)
+        } else {
+          ProFeatureGate(lockedMessage: NSLocalizedString("muscle_recommend_by_ai", comment: "")) {
+            EmptyView()
           }
-          .padding(.vertical, 10)
-          .frame(maxWidth: .infinity)
+          .padding(.horizontal)
+          .padding(.bottom, 15)
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.regular)
-        .tint(Color("PrimaryButtonColor"))
-        .padding(.horizontal)
-        .padding(.bottom, 15)
       }
     }
   }
@@ -125,9 +135,10 @@ extension MuscleEntry {
 
 #Preview {
   let container = try! ModelContainer(for: MuscleEntry.self, configurations: ModelConfiguration())
-  let context = container.mainContext
   
-  ContentView().modelContainer(container)
+  ContentView()
+    .modelContainer(container)
+    .environmentObject(StoreManager.shared)
 }
 
 extension ModelContext: ModelContextProtocol {
