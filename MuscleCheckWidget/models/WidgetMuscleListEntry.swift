@@ -11,4 +11,6 @@ import SwiftUI
 struct WidgetMuscleListEntry: TimelineEntry, Hashable {
     let date: Date
     let entries: [SharedMuscleEntry]
+    let currentStreak: Int
+    let maxStreak: Int
 }
