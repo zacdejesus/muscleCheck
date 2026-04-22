@@ -13,6 +13,7 @@ import Firebase
 struct MuscleCheckApp: App {
   
   @StateObject private var storeManager = StoreManager.shared
+  @StateObject private var settingsViewModel = SettingsViewModel()
   
   init() {
     setNavalBarAppearance()
@@ -52,6 +53,8 @@ struct MuscleCheckApp: App {
     WindowGroup {
       ContentView()
         .environmentObject(storeManager)
+        .environmentObject(settingsViewModel)
+        .preferredColorScheme(settingsViewModel.colorScheme)
     }
     .modelContainer(for: MuscleEntry.self)
   }

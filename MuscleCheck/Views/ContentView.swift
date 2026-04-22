@@ -10,19 +10,24 @@ import SwiftData
 struct ContentView: View {
   
   @StateObject private var viewModel = ContentViewModel()
+  @StateObject private var streakViewModel = StreakViewModel()
   @EnvironmentObject var storeManager: StoreManager
+  @EnvironmentObject var settingsViewModel: SettingsViewModel
   @Environment(\.modelContext) private var context
+  @Environment(\.scenePhase) private var scenePhase
   @AppStorage("hasInsertedInitialData") private var hasInsertedInitialData: Bool = false
   
   @State private var showingReviewModal = false
   @State private var showingAddSheet = false
   @State private var showingPaywall = false
+  @State private var showingSettings = false
+  @State private var showingStats = false
   
   @Query private var entries: [MuscleEntry]
   
   var body: some View {
     NavigationStack {
-      Spacer()
+      StreakCardView(viewModel: streakViewModel)
       List {
         if viewModel.currentWeekEntries.isEmpty {
           EmptyStateView()
@@ -51,30 +56,67 @@ struct ContentView: View {
         }
         
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button {
-            showingAddSheet = true
-          } label: {
-            Image(systemName: "plus.circle")
-              .font(.headline)
-              .padding(.horizontal, 12)
-              .padding(.vertical, 8)
-              .foregroundColor(Color("PrimaryButtonColor"))
-              .cornerRadius(8)
+          HStack(spacing: 4) {
+            Button {
+              showingStats = true
+            } label: {
+              Image(systemName: "chart.bar.xaxis")
+                .font(.headline)
+                .foregroundColor(Color("PrimaryButtonColor"))
+            }
+            .accessibilityLabel("stats_title")
+            Button {
+              showingSettings = true
+            } label: {
+              Image(systemName: "gearshape")
+                .font(.headline)
+                .foregroundColor(Color("PrimaryButtonColor"))
+            }
+            Button {
+              showingAddSheet = true
+            } label: {
+              Image(systemName: "plus.circle")
+                .font(.headline)
+                .padding(.horizontal, 4)
+                .foregroundColor(Color("PrimaryButtonColor"))
+            }
+            .accessibilityLabel("add_new_muscle_group")
           }
-          .accessibilityLabel("add_new_muscle_group")
         }
       }
       .padding(0.5)
       .onAppear {
         Task {
           await viewModel.setup(context: context, entries: entries)
+          streakViewModel.update(with: entries)
+          await NotificationManager.shared.checkAuthorizationStatus()
+        }
+      }
+      .onChange(of: scenePhase) { _, newPhase in
+        if newPhase == .background && UserDefaultsManager.shared.notificationsEnabled {
+          Task {
+            await NotificationManager.shared.scheduleInactivityReminders(for: entries)
+          }
         }
       }
       .onChange(of: entries) { oldEntries, newEntries in
         viewModel.updateCurrentEntries()
+        streakViewModel.update(with: newEntries)
       }
       .sheet(isPresented: $showingAddSheet) {
         AddMuscleGroupView()
+      }
+      .sheet(isPresented: $showingSettings) {
+        NavigationStack {
+          SettingsView()
+            .environmentObject(storeManager)
+            .environmentObject(settingsViewModel)
+        }
+      }
+      .sheet(isPresented: $showingStats) {
+        NavigationStack {
+          StatsView()
+        }
       }
       .sheet(isPresented: $showingReviewModal) {
         if let reviewText = viewModel.workoutSuggested {
@@ -139,6 +181,7 @@ extension MuscleEntry {
   ContentView()
     .modelContainer(container)
     .environmentObject(StoreManager.shared)
+    .environmentObject(SettingsViewModel())
 }
 
 extension ModelContext: ModelContextProtocol {

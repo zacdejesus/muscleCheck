@@ -66,6 +66,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		19C9A0C32F98EF97007BD023 /* Exceptions for "MuscleCheck" folder in "MuscleCheck" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = CBE912592DD93DE0001F511B /* MuscleCheck */;
+		};
 		CB1DFA9A2EA828AD00B2047E /* Exceptions for "MuscleCheckWidget" folder in "MuscleCheckWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -86,6 +93,9 @@
 		};
 		CBE9125C2DD93DE0001F511B /* MuscleCheck */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				19C9A0C32F98EF97007BD023 /* Exceptions for "MuscleCheck" folder in "MuscleCheck" target */,
+			);
 			path = MuscleCheck;
 			sourceTree = "<group>";
 		};
@@ -635,6 +645,7 @@
 				DEVELOPMENT_TEAM = DTJLZH295U;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MuscleCheck/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Muscle check";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -673,6 +684,7 @@
 				DEVELOPMENT_TEAM = DTJLZH295U;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MuscleCheck/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Muscle check";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

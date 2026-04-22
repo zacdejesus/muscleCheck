@@ -4,9 +4,11 @@ import SwiftUI
 struct Provider: TimelineProvider {
     private static let appGroup = "group.zadkiel.musclecheck"
     private static let entriesKey = "widgetEntries"
+    private static let currentStreakKey = "widgetCurrentStreak"
+    private static let maxStreakKey = "widgetMaxStreak"
     
     func placeholder(in context: Context) -> WidgetMuscleListEntry {
-        WidgetMuscleListEntry(date: Date(), entries: Self.placeholderEntries())
+        WidgetMuscleListEntry(date: Date(), entries: Self.placeholderEntries(), currentStreak: 3, maxStreak: 7)
     }
     
     func getSnapshot(in context: Context, completion: @escaping (WidgetMuscleListEntry) -> ()) {
@@ -30,7 +32,9 @@ struct Provider: TimelineProvider {
            let decoded = try? JSONDecoder().decode([SharedMuscleEntry].self, from: data) {
                 entries = decoded
         }
-        return WidgetMuscleListEntry(date: Date(), entries: entries)
+        let currentStreak = defaults?.integer(forKey: Self.currentStreakKey) ?? 0
+        let maxStreak = defaults?.integer(forKey: Self.maxStreakKey) ?? 0
+        return WidgetMuscleListEntry(date: Date(), entries: entries, currentStreak: currentStreak, maxStreak: maxStreak)
     }
     
     private static func placeholderEntries() -> [SharedMuscleEntry] {
@@ -47,7 +51,22 @@ struct MuscleCheckWidgetEntryView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            ForEach(entry.entries.prefix(6), id: \.name) { muscle in
+            // Streak row
+            HStack(spacing: 4) {
+                Text(entry.currentStreak > 0 ? "🔥" : "💤")
+                    .font(.caption)
+                Text("\(entry.currentStreak) days")
+                    .font(.caption.bold())
+                    .foregroundColor(.orange)
+                Spacer()
+                Text("🏆 \(entry.maxStreak)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+
+            Divider()
+
+            ForEach(entry.entries.prefix(5), id: \.name) { muscle in
                 HStack {
                     Text(muscle.isChecked ? "✅" : "⬜️")
                         .font(.caption)

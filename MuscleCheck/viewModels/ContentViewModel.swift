@@ -83,11 +83,15 @@ final class ContentViewModel: ObservableObject {
           }
 
           let sharedEntries = currentWeekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked) }
+          let currentStreak = StreakCalculator.currentStreak(from: entries)
+          let maxStreak = StreakCalculator.maxStreak(from: entries)
           Task.detached {
               do {
                   let data = try JSONEncoder().encode(sharedEntries)
                   let defaults = UserDefaults(suiteName: "group.zadkiel.musclecheck")
                   defaults?.set(data, forKey: "widgetEntries")
+                  defaults?.set(currentStreak, forKey: "widgetCurrentStreak")
+                  defaults?.set(maxStreak, forKey: "widgetMaxStreak")
               } catch {
                   assertionFailure("Failed to encode sharedEntries: \(error)")
               }

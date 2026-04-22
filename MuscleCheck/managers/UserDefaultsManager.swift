@@ -26,4 +26,29 @@ final class UserDefaultsManager {
         get { defaults.bool(forKey: "defaultEntriesCreated") }
         set { defaults.set(newValue, forKey: "defaultEntriesCreated") }
     }
+
+    // 0 = system, 1 = light, 2 = dark
+    var appTheme: Int {
+        get { defaults.integer(forKey: "appTheme") }
+        set { defaults.set(newValue, forKey: "appTheme") }
+    }
+
+    var notificationsEnabled: Bool {
+        get { defaults.bool(forKey: "notificationsEnabled") }
+        set { defaults.set(newValue, forKey: "notificationsEnabled") }
+    }
+
+    /// Hour of day for the daily reminder (0–23). Defaults to 18 (6 PM) if never set.
+    var reminderHour: Int {
+        get {
+            guard defaults.object(forKey: "reminderHour") != nil else { return 18 }
+            return defaults.integer(forKey: "reminderHour")
+        }
+        set { defaults.set(newValue, forKey: "reminderHour") }
+    }
+
+    var reminderMinute: Int {
+        get { defaults.integer(forKey: "reminderMinute") }
+        set { defaults.set(newValue, forKey: "reminderMinute") }
+    }
 }
