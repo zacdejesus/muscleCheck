@@ -51,4 +51,9 @@ final class UserDefaultsManager {
         get { defaults.integer(forKey: "reminderMinute") }
         set { defaults.set(newValue, forKey: "reminderMinute") }
     }
+
+    var addedActivityPresets: [String] {
+        get { defaults.stringArray(forKey: "addedActivityPresets") ?? [ActivityCategory.gym.rawValue] }
+        set { defaults.set(newValue, forKey: "addedActivityPresets") }
+    }
 }

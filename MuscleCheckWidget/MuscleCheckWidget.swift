@@ -39,9 +39,9 @@ struct Provider: TimelineProvider {
     
     private static func placeholderEntries() -> [SharedMuscleEntry] {
         [
-            SharedMuscleEntry(name: "Pecho", isChecked: false),
-            SharedMuscleEntry(name: "Espalda", isChecked: true),
-            SharedMuscleEntry(name: "Piernas", isChecked: false)
+            SharedMuscleEntry(name: "Pecho", isChecked: false, icon: "figure.strengthtraining.traditional"),
+            SharedMuscleEntry(name: "Espalda", isChecked: true, icon: "figure.strengthtraining.traditional"),
+            SharedMuscleEntry(name: "Piernas", isChecked: false, icon: "figure.strengthtraining.traditional")
         ]
     }
 }
@@ -67,7 +67,11 @@ struct MuscleCheckWidgetEntryView: View {
             Divider()
 
             ForEach(entry.entries.prefix(5), id: \.name) { muscle in
-                HStack {
+                HStack(spacing: 4) {
+                    Image(systemName: muscle.icon)
+                        .font(.caption2)
+                        .foregroundColor(.accentColor)
+                        .frame(width: 16)
                     Text(muscle.isChecked ? "✅" : "⬜️")
                         .font(.caption)
                     Text(muscle.name)

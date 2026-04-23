@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
 
-    @StateObject private var viewModel = SettingsViewModel()
+    @EnvironmentObject var viewModel: SettingsViewModel
     @EnvironmentObject var storeManager: StoreManager
+    @Environment(\.modelContext) private var context
     @State private var showingPaywall = false
 
     var body: some View {
@@ -59,6 +61,30 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.menu)
                 .tint(Color("PrimaryButtonColor"))
+            }
+
+            // MARK: - Activity Presets
+            Section("settings_section_activity_presets") {
+                ForEach(ActivityCategory.allCases.filter { $0 != .custom }, id: \.self) { category in
+                    Button {
+                        viewModel.addPresetEntries(for: category, context: context)
+                    } label: {
+                        HStack {
+                            Image(systemName: category.defaultIcon)
+                                .frame(width: 24)
+                            Text(category.displayName)
+                            Spacer()
+                            if viewModel.addedPresets.contains(category.rawValue) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                            } else {
+                                Image(systemName: "plus.circle")
+                                    .foregroundColor(Color("PrimaryButtonColor"))
+                            }
+                        }
+                    }
+                    .disabled(viewModel.addedPresets.contains(category.rawValue))
+                }
             }
 
             // MARK: - Notifications
@@ -110,5 +136,7 @@ struct SettingsView: View {
     NavigationStack {
         SettingsView()
             .environmentObject(StoreManager.shared)
+            .environmentObject(SettingsViewModel())
     }
+    .modelContainer(for: MuscleEntry.self)
 }

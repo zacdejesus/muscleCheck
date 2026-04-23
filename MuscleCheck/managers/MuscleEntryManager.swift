@@ -40,7 +40,7 @@ final class MuscleEntryManager {
     /// Adds a new muscle entry with validation
     /// - Parameter name: The name of the muscle group
     /// - Throws: MuscleEntryError.duplicateEntry if entry already exists, MuscleEntryError.invalidName if name is invalid
-    func addEntry(name: String) throws {
+    func addEntry(name: String, category: String = ActivityCategory.gym.rawValue, icon: String = ActivityCategory.gym.defaultIcon) throws {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
             throw MuscleEntryError.invalidName
@@ -51,8 +51,24 @@ final class MuscleEntryManager {
             throw MuscleEntryError.duplicateEntry(trimmedName)
         }
 
-        let entry = MuscleEntry(name: trimmedName)
+        let entry = MuscleEntry(name: trimmedName, category: category, icon: icon)
         context.insert(entry)
+        try context.save()
+    }
+
+    /// Adds all preset entries for a given activity category, skipping duplicates
+    func addPresetEntries(for category: ActivityCategory) throws {
+        for preset in category.presetEntries {
+            let name = NSLocalizedString(preset.nameKey, comment: "")
+            let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmedName.isEmpty else { continue }
+
+            let exists = try context.fetch(FetchDescriptor<MuscleEntry>(predicate: #Predicate { $0.name == trimmedName }))
+            guard exists.isEmpty else { continue }
+
+            let entry = MuscleEntry(name: trimmedName, category: category.rawValue, icon: preset.icon)
+            context.insert(entry)
+        }
         try context.save()
     }
 

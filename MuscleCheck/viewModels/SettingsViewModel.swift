@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import SwiftData
 
 @MainActor
 final class SettingsViewModel: ObservableObject {
@@ -22,6 +23,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var isRestoring = false
     @Published var restoreMessage: String?
     @Published var showRestoreAlert = false
+    @Published var addedPresets: Set<String> = []
 
     /// Whether the daily reminder toggle is on. Requests authorization if turned on.
     @Published var notificationsEnabled: Bool {
@@ -53,6 +55,7 @@ final class SettingsViewModel: ObservableObject {
         self.appTheme = UserDefaultsManager.shared.appTheme
         self.notificationsEnabled = UserDefaultsManager.shared.notificationsEnabled
         self.reminderTime = Self.reminderTimeFromDefaults()
+        self.addedPresets = Set(UserDefaultsManager.shared.addedActivityPresets)
     }
 
     private static func reminderTimeFromDefaults() -> Date {
@@ -132,5 +135,16 @@ final class SettingsViewModel: ObservableObject {
         // Reemplazar con tu URL real
         guard let url = URL(string: "https://example.com/privacy") else { return }
         UIApplication.shared.open(url)
+    }
+
+    func addPresetEntries(for category: ActivityCategory, context: ModelContext) {
+        let manager = MuscleEntryManager(context: context)
+        do {
+            try manager.addPresetEntries(for: category)
+            addedPresets.insert(category.rawValue)
+            UserDefaultsManager.shared.addedActivityPresets = Array(addedPresets)
+        } catch {
+            assertionFailure("Failed to add preset entries: \(error)")
+        }
     }
 }
