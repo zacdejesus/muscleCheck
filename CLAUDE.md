@@ -81,9 +81,9 @@ Ya tiene FoundationModels integrado. Maxine tiene IA básica. Ir mucho más lejo
 - Firebase (Analytics + Crashlytics)
 - Swift Charts (estadísticas, nativo)
 - WidgetKit + App Groups (`group.zadkiel.musclecheck`)
-- HealthKit (sincronización futura)
+- HealthKit (workout detection + sync)
+- PhotosUI (progress photos)
 - WatchKit (Apple Watch app futura)
-- PhotosUI (fotos de progreso futuras)
 
 ---
 
@@ -108,9 +108,9 @@ main (always deployable, tagged for releases)
 - 1.5.0 — Statistics (Swift Charts) ✅
 - 1.6.0 — Local notifications ✅
 - 1.7.0 — App Intents / Siri ✅
-- 1.8.0 — Customizable Activities & Categories
-- 1.9.0 — Progress Photos
-- 2.0.0 — HealthKit integration
+- 1.8.0 — Customizable Activities & Categories ✅
+- 1.9.0 — Progress Photos ✅
+- 2.0.0 — HealthKit integration ✅
 - 2.1.0 — Apple Watch app
 
 ---
@@ -145,69 +145,24 @@ Frases: "Log MuscleCheck", "I trained [muscle] in MuscleCheck", "What did I trai
 
 ---
 
-### ⏳ Feature 7: Customizable Activities & Categories (branch: `feature/customizable-activities`)
-Expandir más allá del gym. Soportar yoga, pilates, calistenia, cardio, stretching.
+### ✅ Feature 7: Customizable Activities & Categories (branch: `feature/app-intents`)
+Implementado. ActivityCategory enum con 7 disciplinas, presets por categoría, icon selection grid, grouped sections en ContentView.
 
-**Modelo:**
-- `ActivityCategory` enum — gym, yoga, pilates, calisthenics, cardio, stretching, custom
-- `MuscleEntry` recibe `category: String` e `icon: String` (SF Symbol)
-- Cada categoría tiene presets predefinidos con iconos apropiados
-
-**UI:**
-- `AddMuscleGroupView` — picker de categoría + selección de icono
-- `MuscleEntryRowView` — muestra SF Symbol antes del nombre
-- `ContentView` — agrupa entries por categoría con Section headers
-- `SettingsView` — sección "Activity Presets" para agregar disciplinas completas con un tap
-
-**Archivos nuevos:**
-- `models/ActivityCategory.swift`
-
-**Archivos modificados:**
-- `models/MuscleEntry.swift` — agregar `category`, `icon`
-- `models/SharedMuscleEntry.swift` (x2) — agregar `icon`
-- `viewModels/ContentViewModel.swift` — grouping logic
-- `managers/MuscleEntryManager.swift` — `addPresetEntries(for:)`
-- `managers/UserDefaultsManager.swift` — `addedActivityPresets`
-- `viewModels/SettingsViewModel.swift` — preset management
-- `Views/MuscleEntryRowView.swift`, `AddMuscleGroupView.swift`, `ContentView.swift`, `SettingsView.swift`
-- `MuscleCheckWidget/MuscleCheckWidget.swift` — iconos en widget
-- `AppIntents/MuscleAppEntity.swift` — typeDisplayRepresentation actualizado
-
-**Versión:** 1.8.0
+Archivos: `models/ActivityCategory.swift` (nuevo), modificados: MuscleEntry, SharedMuscleEntry (x2), ContentViewModel, MuscleEntryManager, UserDefaultsManager, SettingsViewModel, MuscleEntryRowView, AddMuscleGroupView, ContentView, SettingsView, Widget, MuscleAppEntity.
 
 ---
 
-### ⏳ Feature 8: Progress Photos (branch: `feature/progress-photos`)
-Fotos mensuales del cuerpo con timeline y comparación antes/después.
+### ✅ Feature 8: Progress Photos (branch: `feature/app-intents`)
+Implementado. ProgressPhoto SwiftData model (imágenes en disco, no en DB). ProgressPhotoManager con CRUD + file I/O. Gallery con grid mensual, PhotoCompareView con slider antes/después, AddProgressPhotoView con PhotosPicker. Pro-gated.
 
-**Modelo:**
-- `ProgressPhoto` — @Model con `id`, `imageData: Data`, `dateTaken: Date`, `note: String?`
-- Almacenamiento local vía SwiftData (las fotos nunca salen del dispositivo)
-
-**UI:**
-- `ProgressPhotosView` — grid de fotos ordenadas por fecha
-- `PhotoCompareView` — slider antes/después con dos fotos seleccionadas
-- `AddPhotoView` — captura desde cámara o galería via PhotosUI
-- Acceso desde SettingsView o tab dedicado
-
-**Stack:** PhotosUI, SwiftData
-
-**Versión:** 1.9.0
+Archivos nuevos: `models/ProgressPhoto.swift`, `managers/ProgressPhotoManager.swift`, `viewModels/ProgressPhotoViewModel.swift`, `Views/ProgressPhotosView.swift`, `Views/PhotoCompareView.swift`, `Views/AddProgressPhotoView.swift`. Modificados: MuscleCheckApp, ContentView.
 
 ---
 
-### ⏳ Feature 9: HealthKit Integration (branch: `feature/healthkit`)
-Detectar workouts automáticamente y sincronizar con el checklist.
+### ✅ Feature 9: HealthKit Integration (branch: `feature/healthkit`)
+Implementado. HealthKitManager singleton con authorization, workout fetching (últimos 7 días), mapeo HKWorkoutActivityType→ActivityCategory. HealthKitSuggestionsView banner en ContentView con botones Log/Dismiss. Pro-gated toggle en Settings. Foreground-first (sin background delivery en v1).
 
-**Funcionalidad:**
-- Leer workouts de HealthKit (tipo strength training, yoga, etc.)
-- Cuando se detecta un workout nuevo, enviar notificación: "Parece que entrenaste. ¿Qué hiciste?"
-- Mapear `HKWorkoutActivityType` a `ActivityCategory`
-- Escribir actividad de MuscleCheck a HealthKit (opcional)
-
-**Stack:** HealthKit, background delivery
-
-**Versión:** 2.0.0
+Archivos nuevos: `managers/HealthKitManager.swift`, `managers/protocols/HealthKitManagerProtocol.swift`, `Views/HealthKitSuggestionsView.swift`. Modificados: MuscleCheck.entitlements, Info.plist, UserDefaultsManager, SettingsViewModel, SettingsView, ContentView, ContentViewModel.
 
 ---
 
