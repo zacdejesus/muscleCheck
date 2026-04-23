@@ -22,6 +22,7 @@ struct ContentView: View {
   @State private var showingPaywall = false
   @State private var showingSettings = false
   @State private var showingStats = false
+  @State private var showingProgressPhotos = false
   
   @Query private var entries: [MuscleEntry]
   
@@ -31,15 +32,35 @@ struct ContentView: View {
       List {
         if viewModel.currentWeekEntries.isEmpty {
           EmptyStateView()
-        } else {
-          ForEach(viewModel.currentWeekEntries, id: \.name) { entry in
+        } else if viewModel.groupedCurrentWeekEntries.count == 1 {
+          // Single category — no section headers for clean look
+          let group = viewModel.groupedCurrentWeekEntries[0]
+          ForEach(group.entries, id: \.name) { entry in
             MuscleEntryRowView(
               entry: entry,
               onTap: { _ in viewModel.toggleActivity(for: entry) }
             )
           }
-          .onDelete(perform: viewModel.deleteEntries)
-          .id(viewModel.currentWeekEntries.count)
+          .onDelete { offsets in
+            viewModel.deleteEntries(from: group.entries, at: offsets)
+          }
+        } else {
+          // Multiple categories — show section headers
+          ForEach(viewModel.groupedCurrentWeekEntries, id: \.category) { group in
+            Section {
+              ForEach(group.entries, id: \.name) { entry in
+                MuscleEntryRowView(
+                  entry: entry,
+                  onTap: { _ in viewModel.toggleActivity(for: entry) }
+                )
+              }
+              .onDelete { offsets in
+                viewModel.deleteEntries(from: group.entries, at: offsets)
+              }
+            } header: {
+              categoryHeader(group.category)
+            }
+          }
         }
       }
       .background(Color(.systemGray6))
@@ -57,6 +78,14 @@ struct ContentView: View {
         
         ToolbarItem(placement: .navigationBarTrailing) {
           HStack(spacing: 4) {
+            Button {
+              showingProgressPhotos = true
+            } label: {
+              Image(systemName: "camera")
+                .font(.headline)
+                .foregroundColor(Color("PrimaryButtonColor"))
+            }
+            .accessibilityLabel("progress_photos_title")
             Button {
               showingStats = true
             } label: {
@@ -118,6 +147,12 @@ struct ContentView: View {
           StatsView()
         }
       }
+      .sheet(isPresented: $showingProgressPhotos) {
+        NavigationStack {
+          ProgressPhotosView()
+            .environmentObject(storeManager)
+        }
+      }
       .sheet(isPresented: $showingReviewModal) {
         if let reviewText = viewModel.workoutSuggested {
           VStack {
@@ -161,6 +196,20 @@ struct ContentView: View {
           .padding(.bottom, 15)
         }
       }
+    }
+  }
+
+  @ViewBuilder
+  private func categoryHeader(_ categoryRaw: String) -> some View {
+    if let category = ActivityCategory(rawValue: categoryRaw) {
+      HStack(spacing: 6) {
+        Image(systemName: category.defaultIcon)
+        Text(category.displayName)
+      }
+      .font(.subheadline.bold())
+      .foregroundColor(Color("PrimaryButtonColor"))
+    } else {
+      Text(categoryRaw)
     }
   }
 }

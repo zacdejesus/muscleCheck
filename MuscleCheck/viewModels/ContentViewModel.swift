@@ -16,6 +16,7 @@ final class ContentViewModel: ObservableObject {
   private(set) var entries: [MuscleEntry] = []
   private var muscleEntryManager: MuscleEntryManager?
   @Published private(set) var currentWeekEntries: [MuscleEntry] = []
+  @Published private(set) var groupedCurrentWeekEntries: [(category: String, entries: [MuscleEntry])] = []
   @Published var workoutSuggested: String.PartiallyGenerated?
   
   let muscleCheckAI = MuscleCheckAI()
@@ -82,7 +83,17 @@ final class ContentViewModel: ObservableObject {
               currentWeekEntries = filtered
           }
 
-          let sharedEntries = currentWeekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked) }
+          // Group entries by category in stable order
+          let grouped = Dictionary(grouping: currentWeekEntries) { $0.category }
+          groupedCurrentWeekEntries = grouped
+              .sorted { lhs, rhs in
+                  let lOrder = ActivityCategory(rawValue: lhs.key)?.sortOrder ?? 99
+                  let rOrder = ActivityCategory(rawValue: rhs.key)?.sortOrder ?? 99
+                  return lOrder < rOrder
+              }
+              .map { (category: $0.key, entries: $0.value) }
+
+          let sharedEntries = currentWeekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked, icon: $0.icon) }
           let currentStreak = StreakCalculator.currentStreak(from: entries)
           let maxStreak = StreakCalculator.maxStreak(from: entries)
           Task.detached {
@@ -156,6 +167,15 @@ final class ContentViewModel: ObservableObject {
       context?.delete(entry)
     }
     try? context?.save()
+  }
+  
+  func deleteEntries(from sectionEntries: [MuscleEntry], at offsets: IndexSet) {
+    for index in offsets {
+      guard let entry = sectionEntries[safe: index] else { return }
+      context?.delete(entry)
+    }
+    try? context?.save()
+    updateCurrentEntries()
   }
   
   func isAppleIntelligenceAvailable() -> Bool {

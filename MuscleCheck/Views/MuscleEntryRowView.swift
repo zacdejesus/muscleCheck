@@ -14,7 +14,10 @@ struct MuscleEntryRowView: View {
 
     var body: some View {
         HStack {
-            Text("  \(entry.name)")
+            Image(systemName: entry.icon)
+                .foregroundColor(Color("PrimaryButtonColor"))
+                .frame(width: 24)
+            Text(entry.name)
             Spacer()
             Button(action: {
                 onTap(entry)

@@ -20,6 +20,7 @@ struct MuscleCheckApp: App {
     
     FirebaseApp.configure()
     StoreManager.shared.configure()
+    MuscleCheckShortcuts.updateAppShortcutParameters()
   }
   
   private func setNavalBarAppearance() {
@@ -39,6 +40,7 @@ struct MuscleCheckApp: App {
   var sharedModelContainer: ModelContainer = {
     let schema = Schema([
       MuscleEntry.self,
+      ProgressPhoto.self,
     ])
     let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
     
@@ -56,6 +58,6 @@ struct MuscleCheckApp: App {
         .environmentObject(settingsViewModel)
         .preferredColorScheme(settingsViewModel.colorScheme)
     }
-    .modelContainer(for: MuscleEntry.self)
+    .modelContainer(sharedModelContainer)
   }
 }
