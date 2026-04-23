@@ -56,4 +56,9 @@ final class UserDefaultsManager {
         get { defaults.stringArray(forKey: "addedActivityPresets") ?? [ActivityCategory.gym.rawValue] }
         set { defaults.set(newValue, forKey: "addedActivityPresets") }
     }
+
+    var healthKitEnabled: Bool {
+        get { defaults.bool(forKey: "healthKitEnabled") }
+        set { defaults.set(newValue, forKey: "healthKitEnabled") }
+    }
 }

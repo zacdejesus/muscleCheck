@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 import FoundationModels
+import HealthKit
 
 @MainActor
 final class ContentViewModel: ObservableObject {
@@ -180,5 +181,13 @@ final class ContentViewModel: ObservableObject {
   
   func isAppleIntelligenceAvailable() -> Bool {
     return muscleCheckAI.isAppleIntelligenceAvailable()
+  }
+
+  func logHealthKitWorkout(_ workout: HKWorkout) {
+    let category = HealthKitManager.mapToCategory(workout.workoutActivityType)
+    let name = HealthKitManager.suggestedName(for: workout)
+    let icon = HealthKitManager.iconForWorkout(workout)
+    try? muscleEntryManager?.addEntry(name: name, category: category.rawValue, icon: icon)
+    updateCurrentEntries()
   }
 }
