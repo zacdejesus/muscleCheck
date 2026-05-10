@@ -184,10 +184,33 @@ final class ContentViewModel: ObservableObject {
   }
 
   func logHealthKitWorkout(_ workout: HKWorkout) {
+    guard let manager = muscleEntryManager else { return }
+
     let category = HealthKitManager.mapToCategory(workout.workoutActivityType)
     let name = HealthKitManager.suggestedName(for: workout)
     let icon = HealthKitManager.iconForWorkout(workout)
-    try? muscleEntryManager?.addEntry(name: name, category: category.rawValue, icon: icon)
+    let workoutDate = workout.startDate
+
+    do {
+      let allEntries = try manager.fetchAllEntries()
+      let target: MuscleEntry
+      if let existing = allEntries.first(where: { $0.category == category.rawValue }) {
+        target = existing
+      } else {
+        try manager.addEntry(name: name, category: category.rawValue, icon: icon)
+        guard let created = try manager.fetchAllEntries().first(where: { $0.name == name }) else { return }
+        target = created
+      }
+
+      target.addActivityDate(workoutDate)
+      if Date.appCalendar.isDate(workoutDate, equalTo: Date(), toGranularity: .weekOfYear) {
+        target.isChecked = true
+      }
+      try manager.update(target)
+    } catch {
+      return
+    }
+
     updateCurrentEntries()
   }
 }
