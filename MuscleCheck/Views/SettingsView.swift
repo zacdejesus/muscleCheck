@@ -87,6 +87,23 @@ struct SettingsView: View {
                 }
             }
 
+            // MARK: - Health
+            Section("settings_section_health") {
+                if HealthKitManager.isAvailable {
+                    if storeManager.isPro {
+                        Toggle("settings_healthkit_enabled", isOn: $viewModel.healthKitEnabled)
+                            .tint(Color("PrimaryButtonColor"))
+                    } else {
+                        ProFeatureGate(lockedMessage: NSLocalizedString("settings_healthkit_enabled", comment: "")) {
+                            EmptyView()
+                        }
+                    }
+                } else {
+                    Label("settings_healthkit_unavailable", systemImage: "heart.slash")
+                        .foregroundColor(.secondary)
+                }
+            }
+
             // MARK: - Notifications
             Section("settings_section_notifications") {
                 Toggle("settings_notifications_enabled", isOn: $viewModel.notificationsEnabled)

@@ -11,6 +11,7 @@ struct ContentView: View {
   
   @StateObject private var viewModel = ContentViewModel()
   @StateObject private var streakViewModel = StreakViewModel()
+  @ObservedObject private var healthKitManager = HealthKitManager.shared
   @EnvironmentObject var storeManager: StoreManager
   @EnvironmentObject var settingsViewModel: SettingsViewModel
   @Environment(\.modelContext) private var context
@@ -29,6 +30,12 @@ struct ContentView: View {
   var body: some View {
     NavigationStack {
       StreakCardView(viewModel: streakViewModel)
+      if !healthKitManager.unloggedWorkouts.isEmpty && storeManager.isPro {
+        HealthKitSuggestionsView(healthKitManager: healthKitManager) { workout in
+          viewModel.logHealthKitWorkout(workout)
+        }
+        .padding(.top, 4)
+      }
       List {
         if viewModel.currentWeekEntries.isEmpty {
           EmptyStateView()
@@ -119,6 +126,9 @@ struct ContentView: View {
           await viewModel.setup(context: context, entries: entries)
           streakViewModel.update(with: entries)
           await NotificationManager.shared.checkAuthorizationStatus()
+          if UserDefaultsManager.shared.healthKitEnabled {
+            await healthKitManager.fetchUnloggedWorkouts(existingEntries: entries)
+          }
         }
       }
       .onChange(of: scenePhase) { _, newPhase in

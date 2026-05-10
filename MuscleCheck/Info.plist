@@ -4,5 +4,9 @@
 <dict>
 	<key>NSUser​Notifications​Usage​Description</key>
 	<string>it is neccesary for the app</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>MuscleCheck reads your workouts to automatically track your training</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>MuscleCheck can save your training sessions to the Health app</string>
 </dict>
 </plist>

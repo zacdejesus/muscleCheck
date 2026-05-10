@@ -25,6 +25,15 @@ final class SettingsViewModel: ObservableObject {
     @Published var showRestoreAlert = false
     @Published var addedPresets: Set<String> = []
 
+    /// Whether HealthKit sync is enabled. Requests authorization if turned on.
+    @Published var healthKitEnabled: Bool {
+        didSet {
+            guard !_blockHealthKitDidSet else { return }
+            UserDefaultsManager.shared.healthKitEnabled = healthKitEnabled
+            handleHealthKitToggle()
+        }
+    }
+
     /// Whether the daily reminder toggle is on. Requests authorization if turned on.
     @Published var notificationsEnabled: Bool {
         didSet {
@@ -45,6 +54,7 @@ final class SettingsViewModel: ObservableObject {
     }
 
     private var _blockNotificationDidSet = false
+    private var _blockHealthKitDidSet = false
     private let storeManager: StoreManager
 
     // Combine: cancellables almacena las suscripciones activas
@@ -53,6 +63,7 @@ final class SettingsViewModel: ObservableObject {
     init(storeManager: StoreManager = .shared) {
         self.storeManager = storeManager
         self.appTheme = UserDefaultsManager.shared.appTheme
+        self.healthKitEnabled = UserDefaultsManager.shared.healthKitEnabled
         self.notificationsEnabled = UserDefaultsManager.shared.notificationsEnabled
         self.reminderTime = Self.reminderTimeFromDefaults()
         self.addedPresets = Set(UserDefaultsManager.shared.addedActivityPresets)
@@ -80,6 +91,20 @@ final class SettingsViewModel: ObservableObject {
                 }
             }
             await updateDailyReminder()
+        }
+    }
+
+    private func handleHealthKitToggle() {
+        Task {
+            if healthKitEnabled {
+                let granted = await HealthKitManager.shared.requestAuthorization()
+                if !granted {
+                    _blockHealthKitDidSet = true
+                    healthKitEnabled = false
+                    UserDefaultsManager.shared.healthKitEnabled = false
+                    _blockHealthKitDidSet = false
+                }
+            }
         }
     }
 
