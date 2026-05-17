@@ -1,8 +1,13 @@
 # MuscleCheck — Contexto del Proyecto
 
-## Instrucciones para Claude
+## Foco actual (hasta el próximo release al App Store)
 
-> **IMPORTANTE:** El developer está aprendiendo iOS. **NO escribas código a menos que te lo pida explícitamente.** Tu rol es guiar, explicar conceptos, sugerir arquitectura y responder preguntas. Si el developer no pide código, solo orientá con palabras.
+> **MODO CALIDAD DE CÓDIGO.** No proponer ni planificar features nuevos. La única excepción es **Feature 11: Peso por grupo muscular** (ver roadmap). Todo el resto del esfuerzo va a:
+> - Refactors arquitectónicos (god objects, two-phase init, denormalización)
+> - Testing y cobertura
+> - Limpieza de warnings y code smells
+> - Consistencia de patrones entre managers
+> Apple Watch y cualquier otra feature quedan diferidos hasta después del próximo release.
 
 ## Visión y Posicionamiento
 
@@ -111,7 +116,8 @@ main (always deployable, tagged for releases)
 - 1.8.0 — Customizable Activities & Categories ✅
 - 1.9.0 — Progress Photos ✅
 - 2.0.0 — HealthKit integration ✅
-- 2.1.0 — Apple Watch app
+- 2.1.0 — Peso por grupo muscular + refactors de calidad
+- 2.2.0 — Apple Watch app (diferido)
 
 ---
 
@@ -166,8 +172,8 @@ Archivos nuevos: `managers/HealthKitManager.swift`, `managers/protocols/HealthKi
 
 ---
 
-### ⏳ Feature 10: Apple Watch App (branch: `feature/apple-watch`)
-Log desde la muñeca con complication y UI mínima.
+### ⏳ Feature 10: Apple Watch App (branch: `feature/apple-watch`) — DIFERIDO
+Diferido hasta después del release 2.1.0. Log desde la muñeca con complication y UI mínima.
 
 **Funcionalidad:**
 - Complication que muestra racha actual
@@ -177,7 +183,28 @@ Log desde la muñeca con complication y UI mínima.
 
 **Stack:** WatchKit, WatchConnectivity, WidgetKit (complications)
 
-**Versión:** 2.1.0
+**Versión:** 2.2.0
+
+---
+
+### ⏳ Feature 11: Peso por grupo muscular (branch: `feature/muscle-weight`)
+Trackear la carga (peso) usada en cada grupo muscular para ver progreso real, no solo asistencia.
+
+**Funcionalidad:**
+- Campo de peso opcional por entrada (último peso usado)
+- Historial de pesos por sesión, junto a `activityDates`
+- UI mínima: input numérico al marcar como entrenado (no romper el flujo "2 segundos")
+- Toggle kg / lbs en Settings
+- Stats: evolución de peso por grupo muscular (Swift Charts, línea temporal)
+
+**Decisiones abiertas:**
+- El peso es opcional que arranca con un valor default
+- agrega (empezar simple: un peso por sesión)
+- ¿Modelo nuevo `WeightEntry` o array embebido en `MuscleEntry`?
+
+**Stack:** SwiftData (modelo nuevo o extensión), Swift Charts
+
+**Versión:** 2.1.0 (próximo release al App Store)
 
 ---
 
@@ -194,11 +221,15 @@ Log desde la muñeca con complication y UI mínima.
 
 ---
 
-## Notas Importantes
+## Instrucciones para Claude
+**IMPORTANTE:** El developer es senior, con foco histórico en desarrollo de SDKs. Está refrescando la parte de UI/SwiftUI, no aprendiendo iOS desde cero — asumí ese nivel. **NO escribas código a menos que te lo pida explícitamente.** Tu rol es discutir arquitectura como par, hacer code review crítico, proponer trade-offs y responder dudas puntuales (sobre todo del lado de vistas/UI cuando aplique). Si el developer no pide código, solo orientá con palabras.
 
+---
+
+## Notas Importantes
 - `group.zadkiel.musclecheck` — App Group para widget
 - Bundle ID: `com.zadkiel.musclecheck`
 - Calendario empieza en lunes (`firstWeekday = 2`)
-- Localización ES/EN via `Localizable.xcstrings`
+- Localización ES/EN/FR via `Localizable.xcstrings`
 - `PrimaryButtonColor` — color asset en xcassets (usado en botones principales)
 - SF Symbols para iconos de actividades (nativo, no requiere assets custom)
