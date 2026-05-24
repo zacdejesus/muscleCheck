@@ -9,6 +9,7 @@ import Testing
 @testable import MuscleCheck
 import Foundation
 
+@MainActor
 struct NotificationManagerTests {
 
     // MARK: - Helpers
@@ -18,7 +19,7 @@ struct NotificationManagerTests {
         let calendar = Date.appCalendar
         for day in daysAgo {
             if let date = calendar.date(byAdding: .day, value: -day, to: Date()) {
-                entry.addActivityDate(date)
+                entry.addSession(date)
             }
         }
         return entry
@@ -28,7 +29,7 @@ struct NotificationManagerTests {
 
     @Test
     func testDaysInactiveNeverTrained() {
-        let entry = MuscleEntry(name: "Pecho") // no activityDates
+        let entry = MuscleEntry(name: "Pecho") // no sessions
         #expect(NotificationManager.daysInactive(for: entry) == Int.max)
     }
 
@@ -46,7 +47,7 @@ struct NotificationManagerTests {
 
     @Test
     func testDaysInactiveUsesMaxDate() {
-        // Multiple activity dates — should use the most recent
+        // Multiple sessions — should use the most recent
         let entry = makeEntry(name: "Piernas", daysAgo: [7, 3, 1])
         #expect(NotificationManager.daysInactive(for: entry) == 1)
     }

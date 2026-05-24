@@ -16,7 +16,7 @@ struct StreakCalculatorTests {
         let calendar = Date.appCalendar
         for day in daysAgo {
             if let date = calendar.date(byAdding: .day, value: -day, to: Date()) {
-                entry.addActivityDate(date)
+                entry.addSession(date)
             }
         }
         return entry
