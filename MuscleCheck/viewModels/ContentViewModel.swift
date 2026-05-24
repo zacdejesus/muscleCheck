@@ -146,12 +146,25 @@ final class ContentViewModel: ObservableObject {
     }
   }
   
+  /// Saves a weight for the muscle entry today. Premise: "if I set the weight, I trained today",
+  /// so this also marks the entry as checked for the current week.
+  /// Weight is expected to be in kg (the canonical storage unit).
+  func saveWeight(_ weight: Double?, for entry: MuscleEntry) {
+    entry.setTodaysWeight(weight)
+    do {
+      try context?.save()
+    } catch {
+      assertionFailure("Failed to save weight: \(error)")
+    }
+    updateCurrentEntries()
+  }
+
   func toggleActivity(for entry: MuscleEntry) {
     let today = Date()
     if entry.isChecked {
-      entry.removeActivityDate(today)
+      entry.removeSession(matching: today)
     } else {
-      entry.addActivityDate(today)
+        entry.addSession(today)
     }
     entry.isChecked.toggle()
     do {
@@ -202,8 +215,8 @@ final class ContentViewModel: ObservableObject {
         target = created
       }
 
-      target.addActivityDate(workoutDate)
-      if Date.appCalendar.isDate(workoutDate, equalTo: Date(), toGranularity: .weekOfYear) {
+        target.addSession(workoutDate)
+        if Date.appCalendar.isDate(workoutDate, equalTo: Date(), toGranularity: .weekOfYear) {
         target.isChecked = true
       }
       try manager.update(target)

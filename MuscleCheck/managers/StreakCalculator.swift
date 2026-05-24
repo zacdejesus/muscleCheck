@@ -15,7 +15,7 @@ struct StreakCalculator {
         var uniqueDays: [Date] = []
 
         for entry in entries {
-            for date in entry.activityDates {
+            for date in entry.sessions.map(\.date) {
                 let alreadyAdded = uniqueDays.contains {
                     calendar.isDate($0, inSameDayAs: date)
                 }

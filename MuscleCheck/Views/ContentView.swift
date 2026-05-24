@@ -45,7 +45,8 @@ struct ContentView: View {
           ForEach(group.entries, id: \.name) { entry in
             MuscleEntryRowView(
               entry: entry,
-              onTap: { _ in viewModel.toggleActivity(for: entry) }
+              onTap: { _ in viewModel.toggleActivity(for: entry) },
+              onSaveWeight: { target, weight in viewModel.saveWeight(weight, for: target) }
             )
           }
           .onDelete { offsets in
@@ -228,7 +229,7 @@ extension MuscleEntry {
   static func sample(name: String = "Pecho") -> MuscleEntry {
     let entry = MuscleEntry(name: name)
     entry.isChecked = true
-    entry.addActivityDate(Date())
+    entry.addSession(Date())
     return entry
   }
 }

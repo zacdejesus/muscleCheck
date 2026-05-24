@@ -31,8 +31,8 @@ struct StatsCalculator {
             // Collect unique training days that fall within [weekStart, weekEnd]
             var uniqueDays: Set<String> = []
             for entry in entries {
-                for date in entry.activityDates {
-                    let dayStart = calendar.startOfDay(for: date)
+                for session in entry.sessions {
+                    let dayStart = calendar.startOfDay(for: session.date)
                     if dayStart >= weekStart && dayStart <= weekEnd {
                         uniqueDays.insert(dayStart.description)
                     }
@@ -54,8 +54,8 @@ struct StatsCalculator {
         return entries
             .map { entry in
                 var uniqueDays: Set<String> = []
-                for date in entry.activityDates {
-                    uniqueDays.insert(calendar.startOfDay(for: date).description)
+                for session in entry.sessions {
+                    uniqueDays.insert(calendar.startOfDay(for: session.date).description)
                 }
                 return (muscle: entry.name, count: uniqueDays.count)
             }

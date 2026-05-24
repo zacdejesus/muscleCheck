@@ -61,4 +61,14 @@ final class UserDefaultsManager {
         get { defaults.bool(forKey: "healthKitEnabled") }
         set { defaults.set(newValue, forKey: "healthKitEnabled") }
     }
+
+    /// User-selected weight unit. Defaults to .kg when never set.
+    var weightUnit: WeightUnit {
+        get {
+            guard let raw = defaults.string(forKey: "weightUnit"),
+                  let unit = WeightUnit(rawValue: raw) else { return .kg }
+            return unit
+        }
+        set { defaults.set(newValue.rawValue, forKey: "weightUnit") }
+    }
 }

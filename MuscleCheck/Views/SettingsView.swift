@@ -87,6 +87,17 @@ struct SettingsView: View {
                 }
             }
 
+            // MARK: - Units
+            Section("settings_section_units") {
+                Picker("settings_weight_unit", selection: $viewModel.weightUnit) {
+                    ForEach(WeightUnit.allCases) { unit in
+                        Text(unit.displayLabel).tag(unit)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .tint(Color("PrimaryButtonColor"))
+            }
+
             // MARK: - Health
             Section("settings_section_health") {
                 if HealthKitManager.isAvailable {

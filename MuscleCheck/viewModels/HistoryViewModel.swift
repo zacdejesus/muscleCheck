@@ -30,8 +30,8 @@ final class HistoryViewModel: ObservableObject {
       }
 
       let filtered = entries.filter { entry in
-          entry.activityDates.contains { activityDate in
-              weekInterval.contains(activityDate)
+          entry.sessions.contains { activityDate in
+              weekInterval.contains(activityDate.date)
           }
       }
 
