@@ -43,11 +43,23 @@ struct MuscleCheckApp: App {
       ProgressPhoto.self,
     ])
     let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-    
+
     do {
       return try ModelContainer(for: schema, configurations: [modelConfiguration])
     } catch {
-      fatalError("Could not create ModelContainer: \(error)")
+      // 2.1.0 migrated MuscleEntry.activityDates → sessions[]; SwiftData can't
+      // auto-migrate this shape, so on schema mismatch we wipe the local store
+      // and start fresh rather than crash. ProgressPhoto files on disk are
+      // unaffected (only the DB rows are dropped — the orphaned images stay).
+      let support = URL.applicationSupportDirectory
+      for suffix in ["default.store", "default.store-wal", "default.store-shm"] {
+        try? FileManager.default.removeItem(at: support.appending(path: suffix))
+      }
+      do {
+        return try ModelContainer(for: schema, configurations: [modelConfiguration])
+      } catch {
+        fatalError("Could not create ModelContainer after wipe: \(error)")
+      }
     }
   }()
   
