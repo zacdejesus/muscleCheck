@@ -190,12 +190,18 @@ Diferido hasta después del release 2.1.0. Log desde la muñeca con complication
 ### ⏳ Feature 11: Peso por grupo muscular (branch: `feature/muscle-weight`)
 Trackear la carga (peso) usada en cada grupo muscular para ver progreso real, no solo asistencia.
 
-**Funcionalidad:**
-- Campo de peso opcional por entrada (último peso usado)
-- Historial de pesos por sesión, junto a `activityDates`
-- UI mínima: input numérico al marcar como entrenado (no romper el flujo "2 segundos")
-- Toggle kg / lbs en Settings
+**Funcionalidad (2.1.0):**
+- Campo de peso opcional por entrada (último peso usado), solo para la categoria gym, la de yoga por ejemplo no lo necesita ✅
+- Historial de pesos por sesión, junto a `activityDates` ✅ (`WorkoutSession.weight`)
+- UI mínima: input numérico al marcar como entrenado (no romper el flujo "2 segundos") ✅ (`ModalWeightView`, auto-focus al abrir)
+- Toggle kg / lbs en Settings ✅ (`WeightUnit`, sección Units)
+- Label pequeño con el peso al lado del nombre del músculo, solo para gym ✅ (`MuscleEntry.formattedLastWeight` + `MuscleEntryRowView`)
+- Tap en ícono / nombre / label abre el modal (solo gym) ✅
+- Strings localizadas ES/EN/FR para el modal y Settings ✅
+
+**Diferido a 2.2.0:**
 - Stats: evolución de peso por grupo muscular (Swift Charts, línea temporal)
+- Swipe leading para abrir el modal — descartado por UX (tap ya cubre el caso, swipe leading requería botón visible feo)
 
 **Decisiones abiertas:**
 - El peso es opcional que arranca con un valor default

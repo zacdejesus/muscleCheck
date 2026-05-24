@@ -123,9 +123,9 @@ final class MuscleEntryManager {
         let wasChecked = entry.isChecked
         
         if wasChecked {
-            entry.removeActivityDate(date)
+            entry.removeSession(matching: date)
         } else {
-            entry.addActivityDate(date)
+            entry.addSession(date)
         }
         
         entry.isChecked.toggle()

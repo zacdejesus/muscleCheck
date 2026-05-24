@@ -12,19 +12,19 @@ import SwiftData
 
 @MainActor
 final class SettingsViewModel: ObservableObject {
-
+    
     // Combine: @Published emite cambios que la App observa para cambiar el color scheme
     @Published var appTheme: Int {
         didSet {
             UserDefaultsManager.shared.appTheme = appTheme
         }
     }
-
+    
     @Published var isRestoring = false
     @Published var restoreMessage: String?
     @Published var showRestoreAlert = false
     @Published var addedPresets: Set<String> = []
-
+    
     /// Whether HealthKit sync is enabled. Requests authorization if turned on.
     @Published var healthKitEnabled: Bool {
         didSet {
@@ -33,7 +33,7 @@ final class SettingsViewModel: ObservableObject {
             handleHealthKitToggle()
         }
     }
-
+    
     /// Whether the daily reminder toggle is on. Requests authorization if turned on.
     @Published var notificationsEnabled: Bool {
         didSet {
@@ -42,7 +42,11 @@ final class SettingsViewModel: ObservableObject {
             handleNotificationsToggle()
         }
     }
-
+    
+    @Published var weightUnit: WeightUnit {
+        didSet { UserDefaultsManager.shared.weightUnit = weightUnit }
+    }
+    
     /// The time-of-day for the daily reminder (only hour/minute components matter).
     @Published var reminderTime: Date {
         didSet {
@@ -52,14 +56,14 @@ final class SettingsViewModel: ObservableObject {
             Task { await updateDailyReminder() }
         }
     }
-
+    
     private var _blockNotificationDidSet = false
     private var _blockHealthKitDidSet = false
     private let storeManager: StoreManager
-
+    
     // Combine: cancellables almacena las suscripciones activas
     private var cancellables = Set<AnyCancellable>()
-
+    
     init(storeManager: StoreManager = .shared) {
         self.storeManager = storeManager
         self.appTheme = UserDefaultsManager.shared.appTheme
@@ -67,8 +71,9 @@ final class SettingsViewModel: ObservableObject {
         self.notificationsEnabled = UserDefaultsManager.shared.notificationsEnabled
         self.reminderTime = Self.reminderTimeFromDefaults()
         self.addedPresets = Set(UserDefaultsManager.shared.addedActivityPresets)
+        self.weightUnit = UserDefaultsManager.shared.weightUnit
     }
-
+    
     private static func reminderTimeFromDefaults() -> Date {
         let cal = Calendar.current
         var components = DateComponents()
@@ -76,7 +81,7 @@ final class SettingsViewModel: ObservableObject {
         components.minute = UserDefaultsManager.shared.reminderMinute
         return cal.date(from: components) ?? Date()
     }
-
+    
     private func handleNotificationsToggle() {
         Task {
             if notificationsEnabled {
@@ -93,7 +98,7 @@ final class SettingsViewModel: ObservableObject {
             await updateDailyReminder()
         }
     }
-
+    
     private func handleHealthKitToggle() {
         Task {
             if healthKitEnabled {
@@ -107,7 +112,7 @@ final class SettingsViewModel: ObservableObject {
             }
         }
     }
-
+    
     private func updateDailyReminder() async {
         if UserDefaultsManager.shared.notificationsEnabled {
             await NotificationManager.shared.scheduleDailyReminder(
@@ -118,7 +123,7 @@ final class SettingsViewModel: ObservableObject {
             NotificationManager.shared.cancelDailyReminder()
         }
     }
-
+    
     // Convierte el Int de UserDefaults a ColorScheme? para SwiftUI
     var colorScheme: ColorScheme? {
         switch appTheme {
@@ -127,41 +132,41 @@ final class SettingsViewModel: ObservableObject {
         default: return nil // system
         }
     }
-
+    
     var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
     }
-
+    
     var isPro: Bool {
         storeManager.isPro
     }
-
+    
     func restorePurchases() async {
         isRestoring = true
         defer { isRestoring = false }
-
+        
         do {
             try await storeManager.restorePurchases()
             restoreMessage = storeManager.isPro
-                ? NSLocalizedString("settings_restore_success", comment: "")
-                : NSLocalizedString("settings_restore_not_found", comment: "")
+            ? NSLocalizedString("settings_restore_success", comment: "")
+            : NSLocalizedString("settings_restore_not_found", comment: "")
         } catch {
             restoreMessage = NSLocalizedString("settings_restore_error", comment: "")
         }
         showRestoreAlert = true
     }
-
+    
     func openManageSubscription() {
         guard let url = URL(string: "https://apps.apple.com/account/subscriptions") else { return }
         UIApplication.shared.open(url)
     }
-
+    
     func openPrivacyPolicy() {
         // Reemplazar con tu URL real
         guard let url = URL(string: "https://example.com/privacy") else { return }
         UIApplication.shared.open(url)
     }
-
+    
     func addPresetEntries(for category: ActivityCategory, context: ModelContext) {
         let manager = MuscleEntryManager(context: context)
         do {

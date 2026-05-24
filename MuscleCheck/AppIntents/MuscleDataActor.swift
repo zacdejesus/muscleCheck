@@ -43,7 +43,7 @@ actor MuscleDataActor {
         }
 
         let today = Date()
-        entry.addActivityDate(today)
+        entry.addSession(today)
         entry.isChecked = true
         try modelContext.save()
 
@@ -56,9 +56,7 @@ actor MuscleDataActor {
         let now = Date()
 
         return entries.filter { entry in
-            entry.activityDates.contains { date in
-                calendar.isDate(date, equalTo: now, toGranularity: .weekOfYear)
-            }
+            entry.sessions.contains { calendar.isDate($0.date, equalTo: now, toGranularity: .weekOfYear) }
         }.map { $0.name }
     }
 }

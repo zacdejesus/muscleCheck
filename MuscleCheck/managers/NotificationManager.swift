@@ -112,7 +112,7 @@ final class NotificationManager: ObservableObject, NotificationManagerProtocol {
     static func daysInactive(for entry: MuscleEntry, today: Date = Date()) -> Int {
         let calendar = Date.appCalendar
         let todayStart = calendar.startOfDay(for: today)
-        guard let lastDate = entry.activityDates.max() else { return Int.max }
+        guard let lastDate = entry.sessions.map(\.date).max() else { return Int.max }
         let lastDay = calendar.startOfDay(for: lastDate)
         let components = calendar.dateComponents([.day], from: lastDay, to: todayStart)
         return max(0, components.day ?? 0)

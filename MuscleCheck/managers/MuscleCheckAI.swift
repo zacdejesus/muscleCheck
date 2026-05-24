@@ -60,7 +60,7 @@ final class MuscleCheckAI {
     formatter.dateFormat = "yyyy-MM-dd"
     
     let historyLines = entries.compactMap { entry -> String? in
-      guard let lastDate = entry.activityDates.max() else { return nil }
+      guard let lastDate = entry.sessions.map(\.date).max() else { return nil }
       
       let daysSince = Calendar.current.dateComponents([.day], from: lastDate, to: today).day ?? 0
       
@@ -86,7 +86,7 @@ final class MuscleCheckAI {
     case .unavailable(.deviceNotEligible): return false
     case .unavailable(.appleIntelligenceNotEnabled): return false
     case .unavailable(.modelNotReady): return true
-    case .unavailable(let other): return false
+    case .unavailable(_): return false
     }
   }
 }

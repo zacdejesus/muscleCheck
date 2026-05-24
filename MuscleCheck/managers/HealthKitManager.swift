@@ -159,9 +159,7 @@ final class HealthKitManager: ObservableObject {
         let calendar = Date.appCalendar
 
         return entries.contains { entry in
-            entry.activityDates.contains { activityDate in
-                calendar.isDate(activityDate, inSameDayAs: workoutDate)
-            } && Self.mapToCategory(workout.workoutActivityType).rawValue == entry.category
+            entry.sessions.contains { calendar.isDate($0.date, inSameDayAs: workoutDate) } && Self.mapToCategory(workout.workoutActivityType).rawValue == entry.category
         }
     }
 }

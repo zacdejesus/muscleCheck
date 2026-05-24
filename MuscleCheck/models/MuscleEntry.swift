@@ -16,11 +16,25 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
   var weekOfYear: Int
   var year: Int
   var dateCreated: Date
-  var activityDates: [Date]
   var category: String = ActivityCategory.gym.rawValue
   var icon: String = ActivityCategory.gym.defaultIcon
+  var sessions: [WorkoutSession] = []
+    var lastWeight: Double? {
+        get {
+            return sessions.sorted { $0.date > $1.date }.first(where: { $0.weight != nil })?.weight
+        }
+    }
+
+    /// `lastWeight` (stored in kg) formatted in the user's preferred display unit,
+    /// e.g. "20 kg" or "44 lbs". Nil if no session has a weight recorded yet.
+    var formattedLastWeight: String? {
+        guard let kg = lastWeight else { return nil }
+        let unit = UserDefaultsManager.shared.weightUnit
+        let display = unit.displayValue(fromKg: kg)
+        return String(format: "%g", display) + " " + unit.displayLabel
+    }
   
-  init(name: String, category: String = ActivityCategory.gym.rawValue, icon: String = ActivityCategory.gym.defaultIcon, activityDates: [Date] = []) {
+  init(name: String, category: String = ActivityCategory.gym.rawValue, icon: String = ActivityCategory.gym.defaultIcon) {
     self.id = UUID()
     
     let now = Date()
@@ -31,7 +45,6 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
     self.isChecked = false
     self.weekOfYear = Date.appCalendar.component(.weekOfYear, from: startOfWeek)
     self.year = Date.appCalendar.component(.yearForWeekOfYear, from: startOfWeek)
-    self.activityDates = activityDates
     self.category = category
     self.icon = icon
   }
@@ -43,14 +56,31 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
   func hash(into hasher: inout Hasher) {
     hasher.combine(id)
   }
-  
-  func addActivityDate(_ date: Date) {
-    if !activityDates.contains(where: { Date.appCalendar.isDate($0, inSameDayAs: date) }) {
-      activityDates.append(date)
+
+    func addSession(_ date: Date, weight: Double? = nil) {
+        if !sessions.contains(where: { Date.appCalendar.isDate($0.date, inSameDayAs: date) }) {
+            let weight = weight ?? self.lastWeight
+                
+            
+                
+          sessions.append(WorkoutSession(weight: weight, date: date))
+      }
     }
+    
+  func removeSession(matching date: Date) {
+      sessions.removeAll(where: { Date.appCalendar.isDate($0.date, inSameDayAs: date) })
   }
-  
-  func removeActivityDate(_ date: Date) {
-    activityDates.removeAll(where: { Date.appCalendar.isDate($0, inSameDayAs: date) })
+
+  /// Sets (or updates) today's weight for this muscle. Premise: "if I set the weight,
+  /// I trained today" — so this also marks `isChecked = true`.
+  /// If a session already exists for today, only its weight is updated (no duplicate session).
+  func setTodaysWeight(_ weight: Double?) {
+      let today = Date()
+      if let idx = sessions.firstIndex(where: { Date.appCalendar.isDate($0.date, inSameDayAs: today) }) {
+          sessions[idx].weight = weight
+      } else {
+          sessions.append(WorkoutSession(weight: weight, date: today))
+      }
+      isChecked = true
   }
 }
