@@ -18,7 +18,7 @@ struct StatsCalculatorTests {
         let calendar = Date.appCalendar
         for day in daysAgo {
             if let date = calendar.date(byAdding: .day, value: -day, to: Date()) {
-                entry.addActivityDate(date)
+                entry.addSession(date)
             }
         }
         return entry
@@ -49,7 +49,7 @@ struct StatsCalculatorTests {
 
     @Test
     func testFrequencyByMuscleExcludesZeroCount() {
-        let entry = MuscleEntry(name: "Sin actividad") // no activityDates
+        let entry = MuscleEntry(name: "Sin actividad") // no sessions
         #expect(StatsCalculator.frequencyByMuscle(from: [entry]).isEmpty)
     }
 
@@ -71,8 +71,8 @@ struct StatsCalculatorTests {
 
     @Test
     func testFrequencyByMuscleDeduplicatesSameDayDates() {
-        // Adding the same day twice should count as 1 (addActivityDate guards duplicates)
-        let entry = makeEntry(name: "Pecho", daysAgo: [0])
+        // Adding the same day twice should count as 1 (addSession guards duplicates)
+        let entry = makeEntry(name: "Pecho", daysAgo: [0, 0])
         let result = StatsCalculator.frequencyByMuscle(from: [entry])
         #expect(result.first?.count == 1)
     }
