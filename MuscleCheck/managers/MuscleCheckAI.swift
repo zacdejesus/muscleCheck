@@ -9,6 +9,7 @@ import Observation
 import FoundationModels
 import Foundation
 
+@available(iOS 26, *)
 @Observable
 @MainActor
 final class MuscleCheckAI {

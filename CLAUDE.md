@@ -35,6 +35,7 @@ Maxine requiere que logees cada set/rep/peso. Mucha gente abandona eso. MuscleCh
 Ya tiene FoundationModels integrado. Maxine tiene IA básica. Ir mucho más lejos:
 
 - **Recomendación diaria push** — "Hoy te conviene piernas, llevas 5 días sin entrenarlas"
+- **Sugerencia de día completo** — el botón de IA debería sugerir un *día de entrenamiento completo* (varios grupos musculares, ej. "push day: pecho + tríceps + hombros"), no un solo músculo. Acotado a grupos, NO ejercicios/sets/reps (rompería el zero-effort del Pilar 1). Bonus UX: pre-seleccionar/auto-tildar los grupos sugeridos. Técnico: migrar `generateReview` de `String` libre a output `@Generable`. Diferido (modo calidad de código).
 - **Detección de desbalances** — "Entrenas pecho 3x más que espalda, cuidado con la postura"
 - **Streaks y motivación** — "Llevas 4 semanas entrenando 4+ días, nuevo récord" ✅
 - **Plan semanal generado** — lunes pecho, martes espalda... basado en historial real

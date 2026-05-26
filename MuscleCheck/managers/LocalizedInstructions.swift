@@ -10,6 +10,7 @@ import FoundationModels
 import Foundation
 
 struct LocalizedStrings {
+  @available(iOS 26, *)
   static var intructions: Instructions {
     let lang = Locale.current.language.languageCode?.identifier
     switch lang {
@@ -35,6 +36,7 @@ struct LocalizedStrings {
     }
   }
   
+  @available(iOS 26, *)
   static var promtPrefix: Prompt {
     let lang = Locale.current.language.languageCode?.identifier
     switch lang {

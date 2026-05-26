@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftData
-import FoundationModels
 import HealthKit
 
 @MainActor
@@ -18,12 +17,25 @@ final class ContentViewModel: ObservableObject {
   private var muscleEntryManager: MuscleEntryManager?
   @Published private(set) var currentWeekEntries: [MuscleEntry] = []
   @Published private(set) var groupedCurrentWeekEntries: [(category: String, entries: [MuscleEntry])] = []
-  @Published var workoutSuggested: String.PartiallyGenerated?
-  
-  let muscleCheckAI = MuscleCheckAI()
-  let session = LanguageModelSession()
-  
+  @Published var workoutSuggested: String?
+
+  /// Backing storage for the on-device AI. Held as `Any?` because `MuscleCheckAI`
+  /// (FoundationModels) is only available on iOS 26+, while this view model targets iOS 18.
+  private var aiStorage: Any?
+
+  @available(iOS 26, *)
+  private var muscleCheckAI: MuscleCheckAI {
+    if let existing = aiStorage as? MuscleCheckAI { return existing }
+    let new = MuscleCheckAI()
+    aiStorage = new
+    return new
+  }
+
   func reviewLastMonthWorkouts() async {
+    guard #available(iOS 26, *) else {
+      workoutSuggested = String(localized: "ERROR_GENERATING_REVIEW")
+      return
+    }
     do {
       workoutSuggested = try await muscleCheckAI.generateReview(entries: entries)
     } catch {
@@ -32,8 +44,10 @@ final class ContentViewModel: ObservableObject {
   }
   
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
-    muscleCheckAI.prewarmModel()
-    
+    if #available(iOS 26, *) {
+      muscleCheckAI.prewarmModel()
+    }
+
     self.context = context
     self.entries = entries
     
@@ -193,6 +207,7 @@ final class ContentViewModel: ObservableObject {
   }
   
   func isAppleIntelligenceAvailable() -> Bool {
+    guard #available(iOS 26, *) else { return false }
     return muscleCheckAI.isAppleIntelligenceAvailable()
   }
 
