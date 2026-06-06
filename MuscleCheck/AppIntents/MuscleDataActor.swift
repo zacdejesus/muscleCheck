@@ -11,7 +11,7 @@ actor MuscleDataActor {
 
     static let sharedContainer: ModelContainer = {
         do {
-            return try ModelContainer(for: MuscleEntry.self)
+            return try ModelContainer(for: MuscleEntry.self, ProgressPhoto.self)
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }

@@ -16,6 +16,11 @@ struct AddProgressPhotoView: View {
     @State private var selectedImage: UIImage?
     @State private var note: String = ""
     @State private var isLoading = false
+    @State private var showingCamera = false
+
+    private var cameraAvailable: Bool {
+        UIImagePickerController.isSourceTypeAvailable(.camera)
+    }
 
     var body: some View {
         Form {
@@ -30,12 +35,21 @@ struct AddProgressPhotoView: View {
                         .frame(maxWidth: .infinity)
                 }
 
+                if cameraAvailable {
+                    Button {
+                        showingCamera = true
+                    } label: {
+                        Label("progress_photos_take", systemImage: "camera")
+                            .foregroundColor(Color("PrimaryButtonColor"))
+                    }
+                }
+
                 PhotosPicker(
                     selection: $selectedItem,
                     matching: .images
                 ) {
                     Label(
-                        selectedImage == nil ? "progress_photos_add" : "Change Photo",
+                        selectedImage == nil ? "progress_photos_choose_library" : "progress_photos_change",
                         systemImage: "photo.on.rectangle"
                     )
                     .foregroundColor(Color("PrimaryButtonColor"))
@@ -78,6 +92,12 @@ struct AddProgressPhotoView: View {
             if isLoading {
                 ProgressView()
             }
+        }
+        .fullScreenCover(isPresented: $showingCamera) {
+            CameraPicker { image in
+                selectedImage = image
+            }
+            .ignoresSafeArea()
         }
     }
 

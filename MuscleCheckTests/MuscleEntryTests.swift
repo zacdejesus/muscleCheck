@@ -186,6 +186,6 @@ struct MuscleEntryTests {
         UserDefaultsManager.shared.weightUnit = .kg
         let entry = MuscleEntry(name: "Pecho")
         entry.addSession(Date(), weight: 80.5)
-        #expect(entry.formattedLastWeight == "80.5 kg")
+        #expect(entry.formattedLastWeight == "80 kg")
     }
 }

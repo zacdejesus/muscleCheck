@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		195A08DB2FD46D9000F8137B /* MuscleCheck.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 195A08DA2FD46D9000F8137B /* MuscleCheck.storekit */; };
 		19C99F812F942D22007BD023 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 19C99F802F942D22007BD023 /* RevenueCat */; };
 		CB1DFA832EA828AC00B2047E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA822EA828AC00B2047E /* WidgetKit.framework */; };
 		CB1DFA852EA828AC00B2047E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA842EA828AC00B2047E /* SwiftUI.framework */; };
@@ -56,6 +57,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		195A08DA2FD46D9000F8137B /* MuscleCheck.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = MuscleCheck.storekit; sourceTree = "<group>"; };
 		CB1DFA802EA828AC00B2047E /* MuscleCheckWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MuscleCheckWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB1DFA822EA828AC00B2047E /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		CB1DFA842EA828AC00B2047E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -163,6 +165,7 @@
 			isa = PBXGroup;
 			children = (
 				CB1DFA9D2EA8296D00B2047E /* MuscleCheckWidgetExtension.entitlements */,
+				195A08DA2FD46D9000F8137B /* MuscleCheck.storekit */,
 				CBE9125C2DD93DE0001F511B /* MuscleCheck */,
 				CBE9126F2DD93DE1001F511B /* MuscleCheckTests */,
 				CBE912792DD93DE1001F511B /* MuscleCheckUITests */,
@@ -350,6 +353,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				195A08DB2FD46D9000F8137B /* MuscleCheck.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -716,7 +720,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5CB8537JK6;
+				DEVELOPMENT_TEAM = DTJLZH295U;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
@@ -739,7 +743,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5CB8537JK6;
+				DEVELOPMENT_TEAM = DTJLZH295U;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
@@ -761,7 +765,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5CB8537JK6;
+				DEVELOPMENT_TEAM = DTJLZH295U;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
@@ -783,7 +787,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5CB8537JK6;
+				DEVELOPMENT_TEAM = DTJLZH295U;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
