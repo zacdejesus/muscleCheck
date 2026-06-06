@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyDZ9NcgKnmTkx8IsWtiSpe1_2FRA-HdU9E</string>
+	<string>AIzaSyAaoaP-EOha3_AjlOtD8CclNfwpHXDVS54</string>
 	<key>GCM_SENDER_ID</key>
 	<string>270940771458</string>
 	<key>PLIST_VERSION</key>
@@ -17,7 +17,7 @@
 	<key>IS_ADS_ENABLED</key>
 	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false/>
+	<true/>
 	<key>IS_APPINVITE_ENABLED</key>
 	<true/>
 	<key>IS_GCM_ENABLED</key>

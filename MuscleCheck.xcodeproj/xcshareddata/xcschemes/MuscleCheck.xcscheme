@@ -75,6 +75,12 @@
             ReferencedContainer = "container:MuscleCheck.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "FIRDebugEnabled"
+            isEnabled = "NO">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <StoreKitConfigurationFileReference
          identifier = "../../MuscleCheck.storekit">
       </StoreKitConfigurationFileReference>
