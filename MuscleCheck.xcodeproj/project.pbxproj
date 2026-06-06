@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		195A08DB2FD46D9000F8137B /* MuscleCheck.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 195A08DA2FD46D9000F8137B /* MuscleCheck.storekit */; };
 		19C99F812F942D22007BD023 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 19C99F802F942D22007BD023 /* RevenueCat */; };
 		CB1DFA832EA828AC00B2047E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA822EA828AC00B2047E /* WidgetKit.framework */; };
 		CB1DFA852EA828AC00B2047E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA842EA828AC00B2047E /* SwiftUI.framework */; };
@@ -353,7 +352,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				195A08DB2FD46D9000F8137B /* MuscleCheck.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
