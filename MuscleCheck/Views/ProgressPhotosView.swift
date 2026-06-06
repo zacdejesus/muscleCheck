@@ -18,9 +18,8 @@ struct ProgressPhotosView: View {
     @State private var selectedPhoto: ProgressPhoto?
 
     private let columns = [
-        GridItem(.flexible(), spacing: 4),
-        GridItem(.flexible(), spacing: 4),
-        GridItem(.flexible(), spacing: 4)
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10)
     ]
 
     var body: some View {
@@ -120,11 +119,12 @@ struct ProgressPhotosView: View {
 
                 ForEach(viewModel.groupedPhotos, id: \.month) { group in
                     Section {
-                        LazyVGrid(columns: columns, spacing: 4) {
+                        LazyVGrid(columns: columns, spacing: 10) {
                             ForEach(group.photos) { photo in
                                 photoThumbnail(photo)
                             }
                         }
+                        .padding(.horizontal)
                     } header: {
                         Text(group.month)
                             .font(.subheadline.bold())
@@ -152,39 +152,44 @@ struct ProgressPhotosView: View {
                 selectedPhoto = photo
             }
         } label: {
-            ZStack(alignment: .bottomTrailing) {
-                if let uiImage = photo.loadImage() {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .aspectRatio(1, contentMode: .fill)
-                        .clipped()
-                } else {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .aspectRatio(1, contentMode: .fill)
-                        .overlay {
-                            Image(systemName: "photo")
-                                .foregroundColor(.secondary)
-                        }
+            // Color.clear forces a square cell that fills the column width; the image
+            // fills it (scaledToFill + clip) so portrait photos aren't squished.
+            Color.clear
+                .aspectRatio(1, contentMode: .fit)
+                .overlay {
+                    if let uiImage = photo.loadImage() {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                    } else {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .overlay {
+                                Image(systemName: "photo")
+                                    .foregroundColor(.secondary)
+                            }
+                    }
                 }
-
-                if viewModel.isCompareMode && isSelected {
-                    Image(systemName: isSelectedA ? "1.circle.fill" : "2.circle.fill")
-                        .font(.caption)
-                        .foregroundColor(.white)
-                        .padding(4)
-                        .background(Color("PrimaryButtonColor"))
-                        .clipShape(Circle())
-                        .padding(4)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(alignment: .bottomTrailing) {
+                    if viewModel.isCompareMode && isSelected {
+                        Image(systemName: isSelectedA ? "1.circle.fill" : "2.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.white)
+                            .padding(4)
+                            .background(Color("PrimaryButtonColor"))
+                            .clipShape(Circle())
+                            .padding(6)
+                    }
                 }
-            }
+                .overlay {
+                    if viewModel.isCompareMode && isSelected {
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color("PrimaryButtonColor"), lineWidth: 3)
+                    }
+                }
         }
-        .overlay {
-            if viewModel.isCompareMode && isSelected {
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(Color("PrimaryButtonColor"), lineWidth: 3)
-            }
-        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Compare Banner
