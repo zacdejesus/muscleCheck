@@ -40,7 +40,7 @@ MuscleCheck takes the opposite bet: a weekly checklist of muscle groups (or yoga
 |  **Native charts** | Weekly training trends and muscle frequency analysis with `Swift Charts` |
 |  **Progress photos** | Before/after comparison with slider UI, photos stored on disk with SwiftData metadata pointers |
 |  **Freemium monetization** | RevenueCat integration with `ProFeatureGate` component, reusable paywall, restore purchases |
-|  **Fully localized** | English & Spanish via `Localizable.xcstrings` (Xcode 15 native catalog format) |
+|  **Fully localized** | English, French & Spanish via `Localizable.xcstrings` (Xcode 15 native catalog format) |
 
 ---
 
@@ -229,7 +229,7 @@ The project uses Swift Package Manager for dependencies (RevenueCat, Firebase). 
 |---|---|---|
 | 1.0 – 1.1 | ✅ Shipped | Initial release + Apple Intelligence integration |
 | 1.2.0 – 2.0.0 | ✅ Merged | RevenueCat · Settings · Streaks · Stats · Notifications · App Intents · Categories · Progress Photos · HealthKit |
-| **2.1.0** | 🚧 In progress | Weight tracking per muscle group · architectural refactors |
+| **2.1.0** |  ✅ Shipped  | Weight tracking per muscle group · architectural refactors |
 | 2.2.0 | ⏳ Planned | Apple Watch app with complications |
 | Future | 💭 Exploring | Social/accountability features · weekly AI-generated plans |
 
