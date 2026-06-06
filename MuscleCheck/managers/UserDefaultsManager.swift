@@ -71,4 +71,17 @@ final class UserDefaultsManager {
         }
         set { defaults.set(newValue.rawValue, forKey: "weightUnit") }
     }
+
+    /// JSON-encoded `RoutineSuggestion` cached for the day (Feature 12), so reopening
+    /// the coach in the gym shows the same suggestion until "dame otra" or a new day.
+    var cachedRoutineData: Data? {
+        get { defaults.data(forKey: "cachedRoutineData") }
+        set { defaults.set(newValue, forKey: "cachedRoutineData") }
+    }
+
+    /// Date the cached routine was generated. The cache is valid only on the same day.
+    var cachedRoutineDate: Date? {
+        get { defaults.object(forKey: "cachedRoutineDate") as? Date }
+        set { defaults.set(newValue, forKey: "cachedRoutineDate") }
+    }
 }

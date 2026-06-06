@@ -55,7 +55,7 @@ struct MuscleCheckWidgetEntryView: View {
             HStack(spacing: 4) {
                 Text(entry.currentStreak > 0 ? "🔥" : "💤")
                     .font(.caption)
-                Text("\(entry.currentStreak) days")
+                Text("widget_streak_days \(entry.currentStreak)")
                     .font(.caption.bold())
                     .foregroundColor(.orange)
                 Spacer()

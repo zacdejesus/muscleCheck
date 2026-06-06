@@ -31,7 +31,8 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
         guard let kg = lastWeight else { return nil }
         let unit = UserDefaultsManager.shared.weightUnit
         let display = unit.displayValue(fromKg: kg)
-        return String(format: "%g", display) + " " + unit.displayLabel
+        // Weights are shown as whole numbers (no decimals) — round at the display boundary.
+        return String(format: "%.0f", display) + " " + unit.displayLabel
     }
   
   init(name: String, category: String = ActivityCategory.gym.rawValue, icon: String = ActivityCategory.gym.defaultIcon) {

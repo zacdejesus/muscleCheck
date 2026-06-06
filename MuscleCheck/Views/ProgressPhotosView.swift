@@ -24,7 +24,12 @@ struct ProgressPhotosView: View {
     ]
 
     var body: some View {
-        ProFeatureGate(lockedMessage: NSLocalizedString("progress_photos_title", comment: "")) {
+        ProFeatureGate(
+            lockedMessage: NSLocalizedString("progress_photos_title", comment: ""),
+            description: NSLocalizedString("progress_photos_locked_message", comment: ""),
+            icon: "photo.stack",
+            style: .card
+        ) {
             Group {
                 if viewModel.photos.isEmpty {
                     emptyState
