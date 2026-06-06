@@ -162,8 +162,7 @@ final class SettingsViewModel: ObservableObject {
     }
     
     func openPrivacyPolicy() {
-        // Reemplazar con tu URL real
-        guard let url = URL(string: "https://example.com/privacy") else { return }
+        guard let url = URL(string: "https://zacdejesus.github.io/muscleCheck/privacy.html") else { return }
         UIApplication.shared.open(url)
     }
     

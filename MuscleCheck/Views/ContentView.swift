@@ -18,7 +18,7 @@ struct ContentView: View {
   @Environment(\.scenePhase) private var scenePhase
   @AppStorage("hasInsertedInitialData") private var hasInsertedInitialData: Bool = false
   
-  @State private var showingReviewModal = false
+  @State private var showingRoutineModal = false
   @State private var showingAddSheet = false
   @State private var showingPaywall = false
   @State private var showingSettings = false
@@ -29,49 +29,82 @@ struct ContentView: View {
   
   var body: some View {
     NavigationStack {
-      StreakCardView(viewModel: streakViewModel)
-      if !healthKitManager.unloggedWorkouts.isEmpty && storeManager.isPro {
-        HealthKitSuggestionsView(healthKitManager: healthKitManager) { workout in
-          viewModel.logHealthKitWorkout(workout)
+      VStack(spacing: 0) {
+        StreakCardView(viewModel: streakViewModel)
+
+        if !healthKitManager.unloggedWorkouts.isEmpty && storeManager.isPro {
+          HealthKitSuggestionsView(healthKitManager: healthKitManager) { workout in
+            viewModel.logHealthKitWorkout(workout)
+          }
+          .padding(.top, 4)
         }
-        .padding(.top, 4)
-      }
-      List {
-        if viewModel.currentWeekEntries.isEmpty {
-          EmptyStateView()
-        } else if viewModel.groupedCurrentWeekEntries.count == 1 {
-          // Single category — no section headers for clean look
-          let group = viewModel.groupedCurrentWeekEntries[0]
-          ForEach(group.entries, id: \.name) { entry in
-            MuscleEntryRowView(
-              entry: entry,
-              onTap: { _ in viewModel.toggleActivity(for: entry) },
-              onSaveWeight: { target, weight in viewModel.saveWeight(weight, for: target) }
-            )
-          }
-          .onDelete { offsets in
-            viewModel.deleteEntries(from: group.entries, at: offsets)
-          }
-        } else {
-          // Multiple categories — show section headers
-          ForEach(viewModel.groupedCurrentWeekEntries, id: \.category) { group in
-            Section {
-              ForEach(group.entries, id: \.name) { entry in
-                MuscleEntryRowView(
-                  entry: entry,
-                  onTap: { _ in viewModel.toggleActivity(for: entry) }
-                )
+
+        List {
+          if viewModel.currentWeekEntries.isEmpty {
+            EmptyStateView()
+          } else if viewModel.groupedCurrentWeekEntries.count == 1 {
+            // Single category — no section headers for clean look
+            let group = viewModel.groupedCurrentWeekEntries[0]
+            ForEach(group.entries, id: \.name) { entry in
+              MuscleEntryRowView(
+                entry: entry,
+                onTap: { _ in viewModel.toggleActivity(for: entry) },
+                onSaveWeight: { target, weight in viewModel.saveWeight(weight, for: target) }
+              )
+            }
+            .onDelete { offsets in
+              viewModel.deleteEntries(from: group.entries, at: offsets)
+            }
+          } else {
+            // Multiple categories — show section headers
+            ForEach(viewModel.groupedCurrentWeekEntries, id: \.category) { group in
+              Section {
+                ForEach(group.entries, id: \.name) { entry in
+                  MuscleEntryRowView(
+                    entry: entry,
+                    onTap: { _ in viewModel.toggleActivity(for: entry) },
+                    onSaveWeight: { target, weight in viewModel.saveWeight(weight, for: target) }
+                  )
+                }
+                .onDelete { offsets in
+                  viewModel.deleteEntries(from: group.entries, at: offsets)
+                }
+              } header: {
+                categoryHeader(group.category)
               }
-              .onDelete { offsets in
-                viewModel.deleteEntries(from: group.entries, at: offsets)
-              }
-            } header: {
-              categoryHeader(group.category)
             }
           }
         }
+        .background(Color(.systemGray6))
+        // AI Coach: suggested day. Free + on-device, so no Pro gate — only hidden when
+        // Apple Intelligence isn't available (iOS < 26, ineligible hardware, AI off).
+        // Pinned as a bottom bar so the list scrolls underneath and the bottom edge
+        // stays clean (no stray band over the system background).
+        .safeAreaInset(edge: .bottom) {
+          if viewModel.isAppleIntelligenceAvailable() {
+            Button {
+              showingRoutineModal = true
+              if viewModel.routineSuggestion == nil {
+                Task { await viewModel.generateRoutine() }
+              }
+            } label: {
+              HStack {
+                Image(systemName: "sparkles")
+                Text("ai_coach_suggest_day")
+                  .fontWeight(.medium)
+              }
+              .padding(.vertical, 10)
+              .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.regular)
+            .tint(Color("PrimaryButtonColor"))
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(.bar)
+          }
+        }
       }
-      .background(Color(.systemGray6))
       .navigationTitle("home_title")
       .tint(Color("PrimaryButtonColor"))
       .navigationBarTitleDisplayMode(.automatic)
@@ -121,7 +154,6 @@ struct ContentView: View {
           }
         }
       }
-      .padding(0.5)
       .onAppear {
         Task {
           await viewModel.setup(context: context, entries: entries)
@@ -164,48 +196,8 @@ struct ContentView: View {
             .environmentObject(storeManager)
         }
       }
-      .sheet(isPresented: $showingReviewModal) {
-        if let reviewText = viewModel.workoutSuggested {
-          VStack {
-            Text("Review")
-              .font(.headline)
-            Text(reviewText)
-              .padding()
-            Button("BUTTON_CLOSE") {
-              showingReviewModal = false
-            }
-          }
-          .padding()
-        }
-      }
-      if viewModel.isAppleIntelligenceAvailable() {
-        if storeManager.isPro {
-          Button {
-            Task {
-              await viewModel.reviewLastMonthWorkouts()
-              showingReviewModal = true
-            }
-          } label: {
-            HStack {
-              Image(systemName: "chart.bar.xaxis")
-              Text("muscle_recommend_by_ai")
-                .fontWeight(.medium)
-            }
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity)
-          }
-          .buttonStyle(.borderedProminent)
-          .controlSize(.regular)
-          .tint(Color("PrimaryButtonColor"))
-          .padding(.horizontal)
-          .padding(.bottom, 15)
-        } else {
-          ProFeatureGate(lockedMessage: NSLocalizedString("muscle_recommend_by_ai", comment: "")) {
-            EmptyView()
-          }
-          .padding(.horizontal)
-          .padding(.bottom, 15)
-        }
+      .sheet(isPresented: $showingRoutineModal) {
+        RoutineSuggestionView(viewModel: viewModel)
       }
     }
   }

@@ -35,7 +35,7 @@ Maxine requiere que logees cada set/rep/peso. Mucha gente abandona eso. MuscleCh
 Ya tiene FoundationModels integrado. Maxine tiene IA básica. Ir mucho más lejos:
 
 - **Recomendación diaria push** — "Hoy te conviene piernas, llevas 5 días sin entrenarlas"
-- **Sugerencia de día completo** — el botón de IA debería sugerir un *día de entrenamiento completo* (varios grupos musculares, ej. "push day: pecho + tríceps + hombros"), no un solo músculo. Acotado a grupos, NO ejercicios/sets/reps (rompería el zero-effort del Pilar 1). Bonus UX: pre-seleccionar/auto-tildar los grupos sugeridos. Técnico: migrar `generateReview` de `String` libre a output `@Generable`. Diferido (modo calidad de código).
+- **Coach IA: día sugerido** — el botón de IA sugiere un *par muscular coherente* del día con ejercicios de ejemplo, en vez de un solo músculo. **Free, on-device, no tilda nada** (solo guía). Diseño completo en **Feature 12** del roadmap.
 - **Detección de desbalances** — "Entrenas pecho 3x más que espalda, cuidado con la postura"
 - **Streaks y motivación** — "Llevas 4 semanas entrenando 4+ días, nuevo récord" ✅
 - **Plan semanal generado** — lunes pecho, martes espalda... basado en historial real
@@ -63,10 +63,10 @@ Ya tiene FoundationModels integrado. Maxine tiene IA básica. Ir mucho más lejo
 
 | Gratis | Pro |
 |--------|-----|
-| Checklist semanal | IA ilimitada |
+| Checklist semanal | HealthKit: detección automática |
 | Historial básico | Detección de desbalances |
 | Widget | Estadísticas avanzadas (Swift Charts) |
-| 1 consulta IA/semana | Notificaciones inteligentes |
+| Coach IA: día sugerido + ejercicios (ilimitado) | Notificaciones inteligentes |
 | Categorías + presets básicos | Plan semanal auto-generado |
 | | Progress photos con timeline |
 | | Apple Watch app |
@@ -212,6 +212,51 @@ Trackear la carga (peso) usada en cada grupo muscular para ver progreso real, no
 **Stack:** SwiftData (modelo nuevo o extensión), Swift Charts
 
 **Versión:** 2.1.0 (próximo release al App Store)
+
+---
+
+### ⏳ Feature 12: AI Coach — día de entrenamiento sugerido (DISEÑADO, diferido)
+Reemplaza el botón actual de "review" (`reviewLastMonthWorkouts`). En vez de devolver un mensaje de texto con un solo músculo, sugiere un día coherente con ejercicios.
+
+**Comportamiento:**
+- **Coach, no logger:** sugiere, **nunca tilda**. El usuario marca los grupos a mano (tildar = "lo entrené"; no se ensucia la semántica).
+- **Free** (no Pro): el modelo on-device no tiene costo por llamada, así que no se gatea.
+- Genera desde el historial (sin inputs/chips en v1).
+- **PPL como ancla blanda** → **exactamente 2 grupos coherentes** (par muscular: pecho+tríceps, espalda+bíceps, piernas+abdomen), **3 ejercicios de ejemplo** por grupo (read-only, ideas — no programa obligatorio).
+- Lógica del prompt: rotación entre días (inferida del historial) → coherencia dentro del día → excluir lo ya entrenado hoy → descanso como desempate.
+- **"Dame otra"** = regenerar (un tap).
+- **Cacheada por el día** (UserDefaults): reabrible en el gym, misma sugerencia hasta "dame otra" o cambio de día.
+- **Solo gym.** iOS 26 gated (FoundationModels) con degradación elegante (botón oculto si no hay IA).
+
+**Output (`@Generable`, iOS 26):**
+```swift
+@Generable struct WorkoutSuggestion {
+  var focus: String          // "Push", "Pull", "Piernas"
+  var blocks: [Block]        // exactamente 2
+  var rationale: String
+}
+@Generable struct Block {
+  var groupIndex: Int        // índice en los grupos de gym numerados → robusto, sin fuzzy matching
+  var exercises: [String]    // ~3 ejemplos
+}
+```
+Validar `groupIndex` en rango y `blocks.count == 2`; descartar/recortar lo inválido. Mapear índice → `MuscleEntry`.
+
+**Arquitectura:**
+- `MuscleCheckAI.suggestWorkout(...)` (iOS 26) → `WorkoutSuggestion`. Mapear a un struct plano version-agnostic (`RoutineSuggestion`) para que `ContentViewModel` (iOS 18) lo guarde — mismo patrón de gating ya usado para FoundationModels.
+- Prompt: grupos numerados + historial (descanso por grupo, entrenado-hoy) + instrucciones (PPL blando, 2 grupos, rotación, excluir hoy, 3 ejercicios/grupo, idioma por locale).
+- Modal: focus + rationale + 2 grupos con sus ejercicios + "Dame otra" + cerrar. Sin botón "agregar".
+- **Usar `streamResponse` (no `respond`)** para mostrar la sugerencia generándose progresivamente (mejor UX que un spinner).
+
+**Modelo:** on-device ~3B de Apple (FoundationModels). Suficiente para esta tarea acotada (conocimiento común de ejercicios + split simple + output estructurado); flojo en razonamiento profundo, mitigado con tarea acotada + "dame otra".
+
+**Diferido a v2:** chips (tiempo/energía), discovery de grupos nuevos ("considerá agregar X"), historial completo de sugerencias, catálogo curado de ejercicios (el modelo selecciona por índice en vez de generar), pista de rotación precomputada.
+
+**Stack:** FoundationModels (`@Generable`), SwiftUI, UserDefaults (cache).
+
+**Tuning de prompt (hecho, en device real):** ver `docs/feature12-prompt-tuning.md`. Hallazgo clave: el modelo on-device **no puede rotar** (no razona el historial) → la **rotación y la variedad van en código** (filtrar grupos elegibles, pasarle solo esos; excluir lo recién sugerido para "dame otra"). El modelo solo elige 2 coherentes + 3 ejercicios. El doc tiene la instrucción ganadora.
+
+**Versión:** post-2.1.0 (diseñado, no construido — modo calidad de código).
 
 ---
 

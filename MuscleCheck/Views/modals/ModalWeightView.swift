@@ -37,7 +37,7 @@ struct ModalWeightView: View {
                 Section {
                     HStack {
                         TextField("", text: $weight)
-                            .keyboardType(.decimalPad)
+                            .keyboardType(.numberPad)
                             .focused($isWeightFieldFocused)
                         Text(unit.displayLabel)
                             .foregroundStyle(.secondary)
@@ -56,8 +56,9 @@ struct ModalWeightView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("save") {
-                        // Input is in display unit; convert to kg before handing off.
-                        let kg = parsedValue.map { unit.toKg($0) }
+                        // Input is in display unit; weights are whole numbers, so round
+                        // before converting to kg for storage.
+                        let kg = parsedValue.map { unit.toKg($0.rounded()) }
                         onSave(kg)
                         dismiss()
                     }
@@ -67,8 +68,8 @@ struct ModalWeightView: View {
             .onAppear {
                 if let lastKg = entry.lastWeight {
                     let displayed = unit.displayValue(fromKg: lastKg)
-                    // %g drops trailing zeros (60.0 → "60", 60.5 → "60.5").
-                    weight = String(format: "%g", displayed)
+                    // Weights are whole numbers — prefill rounded, no decimals.
+                    weight = String(format: "%.0f", displayed)
                 }
                 // Slight delay so the sheet's transition finishes before the keyboard
                 // animates up — focusing synchronously inside onAppear is usually ignored.

@@ -17,7 +17,16 @@ final class ContentViewModel: ObservableObject {
   private var muscleEntryManager: MuscleEntryManager?
   @Published private(set) var currentWeekEntries: [MuscleEntry] = []
   @Published private(set) var groupedCurrentWeekEntries: [(category: String, entries: [MuscleEntry])] = []
-  @Published var workoutSuggested: String?
+
+  // MARK: - AI Coach (Feature 12)
+
+  /// Current suggested day, shown (and filled progressively while streaming) in the
+  /// coach modal. Version-agnostic so this iOS 18 view model can hold it.
+  @Published var routineSuggestion: RoutineSuggestion?
+  @Published var isGeneratingRoutine = false
+  @Published var routineError: String?
+  /// Groups from the last suggestion, excluded on "dame otra" to force a different day.
+  private var lastSuggestedGroups: Set<String> = []
 
   /// Backing storage for the on-device AI. Held as `Any?` because `MuscleCheckAI`
   /// (FoundationModels) is only available on iOS 26+, while this view model targets iOS 18.
@@ -31,18 +40,57 @@ final class ContentViewModel: ObservableObject {
     return new
   }
 
-  func reviewLastMonthWorkouts() async {
-    guard #available(iOS 26, *) else {
-      workoutSuggested = String(localized: "ERROR_GENERATING_REVIEW")
+  /// Generates (or regenerates) a suggested training day from the eligible gym groups.
+  /// Rotation/variety is resolved in code (`WorkoutEligibility`); the model only picks
+  /// a coherent pair + example exercises. Free, on-device — no Pro gate.
+  func generateRoutine(regenerate: Bool = false) async {
+    guard #available(iOS 26, *) else { return }
+
+    let previous = routineSuggestion
+    isGeneratingRoutine = true
+    routineError = nil
+
+    let excluded = regenerate ? lastSuggestedGroups : []
+    let eligible = WorkoutEligibility.eligibleGymGroups(from: entries, excluding: excluded)
+
+    // Nothing to suggest from (no gym groups at all).
+    guard eligible.count >= 2 else {
+      isGeneratingRoutine = false
+      routineError = String(localized: "ERROR_GENERATING_ROUTINE")
       return
     }
+
     do {
-      workoutSuggested = try await muscleCheckAI.generateReview(entries: entries)
+      let suggestion = try await muscleCheckAI.suggestWorkout(eligible: eligible) { [weak self] partial in
+        self?.routineSuggestion = partial
+      }
+      routineSuggestion = suggestion
+      lastSuggestedGroups = Set(suggestion.blocks.map(\.groupName))
+      cacheRoutine(suggestion)
     } catch {
-      workoutSuggested = String(localized: "ERROR_GENERATING_REVIEW")
+      routineError = String(localized: "ERROR_GENERATING_ROUTINE")
+      routineSuggestion = previous // restore prior suggestion (nil on first run)
     }
+
+    isGeneratingRoutine = false
   }
-  
+
+  private func cacheRoutine(_ suggestion: RoutineSuggestion) {
+    guard let data = try? JSONEncoder().encode(suggestion) else { return }
+    UserDefaultsManager.shared.cachedRoutineData = data
+    UserDefaultsManager.shared.cachedRoutineDate = Date()
+  }
+
+  private func loadCachedRoutineIfToday() {
+    guard let date = UserDefaultsManager.shared.cachedRoutineDate,
+          Date.appCalendar.isDate(date, inSameDayAs: Date()),
+          let data = UserDefaultsManager.shared.cachedRoutineData,
+          let cached = try? JSONDecoder().decode(RoutineSuggestion.self, from: data)
+    else { return }
+    routineSuggestion = cached
+    lastSuggestedGroups = Set(cached.blocks.map(\.groupName))
+  }
+
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
     if #available(iOS 26, *) {
       muscleCheckAI.prewarmModel()
@@ -50,14 +98,16 @@ final class ContentViewModel: ObservableObject {
 
     self.context = context
     self.entries = entries
-    
+
     self.muscleEntryManager = .init(context: context)
-    
+
     insertDefaultMuscleEntries()
 
     resetCheckedEntriesIfnewWeek()
-    
+
     updateCurrentEntries()
+
+    loadCachedRoutineIfToday()
   }
   
   func resetCheckedEntriesIfnewWeek() {
