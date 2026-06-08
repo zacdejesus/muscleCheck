@@ -217,8 +217,8 @@
 				CBE912562DD93DE0001F511B /* Sources */,
 				CBE912572DD93DE0001F511B /* Frameworks */,
 				CBE912582DD93DE0001F511B /* Resources */,
-				CB6772DB2DF48FA300A683BC /* ShellScript */,
 				CB1DFA972EA828AD00B2047E /* Embed Foundation Extensions */,
+				CB6772DB2DF48FA300A683BC /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -653,6 +653,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -692,6 +693,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
