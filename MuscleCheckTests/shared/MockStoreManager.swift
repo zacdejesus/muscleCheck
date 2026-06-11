@@ -37,4 +37,8 @@ final class MockStoreManager: ObservableObject, StoreManagerProtocol {
     func loadOfferings() async {
         loadOfferingsCalled = true
     }
+
+    func loadOfferingsIfNeeded() async {
+        await loadOfferings()
+    }
 }

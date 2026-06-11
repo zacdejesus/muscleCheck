@@ -13,6 +13,7 @@ protocol StoreManagerProtocol: ObservableObject {
     func purchase(_ packageType: PackageType) async throws
     func restorePurchases() async throws
     func loadOfferings() async
+    func loadOfferingsIfNeeded() async
 }
 
 enum PackageType: String, CaseIterable {

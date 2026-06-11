@@ -125,6 +125,11 @@ struct PaywallView: View {
             .onChange(of: viewModel.purchaseSuccess) { _, success in
                 if success { dismiss() }
             }
+            .task {
+                // Retry if the launch-time fetch failed; prices re-render via
+                // the observed storeManager when offerings arrive.
+                await storeManager.loadOfferingsIfNeeded()
+            }
         }
     }
 }
