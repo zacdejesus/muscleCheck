@@ -44,8 +44,9 @@ final class StoreManager: ObservableObject, @MainActor StoreManagerProtocol {
     // MARK: - StoreManagerProtocol
     
     func purchase(_ packageType: PackageType) async throws {
-        guard let offerings = offerings,
-              let currentOffering = offerings.current else {
+        // Last-chance fetch so a transient launch failure doesn't block the sale
+        await loadOfferingsIfNeeded()
+        guard let currentOffering = offerings?.current else {
             throw StoreError.noOfferings
         }
         
