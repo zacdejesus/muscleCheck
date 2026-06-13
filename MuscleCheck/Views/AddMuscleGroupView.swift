@@ -14,6 +14,7 @@ struct AddMuscleGroupView: View {
     @State private var muscleName: String = ""
     @State private var selectedCategory: ActivityCategory = .gym
     @State private var selectedIcon: String = ActivityCategory.gym.defaultIcon
+    @State private var errorMessage: String?
 
     private let columns = Array(repeating: GridItem(.flexible()), count: 6)
 
@@ -60,6 +61,14 @@ struct AddMuscleGroupView: View {
                     }
                     .padding(.vertical, 4)
                 }
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .font(.subheadline)
+                            .foregroundStyle(.red)
+                    }
+                }
             }
             .navigationTitle("add_exercise")
             .onChange(of: selectedCategory) { _, newCategory in
@@ -68,14 +77,7 @@ struct AddMuscleGroupView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("save") {
-                        guard !muscleName.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-                        let entry = MuscleEntry(
-                            name: muscleName,
-                            category: selectedCategory.rawValue,
-                            icon: selectedIcon
-                        )
-                        context.insert(entry)
-                        dismiss()
+                        save()
                     }
                 }
                 ToolbarItem(placement: .cancellationAction) {
@@ -85,6 +87,22 @@ struct AddMuscleGroupView: View {
                 }
             }
             .tint(Color("PrimaryButtonColor"))
+        }
+    }
+
+    /// Adds the entry through the validated manager: trims, rejects duplicates with a
+    /// localized message instead of silently creating a same-named row (which broke the
+    /// home list's identity and made rows glitch).
+    private func save() {
+        do {
+            try MuscleEntryManager(context: context).addEntry(
+                name: muscleName,
+                category: selectedCategory.rawValue,
+                icon: selectedIcon
+            )
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 }

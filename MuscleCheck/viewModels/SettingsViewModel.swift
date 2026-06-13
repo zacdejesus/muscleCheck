@@ -175,7 +175,8 @@ final class SettingsViewModel: ObservableObject {
             addedPresets.insert(category.rawValue)
             UserDefaultsManager.shared.addedActivityPresets = Array(addedPresets)
         } catch {
-            assertionFailure("Failed to add preset entries: \(error)")
+            // Don't crash on a preset insert failure — it's recoverable (the user can retry).
+            print("Failed to add preset entries: \(error)")
         }
     }
 }
