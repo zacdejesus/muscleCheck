@@ -17,69 +17,70 @@ struct HistoryViewModelTests {
         return entry
     }
 
+    private func date(_ y: Int, _ m: Int, _ d: Int) -> Date {
+        Date.appCalendar.date(from: DateComponents(year: y, month: m, day: d, hour: 12))!
+    }
+
+    // MARK: - Selection
+
     @Test
-    func testGroupedEntriesIncludesEntriesInSelectedWeek() {
-        let calendar = Calendar(identifier: .gregorian)
-        let monday = calendar.date(from: DateComponents(year: 2025, month: 6, day: 9))!
-        let tuesday = calendar.date(byAdding: .day, value: 1, to: monday)!
-
-        let entry1 = makeEntry(name: "Pecho", dates: [monday])
-        let entry2 = makeEntry(name: "Espalda", dates: [tuesday])
-        let entry3 = makeEntry(name: "Piernas", dates: [])
-
-        let viewModel = HistoryViewModel(entries: [entry1, entry2, entry3])
-        viewModel.selectedDate = monday
-
-        let result = viewModel.groupedEntries
-
-        #expect(result["Pecho"]?.count == 1)
-        #expect(result["Espalda"]?.count == 1)
-        #expect(result["Piernas"] == nil)
+    func testSelectSetsSelectedDate() {
+        let vm = HistoryViewModel(entries: [])
+        let day = date(2026, 6, 10)
+        vm.select(day)
+        #expect(vm.selectedDate == day)
     }
 
     @Test
-    func testGroupedEntriesExcludesEntriesOutsideSelectedWeek() {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.firstWeekday = 2
-        let monday = calendar.date(from: DateComponents(year: 2025, month: 6, day: 8))!
-        let nextWeek = calendar.date(byAdding: .day, value: 7, to: monday)!
+    func testSelectingDayInAnotherMonthPagesToIt() {
+        let vm = HistoryViewModel(entries: [])
+        vm.displayedMonth = date(2026, 6, 15)
+        let julyDay = date(2026, 7, 2)
+        vm.select(julyDay)
+        #expect(Date.appCalendar.isDate(vm.displayedMonth, equalTo: julyDay, toGranularity: .month))
+    }
 
-        let entry = makeEntry(name: "Pecho", dates: [nextWeek])
-        let viewModel = HistoryViewModel(entries: [entry])
-        viewModel.selectedDate = monday
+    // MARK: - Month paging
 
-        #expect(viewModel.groupedEntries.isEmpty)
+    @Test
+    func testGoToNextAndPreviousMonthShiftByOneMonth() {
+        let vm = HistoryViewModel(entries: [])
+        vm.displayedMonth = date(2026, 6, 15)
+        vm.goToNextMonth()
+        #expect(Date.appCalendar.component(.month, from: vm.displayedMonth) == 7)
+        vm.goToPreviousMonth()
+        vm.goToPreviousMonth()
+        #expect(Date.appCalendar.component(.month, from: vm.displayedMonth) == 5)
     }
 
     @Test
-    func testGroupedEntriesGroupsByMuscleName() {
-        let calendar = Calendar(identifier: .gregorian)
-        let monday = calendar.date(from: DateComponents(year: 2025, month: 6, day: 9))!
+    func testPagingDoesNotMoveSelection() {
+        let vm = HistoryViewModel(entries: [])
+        let selected = date(2026, 6, 10)
+        vm.selectedDate = selected
+        vm.displayedMonth = date(2026, 6, 1)
+        vm.goToNextMonth()
+        #expect(vm.selectedDate == selected) // chevrons don't move the highlighted week
+    }
 
-        let entry1 = makeEntry(name: "Pecho", dates: [monday])
-        let entry2 = makeEntry(name: "Pecho", dates: [monday])
-        let entry3 = makeEntry(name: "Espalda", dates: [monday])
+    // MARK: - Derived data
 
-        let viewModel = HistoryViewModel(entries: [entry1, entry2, entry3])
-        viewModel.selectedDate = monday
-
-        let result = viewModel.groupedEntries
-
-        #expect(result["Pecho"]?.count == 2)
-        #expect(result["Espalda"]?.count == 1)
+    @Test
+    func testWeekBreakdownReflectsSelectedDate() {
+        let entry = makeEntry(name: "Pecho", dates: [date(2026, 6, 8)])
+        let vm = HistoryViewModel(entries: [entry])
+        vm.select(date(2026, 6, 10)) // same week as June 8
+        #expect(vm.weekBreakdown.count == 1)
+        #expect(vm.weekBreakdown.first?.activities.first?.entry.name == "Pecho")
     }
 
     @Test
-    func testGroupedEntriesHandlesMultipleSessions() {
-        let calendar = Calendar(identifier: .gregorian)
-        let monday = calendar.date(from: DateComponents(year: 2025, month: 6, day: 9))!
-        let nextWeek = calendar.date(byAdding: .day, value: 7, to: monday)!
-
-        let entry = makeEntry(name: "Pecho", dates: [monday, nextWeek])
-        let viewModel = HistoryViewModel(entries: [entry])
-        viewModel.selectedDate = monday
-
-        // Entry is included once even though it has a session in another week
-        #expect(viewModel.groupedEntries["Pecho"]?.count == 1)
+    func testMonthTrainedCountReflectsDisplayedMonth() {
+        let entry = makeEntry(name: "Pecho", dates: [date(2026, 6, 1), date(2026, 6, 15), date(2026, 5, 20)])
+        let vm = HistoryViewModel(entries: [entry])
+        vm.displayedMonth = date(2026, 6, 10)
+        #expect(vm.monthTrainedCount == 2) // only June days
+        vm.displayedMonth = date(2026, 5, 10)
+        #expect(vm.monthTrainedCount == 1)
     }
 }

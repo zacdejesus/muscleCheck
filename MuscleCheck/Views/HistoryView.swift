@@ -2,50 +2,49 @@ import SwiftUI
 import SwiftData
 
 struct HistoryView: View {
-  @State private var showPicker = false
-  
   let entries: [MuscleEntry]
   @StateObject private var viewModel: HistoryViewModel
-    
+
   init(entries: [MuscleEntry]) {
     self.entries = entries
     _viewModel = StateObject(wrappedValue: HistoryViewModel.create(with: entries))
   }
-  
+
   var body: some View {
-    List {
-      ForEach(viewModel.groupedEntries.keys.sorted(), id: \.self) { muscleName in
-        Section(header: Text(muscleName).font(.headline)) {
-          ForEach(viewModel.groupedEntries[muscleName] ?? [], id: \.self) { entry in
-            Text(entry.dateCreated.formatted(date: .abbreviated, time: .omitted))
-              .font(.subheadline)
-              .foregroundColor(.primary)
-          }
-        }
-      }
-    }
-    .navigationBarTitleDisplayMode(.inline)
-    .toolbar {
-      ToolbarItem(placement: .principal) {
-        Button {
-          showPicker = true
-        } label: {
-          Text("history_week_range \(viewModel.weekOf(viewModel.selectedDate)) \(viewModel.weekRangeString(for: viewModel.selectedDate))")
-            .font(.subheadline.bold())
-            .foregroundColor(Color("PrimaryButtonColor"))
-        }
-      }
-    }
-    .sheet(isPresented: $showPicker) {
-      VStack {
-        DatePicker("PROMPT_SELECT_WEEK", selection: $viewModel.selectedDate, displayedComponents: .date)
-          .datePickerStyle(.graphical)
-          .padding()
-        Button("Done") {
-          showPicker = false
-        }
+    ScrollView {
+      VStack(alignment: .leading, spacing: 20) {
+        // Month summary caption (per-month trained-day count — not shown in Stats/Streak)
+        Text("history_month_summary \(viewModel.monthTrainedCount) \(viewModel.monthName)")
+          .font(.subheadline)
+          .foregroundStyle(.secondary)
+          .padding(.horizontal)
+
+        // Hero calendar
+        MonthCalendarView(
+          weeks: viewModel.weeks,
+          monthTitle: viewModel.monthTitle,
+          intensityByDay: viewModel.intensityByDay,
+          selectedDate: viewModel.selectedDate,
+          onPrev: { withAnimation { viewModel.goToPreviousMonth() } },
+          onNext: { withAnimation { viewModel.goToNextMonth() } },
+          onSelect: { day in withAnimation { viewModel.select(day) } }
+        )
         .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .padding(.horizontal)
+
+        // Selected week, day by day
+        WeekDetailSection(days: viewModel.weekBreakdown)
       }
+      .padding(.vertical)
+    }
+    .background(Color(.systemGroupedBackground))
+    .navigationTitle("workout_history")
+    .navigationBarTitleDisplayMode(.large)
+    .onChange(of: entries) { _, newEntries in
+      viewModel.entries = newEntries
     }
   }
 }
