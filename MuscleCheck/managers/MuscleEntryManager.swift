@@ -18,9 +18,9 @@ enum MuscleEntryError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .duplicateEntry(let name):
-            return "An entry with name '\(name)' already exists"
+            return String(format: NSLocalizedString("error_duplicate_entry %@", comment: ""), name)
         case .invalidName:
-            return "Entry name cannot be empty or contain only whitespace"
+            return NSLocalizedString("error_invalid_name", comment: "")
         case .invalidWeekOrYear:
             return "Week must be between 1-53 and year must be positive"
         case .entryNotFound:

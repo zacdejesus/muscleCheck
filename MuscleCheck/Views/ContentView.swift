@@ -45,7 +45,7 @@ struct ContentView: View {
           } else if viewModel.groupedCurrentWeekEntries.count == 1 {
             // Single category — no section headers for clean look
             let group = viewModel.groupedCurrentWeekEntries[0]
-            ForEach(group.entries, id: \.name) { entry in
+            ForEach(group.entries) { entry in
               MuscleEntryRowView(
                 entry: entry,
                 onTap: { _ in viewModel.toggleActivity(for: entry) },
@@ -59,7 +59,7 @@ struct ContentView: View {
             // Multiple categories — show section headers
             ForEach(viewModel.groupedCurrentWeekEntries, id: \.category) { group in
               Section {
-                ForEach(group.entries, id: \.name) { entry in
+                ForEach(group.entries) { entry in
                   MuscleEntryRowView(
                     entry: entry,
                     onTap: { _ in viewModel.toggleActivity(for: entry) },

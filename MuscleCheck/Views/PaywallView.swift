@@ -33,14 +33,9 @@ struct PaywallView: View {
                     }
                     .padding(.top, 32)
                     
-                    // Features list
-                    VStack(alignment: .leading, spacing: 16) {
-                        FeatureRow(icon: "brain.head.profile", text: NSLocalizedString("paywall_feature_ai", comment: ""))
-                        FeatureRow(icon: "chart.bar.fill", text: NSLocalizedString("paywall_feature_stats", comment: ""))
-                        FeatureRow(icon: "bell.badge.fill", text: NSLocalizedString("paywall_feature_notifications", comment: ""))
-                        FeatureRow(icon: "paintbrush.fill", text: NSLocalizedString("paywall_feature_themes", comment: ""))
-                    }
-                    .padding(.horizontal, 24)
+                    // Free vs Pro comparison — so the value of upgrading is explicit.
+                    PlanComparisonView()
+                        .padding(.horizontal, 24)
                     
                     // Package selection
                     VStack(spacing: 12) {
@@ -136,18 +131,54 @@ struct PaywallView: View {
 
 // MARK: - Supporting Views
 
-private struct FeatureRow: View {
-    let icon: String
-    let text: String
-    
+private struct PlanComparisonView: View {
+    private struct Row: Identifiable {
+        let id = UUID()
+        let labelKey: String
+        let free: Bool
+    }
+
+    // Free rows first, then Pro-only. Mirrors the monetization table in the project doc.
+    private let rows: [Row] = [
+        Row(labelKey: "paywall_compare_checklist", free: true),
+        Row(labelKey: "paywall_compare_ai", free: true),
+        Row(labelKey: "paywall_compare_history", free: true),
+        Row(labelKey: "paywall_compare_healthkit", free: false),
+        Row(labelKey: "paywall_compare_stats", free: false),
+        Row(labelKey: "paywall_compare_notifications", free: false),
+        Row(labelKey: "paywall_compare_photos", free: false)
+    ]
+
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .foregroundColor(Color("PrimaryButtonColor"))
-                .frame(width: 24)
-            Text(text)
-                .font(.body)
+        VStack(spacing: 0) {
+            HStack {
+                Spacer()
+                Text("paywall_compare_free").frame(width: 60)
+                Text("paywall_compare_pro").frame(width: 60)
+                    .foregroundColor(Color("PrimaryButtonColor"))
+            }
+            .font(.caption.bold())
+            .padding(.bottom, 4)
+
+            ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+                HStack {
+                    Text(LocalizedStringKey(row.labelKey))
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    cell(on: row.free, accent: false).frame(width: 60)
+                    cell(on: true, accent: true).frame(width: 60)
+                }
+                .padding(.vertical, 10)
+                if index < rows.count - 1 { Divider() }
+            }
         }
+    }
+
+    @ViewBuilder
+    private func cell(on: Bool, accent: Bool) -> some View {
+        Image(systemName: on ? "checkmark" : "minus")
+            .font(.subheadline.bold())
+            .foregroundStyle(on ? (accent ? Color("PrimaryButtonColor") : Color.secondary) : Color.secondary.opacity(0.4))
     }
 }
 
