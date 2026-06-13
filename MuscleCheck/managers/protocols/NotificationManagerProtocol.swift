@@ -18,7 +18,8 @@ protocol NotificationManagerProtocol: AnyObject {
     /// Schedules (or replaces) the daily reminder at the given hour/minute.
     func scheduleDailyReminder(hour: Int, minute: Int) async
 
-    /// Schedules one-time inactivity reminders for muscles not trained in 3+ days.
+    /// Schedules a single one-time reminder summarizing activities not trained in 3+ days.
+    /// Never-trained entries are ignored.
     func scheduleInactivityReminders(for entries: [MuscleEntry]) async
 
     /// Cancels all pending notifications.

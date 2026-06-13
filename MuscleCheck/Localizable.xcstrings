@@ -1431,6 +1431,29 @@
         }
       }
     },
+    "notification_inactivity_body_multiple" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d activities are waiting for you: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d actividades te están esperando: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d activités t'attendent : %@"
+          }
+        }
+      }
+    },
     "notification_inactivity_title" : {
       "extractionState" : "manual",
       "localizations" : {

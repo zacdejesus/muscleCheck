@@ -102,4 +102,65 @@ struct NotificationManagerTests {
         let entry3Days = makeEntry(name: "Hombros", daysAgo: [3])
         #expect(NotificationManager.daysInactive(for: entry3Days) >= 3)
     }
+
+    // MARK: - inactiveEntries (summary eligibility)
+
+    @Test
+    func testInactiveEntriesExcludesNeverTrained() {
+        // Regression: never-trained presets used to fire one notification each (2.1.0 spam)
+        let neverTrained = MuscleEntry(name: "Yoga")
+        let trained = makeEntry(name: "Pecho", daysAgo: [5])
+        let result = NotificationManager.inactiveEntries(from: [neverTrained, trained])
+        #expect(result.count == 1)
+        #expect(result.first?.entry.name == "Pecho")
+    }
+
+    @Test
+    func testInactiveEntriesExcludesRecentlyTrained() {
+        let recent = makeEntry(name: "Pecho", daysAgo: [1])
+        let result = NotificationManager.inactiveEntries(from: [recent])
+        #expect(result.isEmpty)
+    }
+
+    @Test
+    func testInactiveEntriesSortedMostInactiveFirst() {
+        let a = makeEntry(name: "Pecho", daysAgo: [4])
+        let b = makeEntry(name: "Espalda", daysAgo: [9])
+        let c = makeEntry(name: "Piernas", daysAgo: [6])
+        let result = NotificationManager.inactiveEntries(from: [a, b, c])
+        #expect(result.map { $0.entry.name } == ["Espalda", "Piernas", "Pecho"])
+    }
+
+    // MARK: - inactivityBody (single summary notification)
+
+    @Test
+    func testInactivityBodyNilWhenNothingEligible() {
+        #expect(NotificationManager.inactivityBody(for: []) == nil)
+    }
+
+    @Test
+    func testInactivityBodySingleMentionsNameAndDays() {
+        let inactive = NotificationManager.inactiveEntries(from: [makeEntry(name: "Espalda", daysAgo: [5])])
+        let body = NotificationManager.inactivityBody(for: inactive)
+        #expect(body?.contains("Espalda") == true)
+        #expect(body?.contains("5") == true)
+    }
+
+    @Test
+    func testInactivityBodyMultipleMentionsCountAndCapsNamesAtThree() {
+        let entries = [
+            makeEntry(name: "Pecho", daysAgo: [9]),
+            makeEntry(name: "Espalda", daysAgo: [8]),
+            makeEntry(name: "Piernas", daysAgo: [7]),
+            makeEntry(name: "Hombros", daysAgo: [6]),
+        ]
+        let inactive = NotificationManager.inactiveEntries(from: entries)
+        let body = NotificationManager.inactivityBody(for: inactive)
+        #expect(body?.contains("4") == true)
+        #expect(body?.contains("Pecho") == true)
+        #expect(body?.contains("Espalda") == true)
+        #expect(body?.contains("Piernas") == true)
+        #expect(body?.contains("Hombros") == false) // capped at 3 names
+        #expect(body?.contains("…") == true)
+    }
 }

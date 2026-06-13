@@ -120,7 +120,9 @@ final class SettingsViewModel: ObservableObject {
                 minute: UserDefaultsManager.shared.reminderMinute
             )
         } else {
-            NotificationManager.shared.cancelDailyReminder()
+            // Toggle off must silence everything: the pending inactivity one-shot
+            // would otherwise still fire (it's only rescheduled while enabled).
+            NotificationManager.shared.cancelAllNotifications()
         }
     }
     

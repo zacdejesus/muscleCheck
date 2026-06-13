@@ -44,8 +44,9 @@ final class StoreManager: ObservableObject, @MainActor StoreManagerProtocol {
     // MARK: - StoreManagerProtocol
     
     func purchase(_ packageType: PackageType) async throws {
-        guard let offerings = offerings,
-              let currentOffering = offerings.current else {
+        // Last-chance fetch so a transient launch failure doesn't block the sale
+        await loadOfferingsIfNeeded()
+        guard let currentOffering = offerings?.current else {
             throw StoreError.noOfferings
         }
         
@@ -65,39 +66,39 @@ final class StoreManager: ObservableObject, @MainActor StoreManagerProtocol {
         
         isLoading = true
         defer { isLoading = false }
-        
-        do {
-            let result = try await Purchases.shared.purchase(package: selectedPackage)
-            if !result.userCancelled {
-                self.isPro = result.customerInfo.entitlements[Self.entitlementID]?.isActive == true
-            } else {
-                throw StoreError.userCancelled
-            }
-        } catch let error as StoreError {
-            throw error
-        } catch {
-            throw StoreError.purchaseFailed
+
+        // Rethrow RevenueCat errors as-is: their localizedDescription says *why*
+        // (product not available, App Store connection, etc.). Mapping everything
+        // to a generic StoreError made production failures undiagnosable.
+        let result = try await Purchases.shared.purchase(package: selectedPackage)
+        if result.userCancelled {
+            throw StoreError.userCancelled
         }
+        self.isPro = result.customerInfo.entitlements[Self.entitlementID]?.isActive == true
     }
     
     func restorePurchases() async throws {
         isLoading = true
         defer { isLoading = false }
-        
-        do {
-            let customerInfo = try await Purchases.shared.restorePurchases()
-            self.isPro = customerInfo.entitlements[Self.entitlementID]?.isActive == true
-        } catch {
-            throw StoreError.restoreFailed
-        }
+
+        let customerInfo = try await Purchases.shared.restorePurchases()
+        self.isPro = customerInfo.entitlements[Self.entitlementID]?.isActive == true
     }
-    
+
     func loadOfferings() async {
         do {
             self.offerings = try await Purchases.shared.offerings()
         } catch {
             print("Failed to load offerings: \(error)")
         }
+    }
+
+    /// Retries the offerings fetch if the launch-time load failed (no network,
+    /// products not yet available, etc.). Called when the paywall opens so it
+    /// doesn't stay dead for the rest of the session.
+    func loadOfferingsIfNeeded() async {
+        guard offerings == nil else { return }
+        await loadOfferings()
     }
     
     // MARK: - Private
