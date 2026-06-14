@@ -708,6 +708,7 @@
       }
     },
     "Done" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -749,6 +750,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erreur"
+          }
+        }
+      }
+    },
+    "error_duplicate_entry %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An activity named \"%@\" already exists."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya existe una actividad llamada \"%@\"."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une activité nommée « %@ » existe déjà."
           }
         }
       }
@@ -795,6 +819,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Impossible de générer la suggestion. Réessaie."
+          }
+        }
+      }
+    },
+    "error_invalid_name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The name can't be empty."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El nombre no puede estar vacío."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le nom ne peut pas être vide."
           }
         }
       }
@@ -1031,28 +1078,6 @@
         }
       }
     },
-    "history_week_range %lld %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Week %lld: %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Semana %lld: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Semaine %lld : %@"
-          }
-        }
-      }
-    },
     "history_month_summary %lld %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1118,6 +1143,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun entraînement cette semaine"
+          }
+        }
+      }
+    },
+    "history_week_range %lld %@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Week %lld: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semana %lld: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semaine %lld : %@"
           }
         }
       }
@@ -1594,96 +1642,216 @@
         }
       }
     },
-    "error_duplicate_entry %@" : {
+    "paywall_compare_ai" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "An activity named \"%@\" already exists." } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ya existe una actividad llamada \"%@\"." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Une activité nommée « %@ » existe déjà." } }
-      }
-    },
-    "error_invalid_name" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The name can't be empty." } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "El nombre no puede estar vacío." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Le nom ne peut pas être vide." } }
-      }
-    },
-    "paywall_compare_free" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Free" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Gratis" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Gratuit" } }
-      }
-    },
-    "paywall_compare_pro" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pro" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pro" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pro" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI suggested day"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día sugerido por IA"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jour suggéré par l'IA"
+          }
+        }
       }
     },
     "paywall_compare_checklist" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Weekly checklist" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Checklist semanal" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Liste hebdomadaire" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly checklist"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checklist semanal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liste hebdomadaire"
+          }
+        }
       }
     },
-    "paywall_compare_ai" : {
+    "paywall_compare_free" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "AI suggested day" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Día sugerido por IA" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Jour suggéré par l'IA" } }
-      }
-    },
-    "paywall_compare_history" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Streaks & history" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Rachas e historial" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Séries et historique" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gratis"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gratuit"
+          }
+        }
       }
     },
     "paywall_compare_healthkit" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Auto HealthKit sync" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sincronización con HealthKit" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Synchro HealthKit auto" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto HealthKit sync"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronización con HealthKit"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchro HealthKit auto"
+          }
+        }
       }
     },
-    "paywall_compare_stats" : {
+    "paywall_compare_history" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Advanced statistics" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Estadísticas avanzadas" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Statistiques avancées" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Streaks & history"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rachas e historial"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Séries et historique"
+          }
+        }
       }
     },
     "paywall_compare_notifications" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Smart notifications" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Notificaciones inteligentes" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Notifications intelligentes" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Smart notifications"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificaciones inteligentes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications intelligentes"
+          }
+        }
       }
     },
     "paywall_compare_photos" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Progress photos" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Fotos de progreso" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Photos de progrès" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progress photos"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos de progreso"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos de progrès"
+          }
+        }
+      }
+    },
+    "paywall_compare_pro" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        }
+      }
+    },
+    "paywall_compare_stats" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advanced statistics"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estadísticas avanzadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statistiques avancées"
+          }
+        }
       }
     },
     "paywall_feature_ai" : {
       "comment" : "Feature description in the paywall view.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "en" : {
@@ -1708,6 +1876,7 @@
     },
     "paywall_feature_notifications" : {
       "comment" : "Feature description for the \"Notifications\" feature in the paywall.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "en" : {
@@ -1732,6 +1901,7 @@
     },
     "paywall_feature_stats" : {
       "comment" : "Feature description in the paywall, related to viewing and managing statistics.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "en" : {
@@ -1756,6 +1926,7 @@
     },
     "paywall_feature_themes" : {
       "comment" : "Feature description in the paywall view, related to changing app themes.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "en" : {
@@ -2341,6 +2512,7 @@
     },
     "PROMPT_SELECT_WEEK" : {
       "comment" : "A prompt for selecting a week.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "en" : {
