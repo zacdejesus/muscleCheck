@@ -138,14 +138,15 @@ private struct PlanComparisonView: View {
         let free: Bool
     }
 
-    // Free rows first, then Pro-only. Mirrors the monetization table in the project doc.
+    // Free rows first, then Pro-only. Reflects what the app actually gates today:
+    // stats and notifications ship free; only HealthKit sync and progress photos are Pro.
     private let rows: [Row] = [
         Row(labelKey: "paywall_compare_checklist", free: true),
         Row(labelKey: "paywall_compare_ai", free: true),
         Row(labelKey: "paywall_compare_history", free: true),
+        Row(labelKey: "paywall_compare_stats", free: true),
+        Row(labelKey: "paywall_compare_notifications", free: true),
         Row(labelKey: "paywall_compare_healthkit", free: false),
-        Row(labelKey: "paywall_compare_stats", free: false),
-        Row(labelKey: "paywall_compare_notifications", free: false),
         Row(labelKey: "paywall_compare_photos", free: false)
     ]
 
