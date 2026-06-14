@@ -17,7 +17,7 @@ struct MuscleCheckApp: App {
   
   init() {
     setNavalBarAppearance()
-    
+
     FirebaseApp.configure()
     StoreManager.shared.configure()
     MuscleCheckShortcuts.updateAppShortcutParameters()
@@ -25,7 +25,14 @@ struct MuscleCheckApp: App {
   
   private func setNavalBarAppearance() {
     let appearance = UINavigationBarAppearance()
-    appearance.configureWithOpaqueBackground()
+    // iOS 26's Liquid Glass nav bar suppresses the large title on pushed screens
+    // when scrollEdgeAppearance is opaque (see HistoryView). Use the default glass
+    // background there so large titles render; keep the opaque look on iOS < 26.
+    if #available(iOS 26.0, *) {
+      appearance.configureWithDefaultBackground()
+    } else {
+      appearance.configureWithOpaqueBackground()
+    }
     appearance.titleTextAttributes = [.foregroundColor: UIColor(Color("PrimaryButtonColor"))]
     appearance.largeTitleTextAttributes = [.foregroundColor: UIColor(Color("PrimaryButtonColor"))]
     appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor(Color("PrimaryButtonColor"))]
