@@ -37,8 +37,10 @@ Ya tiene FoundationModels integrado. Maxine tiene IA básica. Ir mucho más lejo
 - **Recomendación diaria push** — "Hoy te conviene piernas, llevas 5 días sin entrenarlas"
 - **Coach IA: día sugerido** — el botón de IA sugiere un *par muscular coherente* del día con ejercicios de ejemplo, en vez de un solo músculo. **Free, on-device, no tilda nada** (solo guía). Diseño completo en **Feature 12** del roadmap.
 - **Detección de desbalances** — "Entrenas pecho 3x más que espalda, cuidado con la postura"
-- **Streaks y motivación** — "Llevas 4 semanas entrenando 4+ días, nuevo récord" ✅
+- **Streaks y motivación** — racha **semanal** (semanas consecutivas con ≥1 entreno; el descanso NO la rompe, alineado con el modelo de checklist semanal). El cálculo viejo era diario-consecutivo y chocaba con la app (vivía en 0). La card muestra la unidad ("semanas seguidas"). Gracia para la semana en curso: solo cae a 0 si esta semana **y** la anterior están vacías. ✅
 - **Plan semanal generado** — lunes pecho, martes espalda... basado en historial real
+
+> **Idea de gamificación/retención (sin construir):** premiar rachas largas con Pro — p.ej. al llegar a **12 semanas** de racha, regalar **1 mes de Pro gratis**. Refuerza el hábito y es un canal de conversión a Pro de bajo costo (RevenueCat soporta promotional/grant de entitlements). Definir: ¿una sola vez o recurrente?, ¿se resetea el "cobro" del premio si se corta la racha?
 
 **Mensaje:** "Tu entrenador que te conoce, no una planilla"
 
