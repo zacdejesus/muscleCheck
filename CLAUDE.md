@@ -260,6 +260,46 @@ Validar `groupIndex` en rango y `blocks.count == 2`; descartar/recortar lo invá
 
 ---
 
+## Backlog de feedback de usuarios (EN EVALUACIÓN — no construir aún)
+
+> Recomendaciones que salieron del review de la tester (Ro) y no se aplicaron en el release 2.1.x. Quedan acá registradas con su trade-off para decidir más adelante. **No son features aprobados** — varios tensionan el posicionamiento core. Lo que sí se aplicó de ese review: fix de sensibilidad de tap ("se borra todo"), validación de add-group con error inline, y comparación Free vs Pro en el paywall.
+
+### 🤔 Feature 13: Logging detallado (sets / reps / peso por set) — EN EVALUACIÓN
+La tester pidió poder loggear cada set/rep/peso, estilo planilla.
+
+**Tensión estratégica (importante):** esto es **exactamente lo que NO somos**. El Pilar 1 ("zero-effort tracking", "la app para gente que odia logear") se define *en oposición* a Maxine/planillas. Feature 11 (peso por grupo, opcional, un valor por sesión) ya es el límite deliberado de cuánto detalle pedimos sin romper el flujo "2 segundos".
+
+**Si se hace, cómo:** solo como **modo avanzado opcional**, off por default, jamás en el camino feliz del check. Gatear detrás de una preferencia explícita ("modo detallado") para no contaminar la UX de quien solo quiere tildar. Construir **solo si varios usuarios lo piden** — una sola voz no justifica mover el posicionamiento.
+
+**Recomendación:** diferir hasta tener señal de demanda real. No es el diferenciador; es competir en el terreno de Maxine.
+
+### 🤔 Feature 14: "Iniciar entrenamiento" — sesión en vivo (estilo Strava/Adidas/Garmin) — EN EVALUACIÓN
+Un botón "empezar entreno" que abre una sesión activa (timer, en curso, "finalizar").
+
+**Tensión:** introduce el concepto de **sesión cronometrada** en una app cuyo modelo mental es un **checklist semanal**, no un tracker de actividad en tiempo real. Acopla con HealthKit (Feature 9 ya detecta workouts post-hoc) — pisarse con eso sería confuso.
+
+**Valor potencial:** engagement/ritual; algunos usuarios quieren el "modo gym" activo. Pero es un cambio de paradigma, no un add-on.
+
+**Recomendación:** diferir. Si se explora, primero validar que no canibaliza la simplicidad del check. Mantener separado del flujo actual.
+
+### 🤔 Feature 15: Perfil con peso corporal + altura — EN EVALUACIÓN
+Métricas del usuario (peso corporal, altura) en el perfil.
+
+**Trade-off:** bajo costo de implementación (campos en Settings/perfil), pero **sin uso claro hoy** — no alimenta ninguna feature. Sin un consumidor (IMC, evolución de peso corporal en Stats, contexto para el AI Coach) es data muerta.
+
+**Recomendación:** construir **solo junto a la feature que la consuma** (p.ej. tracking de peso corporal en el tiempo, o input para recomendaciones). No agregar campos huérfanos. Nota: HealthKit ya puede ser la fuente de peso/altura si en algún momento se necesita.
+
+### 🤔 Feature 16: Filtro día a día en el Historial — SEGUIMIENTO MENOR
+Ver el detalle de un día específico (no solo la semana).
+
+**Estado:** el rediseño del calendario (Feature de historial, PR #20) ya da navegación mensual + detalle **por semana** al tocar un día. Esto sería el incremento natural: tap en un día → detalle solo de ESE día.
+
+**Trade-off:** la decisión de UX consciente fue mostrar la **semana** al tocar (más contenido por tap, resaltado de semana funcional). Pasar a día-único reduce densidad de info. Posible alternativa: mantener semana, pero permitir colapsar a un día.
+
+**Recomendación:** seguimiento de bajo riesgo del calendario ya existente. Evaluar a ojo si la vista semanal se siente suficiente antes de agregar otro nivel.
+
+---
+
 ## Convenciones de Código
 
 - PascalCase para tipos, camelCase para propiedades/métodos
