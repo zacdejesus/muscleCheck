@@ -61,15 +61,17 @@ Ya tiene FoundationModels integrado. Maxine tiene IA básica. Ir mucho más lejo
 
 **Modelo:** Freemium con "AI Pro" via RevenueCat
 
+> **Gateo real hoy (no aspiracional):** solo **HealthKit (detección automática)** y **Progress photos** están detrás de Pro en el código. **Estadísticas y notificaciones shipean gratis** — el paywall (`PlanComparisonView`) ya lo refleja. Los ítems Pro marcados *(planeado/diferido)* todavía no existen. Si en el futuro se decide gatear stats/notifs, hay que tocar `StatsView`/Settings **y** la tabla del paywall **y** esta tabla a la vez.
+
 | Gratis | Pro |
 |--------|-----|
 | Checklist semanal | HealthKit: detección automática |
-| Historial básico | Detección de desbalances |
-| Widget | Estadísticas avanzadas (Swift Charts) |
-| Coach IA: día sugerido + ejercicios (ilimitado) | Notificaciones inteligentes |
-| Categorías + presets básicos | Plan semanal auto-generado |
-| | Progress photos con timeline |
-| | Apple Watch app |
+| Historial (calendario + detalle) | Progress photos con timeline |
+| Widget | Detección de desbalances *(planeado)* |
+| Coach IA: día sugerido + ejercicios (ilimitado) | Plan semanal auto-generado *(planeado)* |
+| Categorías + presets básicos | Apple Watch app *(diferido)* |
+| Estadísticas (Swift Charts) | |
+| Notificaciones / recordatorios | |
 
 **Precios sugeridos:** $1.99/mes · $14.99/año · $29.99 lifetime
 
