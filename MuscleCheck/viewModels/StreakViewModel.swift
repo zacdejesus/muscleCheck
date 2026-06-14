@@ -19,9 +19,9 @@ final class StreakViewModel: ObservableObject {
         lastTrainedDate = StreakCalculator.lastTrainedDate(from: entries)
     }
 
+    /// The weekly streak is 0 exactly when neither this week nor last week has training,
+    /// so a positive current streak means it's alive (drives the 🔥 vs 💤 icon).
     var isStreakAlive: Bool {
-        guard let last = lastTrainedDate else { return false }
-        let calendar = Date.appCalendar
-        return calendar.isDateInToday(last) || calendar.isDateInYesterday(last)
+        currentStreak > 0
     }
 }

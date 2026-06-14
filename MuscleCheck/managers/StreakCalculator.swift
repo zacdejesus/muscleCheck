@@ -28,60 +28,71 @@ struct StreakCalculator {
         return uniqueDays.sorted(by: >)
     }
 
-    /// Current streak: consecutive days trained going backwards from today.
-    static func currentStreak(from entries: [MuscleEntry]) -> Int {
+    /// Start-of-week (Monday) dates that had ≥1 training day. The streak is measured in
+    /// WEEKS, not days, because MuscleCheck is a weekly-cadence app — rest days are part of
+    /// the plan and must not break the streak.
+    static func trainedWeeks(from entries: [MuscleEntry]) -> Set<Date> {
         let calendar = Date.appCalendar
-        let days = uniqueTrainingDays(from: entries)
-        guard !days.isEmpty else { return 0 }
+        var weeks: Set<Date> = []
+        for entry in entries {
+            for session in entry.sessions {
+                if let weekStart = session.date.startOfWeek(using: calendar) {
+                    weeks.insert(calendar.startOfDay(for: weekStart))
+                }
+            }
+        }
+        return weeks
+    }
 
-        // Streak is alive if trained today or yesterday
-        let today = Date()
-        let mostRecent = days[0]
-
-        guard calendar.isDateInToday(mostRecent) ||
-              calendar.isDateInYesterday(mostRecent) else {
+    /// Current streak in consecutive weeks with ≥1 training day, counting back from the
+    /// current week. Stays alive through the in-progress week: it only drops to 0 once BOTH
+    /// this week and last week have no training (the weekly analogue of "today or yesterday").
+    static func currentStreak(from entries: [MuscleEntry], now: Date = Date()) -> Int {
+        let calendar = Date.appCalendar
+        let weeks = trainedWeeks(from: entries)
+        guard !weeks.isEmpty,
+              let thisWeek = now.startOfWeek(using: calendar).map({ calendar.startOfDay(for: $0) }),
+              let lastWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: thisWeek) else {
             return 0
         }
 
-        var streak = 1
-        var previous = mostRecent
-
-        for day in days.dropFirst() {
-            guard let expectedPrev = calendar.date(byAdding: .day, value: -1, to: previous),
-                  calendar.isDate(day, inSameDayAs: expectedPrev) else {
-                break
-            }
-            streak += 1
-            previous = day
+        // The streak ends at this week if trained, else last week (grace), else it's dead.
+        var cursor: Date
+        if weeks.contains(thisWeek) {
+            cursor = thisWeek
+        } else if weeks.contains(lastWeek) {
+            cursor = lastWeek
+        } else {
+            return 0
         }
 
-        _ = today // suppress warning
+        var streak = 0
+        while weeks.contains(cursor) {
+            streak += 1
+            guard let prev = calendar.date(byAdding: .weekOfYear, value: -1, to: cursor) else { break }
+            cursor = calendar.startOfDay(for: prev)
+        }
         return streak
     }
 
-    /// Max streak ever achieved across all training history.
+    /// Longest run of consecutive trained weeks across the whole history.
     static func maxStreak(from entries: [MuscleEntry]) -> Int {
         let calendar = Date.appCalendar
-        let days = uniqueTrainingDays(from: entries)
-        guard !days.isEmpty else { return 0 }
+        let weeks = trainedWeeks(from: entries).sorted()
+        guard !weeks.isEmpty else { return 0 }
 
-        var maxStreak = 1
-        var current = 1
-        var previous = days[0]
-
-        for day in days.dropFirst() {
-            guard let expectedPrev = calendar.date(byAdding: .day, value: -1, to: previous),
-                  calendar.isDate(day, inSameDayAs: expectedPrev) else {
-                current = 1
-                previous = day
-                continue
+        var maxRun = 1
+        var run = 1
+        for i in 1..<weeks.count {
+            if let nextOfPrev = calendar.date(byAdding: .weekOfYear, value: 1, to: weeks[i - 1]),
+               calendar.isDate(calendar.startOfDay(for: nextOfPrev), inSameDayAs: weeks[i]) {
+                run += 1
+                maxRun = max(maxRun, run)
+            } else {
+                run = 1
             }
-            current += 1
-            maxStreak = max(maxStreak, current)
-            previous = day
         }
-
-        return maxStreak
+        return maxRun
     }
 
     /// Last date the user trained, nil if never.
