@@ -84,7 +84,6 @@ struct RoutineSuggestionView: View {
             anotherButton
                 .padding(.horizontal)
                 .padding(.bottom, 8)
-                .background(.bar)
         }
     }
 

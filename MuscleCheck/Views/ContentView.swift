@@ -80,8 +80,8 @@ struct ContentView: View {
         .background(Color(.systemGray6))
         // AI Coach: suggested day. Free + on-device, so no Pro gate — only hidden when
         // Apple Intelligence isn't available (iOS < 26, ineligible hardware, AI off).
-        // Pinned as a bottom bar so the list scrolls underneath and the bottom edge
-        // stays clean (no stray band over the system background).
+        // Pinned to the bottom with a transparent background so the list shows through
+        // (no bar-material band behind the button).
         .safeAreaInset(edge: .bottom) {
           if viewModel.isAppleIntelligenceAvailable() {
             Button {
@@ -103,7 +103,6 @@ struct ContentView: View {
             .tint(Color("PrimaryButtonColor"))
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .background(.bar)
           }
         }
       }
