@@ -17,20 +17,22 @@ import Foundation
 @available(iOS 26, *)
 @Generable
 struct WorkoutSuggestion {
-    @Guide(description: "Etiqueta corta del día, ej. 'Push', 'Pull', 'Piernas'")
+    // Schema field descriptions are kept language-neutral (English). The OUTPUT language
+    // is set by the instructions ("Answer in <lang>"); these only describe the fields.
+    @Guide(description: "Short label for the day, e.g. 'Push', 'Pull', 'Legs'")
     var focus: String
-    @Guide(description: "Exactamente 2 grupos musculares coherentes entre sí para hoy", .count(2))
+    @Guide(description: "Exactly 2 muscle groups that are coherent to train together today", .count(2))
     var blocks: [WorkoutBlock]
-    @Guide(description: "Una frase corta explicando por qué se sugiere este día")
+    @Guide(description: "One short sentence explaining why this day is suggested")
     var rationale: String
 }
 
 @available(iOS 26, *)
 @Generable
 struct WorkoutBlock {
-    @Guide(description: "Índice del grupo muscular elegido, de la lista numerada provista")
+    @Guide(description: "Index of the chosen muscle group, from the numbered list provided")
     var groupIndex: Int
-    @Guide(description: "Tres ejercicios específicos de ese grupo muscular", .count(3))
+    @Guide(description: "Three exercises that specifically target that muscle group", .count(3))
     var exercises: [String]
 }
 

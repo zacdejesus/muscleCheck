@@ -15,10 +15,19 @@ import Foundation
 
 struct LocalizedStrings {
 
+    /// Language the app UI is actually displaying (its active Bundle localization), so the
+    /// AI answers in the SAME language the user sees. We must not use
+    /// `Locale.current.language`, which follows the device region / preferred-language
+    /// order and can diverge from the UI localization (e.g. a per-app language override) —
+    /// that mismatch produced an English UI with Spanish AI output.
+    private static var appLanguage: String? {
+        Bundle.main.preferredLocalizations.first.map { String($0.prefix(2)) }
+    }
+
     /// Coach persona + rules for the day-suggestion feature.
     @available(iOS 26, *)
     static var coachInstructions: Instructions {
-        let lang = Locale.current.language.languageCode?.identifier
+        let lang = appLanguage
         switch lang {
         case "es":
             return Instructions {
@@ -50,7 +59,7 @@ struct LocalizedStrings {
     /// Per-call prompt: just the user's numbered, already-eligible gym groups.
     /// No history — rotation is resolved in code, so the model doesn't need it.
     static func coachPrompt(groups: String) -> String {
-        let lang = Locale.current.language.languageCode?.identifier
+        let lang = appLanguage
         switch lang {
         case "es":
             return """
@@ -76,7 +85,7 @@ struct LocalizedStrings {
     /// Warmup prompt prefix to reduce cold-start latency on first real call.
     @available(iOS 26, *)
     static var promtPrefix: Prompt {
-        let lang = Locale.current.language.languageCode?.identifier
+        let lang = appLanguage
         switch lang {
         case "es":
             return Prompt("Grupos disponibles (elegí por índice): 0=Espalda, 1=Bíceps, 2=Pecho, 3=Tríceps")
