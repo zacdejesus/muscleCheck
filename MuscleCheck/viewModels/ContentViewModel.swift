@@ -261,30 +261,34 @@ final class ContentViewModel: ObservableObject {
     return muscleCheckAI.isAppleIntelligenceAvailable()
   }
 
-  func logHealthKitWorkout(_ workout: HKWorkout) {
+  /// Logs a HealthKit workout against the user-chosen entries. HealthKit only knows the
+  /// activity type (e.g. "strength training"), not which muscles — so the caller picks the
+  /// targets. If `targets` is empty (the category has no entries yet) a generic entry is
+  /// created from the workout as a fallback.
+  func logHealthKitWorkout(_ workout: HKWorkout, to targets: [MuscleEntry]) {
     guard let manager = muscleEntryManager else { return }
 
-    let category = HealthKitManager.mapToCategory(workout.workoutActivityType)
-    let name = HealthKitManager.suggestedName(for: workout)
-    let icon = HealthKitManager.iconForWorkout(workout)
     let workoutDate = workout.startDate
 
     do {
-      let allEntries = try manager.fetchAllEntries()
-      let target: MuscleEntry
-      if let existing = allEntries.first(where: { $0.category == category.rawValue }) {
-        target = existing
-      } else {
+      var entriesToLog = targets
+      if entriesToLog.isEmpty {
+        let category = HealthKitManager.mapToCategory(workout.workoutActivityType)
+        let name = HealthKitManager.suggestedName(for: workout)
+        let icon = HealthKitManager.iconForWorkout(workout)
         try manager.addEntry(name: name, category: category.rawValue, icon: icon)
-        guard let created = try manager.fetchAllEntries().first(where: { $0.name == name }) else { return }
-        target = created
+        guard let created = try manager.fetchAllEntries()
+          .first(where: { $0.name == name && $0.category == category.rawValue }) else { return }
+        entriesToLog = [created]
       }
 
+      for target in entriesToLog {
         target.addSession(workoutDate)
         if Date.appCalendar.isDate(workoutDate, equalTo: Date(), toGranularity: .weekOfYear) {
-        target.isChecked = true
+          target.isChecked = true
+        }
+        try manager.update(target)
       }
-      try manager.update(target)
     } catch {
       return
     }

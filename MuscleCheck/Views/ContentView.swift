@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import SwiftData
+import HealthKit
 
 struct ContentView: View {
   
@@ -24,17 +25,18 @@ struct ContentView: View {
   @State private var showingSettings = false
   @State private var showingStats = false
   @State private var showingProgressPhotos = false
-  
+  @State private var workoutToLog: IdentifiableWorkout?
+
   @Query private var entries: [MuscleEntry]
   
   var body: some View {
     NavigationStack {
       VStack(spacing: 0) {
         StreakCardView(viewModel: streakViewModel)
-
+          Spacer()
         if !healthKitManager.unloggedWorkouts.isEmpty && storeManager.isPro {
           HealthKitSuggestionsView(healthKitManager: healthKitManager) { workout in
-            viewModel.logHealthKitWorkout(workout)
+            selectWorkoutToLog(workout)
           }
           .padding(.top, 4)
         }
@@ -199,6 +201,31 @@ struct ContentView: View {
       .sheet(isPresented: $showingRoutineModal) {
         RoutineSuggestionView(viewModel: viewModel)
       }
+      .sheet(item: $workoutToLog) { item in
+        HealthKitLogSheet(
+          workout: item.workout,
+          candidates: candidates(for: item.workout)
+        ) { selected in
+          viewModel.logHealthKitWorkout(item.workout, to: selected)
+          healthKitManager.dismissWorkout(item.workout)
+        }
+      }
+    }
+  }
+
+  /// Entries in the same category as the workout — the picker's options.
+  private func candidates(for workout: HKWorkout) -> [MuscleEntry] {
+    let category = HealthKitManager.mapToCategory(workout.workoutActivityType).rawValue
+    return entries.filter { $0.category == category }
+  }
+
+  private func selectWorkoutToLog(_ workout: HKWorkout) {
+    // No entry in this category yet → skip the picker; the VM creates a generic one.
+    if candidates(for: workout).isEmpty {
+      viewModel.logHealthKitWorkout(workout, to: [])
+      healthKitManager.dismissWorkout(workout)
+    } else {
+      workoutToLog = IdentifiableWorkout(workout: workout)
     }
   }
 
@@ -215,6 +242,12 @@ struct ContentView: View {
       Text(categoryRaw)
     }
   }
+}
+
+/// Wraps an HKWorkout so it can drive `.sheet(item:)` (HKWorkout isn't Identifiable).
+struct IdentifiableWorkout: Identifiable {
+  let workout: HKWorkout
+  var id: UUID { workout.uuid }
 }
 
 extension MuscleEntry {

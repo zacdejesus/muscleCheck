@@ -10,7 +10,8 @@ import HealthKit
 
 struct HealthKitSuggestionsView: View {
     @ObservedObject var healthKitManager: HealthKitManager
-    let onLog: (HKWorkout) -> Void
+    /// Tapping a workout's log button hands it to the parent, which opens the muscle picker.
+    let onSelect: (HKWorkout) -> Void
 
     private static let timeFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -67,8 +68,7 @@ struct HealthKitSuggestionsView: View {
             Spacer()
 
             Button {
-                onLog(workout)
-                healthKitManager.dismissWorkout(workout)
+                onSelect(workout)
             } label: {
                 Text("healthkit_log_workout")
                     .font(.caption.bold())
