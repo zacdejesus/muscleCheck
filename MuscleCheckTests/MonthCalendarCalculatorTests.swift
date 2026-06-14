@@ -181,6 +181,36 @@ struct MonthCalendarCalculatorTests {
         #expect(result.count == 2)
     }
 
+    // MARK: - weekRow (collapsed calendar)
+
+    @Test
+    func testWeekRowHasSevenMondayFirstDays() {
+        let row = MonthCalendarCalculator.weekRow(forWeekContaining: date(2026, 6, 10)) // Wed
+        let cal = Date.appCalendar
+        #expect(row.count == 7)
+        #expect(cal.component(.weekday, from: row[0].date) == 2)            // Monday
+        #expect(cal.component(.day, from: row[0].date) == 8)                // Mon June 8
+        #expect(cal.component(.day, from: row[6].date) == 14)              // Sun June 14
+    }
+
+    @Test
+    func testWeekRowAllInMonthForMidMonthWeek() {
+        let row = MonthCalendarCalculator.weekRow(forWeekContaining: date(2026, 6, 10))
+        #expect(row.allSatisfy { $0.isInDisplayedMonth })
+    }
+
+    @Test
+    func testWeekRowDimsSpilledDaysAcrossMonthBoundary() {
+        // Week of July 1 2026 (Wed) = Mon June 29 … Sun July 5; June days dim relative to July.
+        let row = MonthCalendarCalculator.weekRow(forWeekContaining: date(2026, 7, 1))
+        let cal = Date.appCalendar
+        let june = row.filter { cal.component(.month, from: $0.date) == 6 }
+        let july = row.filter { cal.component(.month, from: $0.date) == 7 }
+        #expect(june.count == 2)                          // June 29, 30
+        #expect(june.allSatisfy { !$0.isInDisplayedMonth })
+        #expect(july.allSatisfy { $0.isInDisplayedMonth })
+    }
+
     // MARK: - weekdaySymbols
 
     @Test

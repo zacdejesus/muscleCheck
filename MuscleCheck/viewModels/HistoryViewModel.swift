@@ -15,6 +15,8 @@ final class HistoryViewModel: ObservableObject {
     @Published var selectedDate: Date = Date()
     /// The month currently rendered in the grid (changed by the chevrons).
     @Published var displayedMonth: Date = Date()
+    /// Calendar starts collapsed to the selected week; tapping the header expands it to the full month.
+    @Published var isCalendarExpanded: Bool = false
     @Published var entries: [MuscleEntry]
 
     init(entries: [MuscleEntry]) {
@@ -41,6 +43,11 @@ final class HistoryViewModel: ObservableObject {
 
     var weekBreakdown: [DayActivities] {
         MonthCalendarCalculator.weekBreakdown(forWeekContaining: selectedDate, from: entries)
+    }
+
+    /// The single Monday-first week shown when the calendar is collapsed.
+    var selectedWeek: [CalendarDay] {
+        MonthCalendarCalculator.weekRow(forWeekContaining: selectedDate)
     }
 
     /// "Junio 2026" — capitalized for the header.
@@ -73,6 +80,25 @@ final class HistoryViewModel: ObservableObject {
         if !Date.appCalendar.isDate(day, equalTo: displayedMonth, toGranularity: .month) {
             displayedMonth = day
         }
+        // Picking a day collapses back to its week (Calendar.app behavior).
+        isCalendarExpanded = false
+    }
+
+    func goToPreviousWeek() { shiftSelectedWeek(by: -1) }
+    func goToNextWeek() { shiftSelectedWeek(by: 1) }
+
+    /// Moves the collapsed view a week at a time, keeping `displayedMonth` (and the header
+    /// label) in step with the visible week.
+    private func shiftSelectedWeek(by value: Int) {
+        guard let next = Date.appCalendar.date(byAdding: .weekOfYear, value: value, to: selectedDate) else { return }
+        selectedDate = next
+        displayedMonth = next
+    }
+
+    func toggleCalendarExpanded() {
+        isCalendarExpanded.toggle()
+        // Expanding shows the month around the selected day.
+        if isCalendarExpanded { displayedMonth = selectedDate }
     }
 
     // MARK: - Formatters

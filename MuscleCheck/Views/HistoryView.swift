@@ -22,11 +22,15 @@ struct HistoryView: View {
         // Hero calendar
         MonthCalendarView(
           weeks: viewModel.weeks,
+          selectedWeek: viewModel.selectedWeek,
           monthTitle: viewModel.monthTitle,
           intensityByDay: viewModel.intensityByDay,
           selectedDate: viewModel.selectedDate,
-          onPrev: { withAnimation { viewModel.goToPreviousMonth() } },
-          onNext: { withAnimation { viewModel.goToNextMonth() } },
+          isExpanded: viewModel.isCalendarExpanded,
+          // Chevrons step by month when expanded, by week when collapsed.
+          onPrev: { withAnimation { viewModel.isCalendarExpanded ? viewModel.goToPreviousMonth() : viewModel.goToPreviousWeek() } },
+          onNext: { withAnimation { viewModel.isCalendarExpanded ? viewModel.goToNextMonth() : viewModel.goToNextWeek() } },
+          onToggleExpand: { withAnimation { viewModel.toggleCalendarExpanded() } },
           onSelect: { day in withAnimation { viewModel.select(day) } }
         )
         .padding()

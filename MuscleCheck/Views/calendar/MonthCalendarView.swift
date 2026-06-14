@@ -12,11 +12,16 @@ import SwiftUI
 /// (the macOS Calendar look) — impossible to align cleanly with a flat `LazyVGrid`.
 struct MonthCalendarView: View {
     let weeks: [[CalendarDay]]
+    /// The single week rendered when collapsed.
+    let selectedWeek: [CalendarDay]
     let monthTitle: String
     let intensityByDay: [Date: Int]
     let selectedDate: Date
+    let isExpanded: Bool
+    /// Context-aware paging: the parent wires these to week- or month-stepping based on `isExpanded`.
     let onPrev: () -> Void
     let onNext: () -> Void
+    let onToggleExpand: () -> Void
     let onSelect: (Date) -> Void
 
     private let accent = Color("PrimaryButtonColor")
@@ -30,7 +35,7 @@ struct MonthCalendarView: View {
         }
     }
 
-    // MARK: - Header (month pager)
+    // MARK: - Header (month/week pager + expand toggle)
 
     private var header: some View {
         HStack {
@@ -38,9 +43,17 @@ struct MonthCalendarView: View {
                 Image(systemName: "chevron.left").font(.headline)
             }
             Spacer()
-            Text(monthTitle)
-                .font(.headline)
-                .contentTransition(.numericText())
+            Button(action: onToggleExpand) {
+                HStack(spacing: 4) {
+                    Text(monthTitle)
+                        .font(.headline)
+                        .contentTransition(.numericText())
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption.weight(.bold))
+                }
+            }
+            .accessibilityLabel(monthTitle)
+            .accessibilityHint(isExpanded ? "history_calendar_collapse_hint" : "history_calendar_expand_hint")
             Spacer()
             Button(action: onNext) {
                 Image(systemName: "chevron.right").font(.headline)
@@ -68,34 +81,46 @@ struct MonthCalendarView: View {
 
     private var grid: some View {
         VStack(spacing: 4) {
-            ForEach(weeks.indices, id: \.self) { row in
-                let week = weeks[row]
-                HStack(spacing: 0) {
-                    ForEach(week) { day in
-                        CalendarDayCell(
-                            day: day,
-                            isToday: calendar.isDateInToday(day.date),
-                            isSelected: calendar.isDate(day.date, inSameDayAs: selectedDate),
-                            intensity: intensityByDay[day.date] ?? 0
-                        )
-                        .onTapGesture { onSelect(day.date) }
-                    }
+            if isExpanded {
+                // Full month: highlight the selected week so it stands out in context.
+                ForEach(weeks.indices, id: \.self) { row in
+                    weekRow(weeks[row], highlighted: isSelectedWeek(weeks[row]))
                 }
-                .padding(.vertical, 2)
-                .background(weekBackground(for: week))
+            } else {
+                // Collapsed: only the selected week — it's the sole row, so no highlight needed.
+                weekRow(selectedWeek, highlighted: false)
             }
         }
     }
 
+    private func weekRow(_ week: [CalendarDay], highlighted: Bool) -> some View {
+        HStack(spacing: 0) {
+            ForEach(week) { day in
+                CalendarDayCell(
+                    day: day,
+                    isToday: calendar.isDateInToday(day.date),
+                    isSelected: calendar.isDate(day.date, inSameDayAs: selectedDate),
+                    intensity: intensityByDay[day.date] ?? 0
+                )
+                .onTapGesture { onSelect(day.date) }
+            }
+        }
+        .padding(.vertical, 2)
+        // Pin the highlight to the number band (top) instead of the full cell, so it
+        // doesn't sag into the reserved intensity-dot slot below each number.
+        .background(alignment: .top) { weekBackground(highlighted: highlighted) }
+    }
+
     @ViewBuilder
-    private func weekBackground(for week: [CalendarDay]) -> some View {
-        if isSelectedWeek(week) {
+    private func weekBackground(highlighted: Bool) -> some View {
+        if highlighted {
             RoundedRectangle(cornerRadius: 10)
                 .fill(accent.opacity(0.08))
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(accent.opacity(0.35), lineWidth: 1)
                 )
+                .frame(height: 38)
         }
     }
 
@@ -108,15 +133,35 @@ struct MonthCalendarView: View {
     }
 }
 
-#Preview {
+#Preview("Collapsed") {
     let today = Date()
     MonthCalendarView(
         weeks: MonthCalendarCalculator.monthMatrix(for: today),
+        selectedWeek: MonthCalendarCalculator.weekRow(forWeekContaining: today),
         monthTitle: "junio 2026",
         intensityByDay: [Date.appCalendar.startOfDay(for: today): 2],
         selectedDate: today,
+        isExpanded: false,
         onPrev: {},
         onNext: {},
+        onToggleExpand: {},
+        onSelect: { _ in }
+    )
+    .padding()
+}
+
+#Preview("Expanded") {
+    let today = Date()
+    MonthCalendarView(
+        weeks: MonthCalendarCalculator.monthMatrix(for: today),
+        selectedWeek: MonthCalendarCalculator.weekRow(forWeekContaining: today),
+        monthTitle: "junio 2026",
+        intensityByDay: [Date.appCalendar.startOfDay(for: today): 2],
+        selectedDate: today,
+        isExpanded: true,
+        onPrev: {},
+        onNext: {},
+        onToggleExpand: {},
         onSelect: { _ in }
     )
     .padding()

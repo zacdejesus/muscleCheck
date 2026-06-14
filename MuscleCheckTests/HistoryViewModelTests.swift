@@ -40,6 +40,48 @@ struct HistoryViewModelTests {
         #expect(Date.appCalendar.isDate(vm.displayedMonth, equalTo: julyDay, toGranularity: .month))
     }
 
+    @Test
+    func testSelectingDayCollapsesCalendar() {
+        let vm = HistoryViewModel(entries: [])
+        vm.isCalendarExpanded = true
+        vm.select(date(2026, 6, 10))
+        #expect(vm.isCalendarExpanded == false)
+    }
+
+    // MARK: - Expand / collapse
+
+    @Test
+    func testToggleExpandFlipsAndShowsSelectedMonth() {
+        let vm = HistoryViewModel(entries: [])
+        vm.selectedDate = date(2026, 6, 10)
+        vm.displayedMonth = date(2026, 9, 1) // drifted via month paging
+        vm.toggleCalendarExpanded()
+        #expect(vm.isCalendarExpanded == true)
+        #expect(Date.appCalendar.isDate(vm.displayedMonth, equalTo: vm.selectedDate, toGranularity: .month))
+    }
+
+    // MARK: - Week paging (collapsed)
+
+    @Test
+    func testWeekPagingMovesSelectionBySevenDays() {
+        let vm = HistoryViewModel(entries: [])
+        let start = date(2026, 6, 10)
+        vm.selectedDate = start
+        vm.goToNextWeek()
+        #expect(Date.appCalendar.component(.day, from: vm.selectedDate) == 17)
+        vm.goToPreviousWeek()
+        vm.goToPreviousWeek()
+        #expect(Date.appCalendar.component(.day, from: vm.selectedDate) == 3)
+    }
+
+    @Test
+    func testWeekPagingKeepsMonthLabelInSync() {
+        let vm = HistoryViewModel(entries: [])
+        vm.selectedDate = date(2026, 6, 29) // last week of June
+        vm.goToNextWeek()                    // into July
+        #expect(Date.appCalendar.component(.month, from: vm.displayedMonth) == 7)
+    }
+
     // MARK: - Month paging
 
     @Test

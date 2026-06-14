@@ -60,6 +60,20 @@ struct MonthCalendarCalculator {
         return stride(from: 0, to: days.count, by: 7).map { Array(days[$0..<min($0 + 7, days.count)]) }
     }
 
+    /// The 7 days (Monday-first) of the week containing `date`, for the collapsed calendar.
+    /// `isInDisplayedMonth` is relative to `date`'s month, so a week spanning a month
+    /// boundary dims the spilled days — same convention as the full grid.
+    static func weekRow(forWeekContaining date: Date) -> [CalendarDay] {
+        let calendar = Date.appCalendar
+        guard let monday = date.startOfWeek(using: calendar) else { return [] }
+        return (0..<7).compactMap { offset in
+            guard let day = calendar.date(byAdding: .day, value: offset, to: monday) else { return nil }
+            let dayStart = calendar.startOfDay(for: day)
+            let inMonth = calendar.isDate(dayStart, equalTo: date, toGranularity: .month)
+            return CalendarDay(date: dayStart, isInDisplayedMonth: inMonth)
+        }
+    }
+
     /// Monday-first single-letter weekday headers, localized.
     static func weekdaySymbols() -> [String] {
         let calendar = Date.appCalendar
