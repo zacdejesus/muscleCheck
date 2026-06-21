@@ -188,4 +188,87 @@ struct MuscleEntryTests {
         entry.addSession(Date(), weight: 80.5)
         #expect(entry.formattedLastWeight == "80 kg")
     }
+
+    // MARK: - setTodaySession (weight + sets + reps)
+
+    @Test
+    func testSetTodaySessionStoresAllThreeValues() {
+        let entry = MuscleEntry(name: "Pecho")
+        entry.setTodaySession(weight: 80.0, sets: 4, reps: 10)
+
+        #expect(entry.sessions.count == 1)
+        #expect(entry.sessions[0].weight == 80.0)
+        #expect(entry.sessions[0].sets == 4)
+        #expect(entry.sessions[0].reps == 10)
+        #expect(entry.isChecked == true)
+    }
+
+    @Test
+    func testSetTodaySessionUpdatesExistingTodayWithoutDuplicating() {
+        let entry = MuscleEntry(name: "Pecho")
+        entry.setTodaySession(weight: 80.0, sets: 4, reps: 10)
+        entry.setTodaySession(weight: 90.0, sets: 5, reps: 8)
+
+        #expect(entry.sessions.count == 1)
+        #expect(entry.sessions[0].weight == 90.0)
+        #expect(entry.sessions[0].sets == 5)
+        #expect(entry.sessions[0].reps == 8)
+    }
+
+    @Test
+    func testSetTodaySessionAllowsNilExtras() {
+        let entry = MuscleEntry(name: "Pecho")
+        entry.setTodaySession(weight: 80.0)
+
+        #expect(entry.sessions[0].sets == nil)
+        #expect(entry.sessions[0].reps == nil)
+    }
+
+    @Test
+    func testSetTodaysWeightPreservesExistingSetsAndReps() {
+        let entry = MuscleEntry(name: "Pecho")
+        entry.setTodaySession(weight: 80.0, sets: 4, reps: 10)
+        // Changing only the weight (legacy path) must NOT wipe sets/reps recorded today.
+        entry.setTodaysWeight(85.0)
+
+        #expect(entry.sessions.count == 1)
+        #expect(entry.sessions[0].weight == 85.0)
+        #expect(entry.sessions[0].sets == 4)
+        #expect(entry.sessions[0].reps == 10)
+    }
+
+    // MARK: - lastSets / lastReps
+
+    @Test
+    func testLastSetsAndRepsNilWhenNoSessions() {
+        let entry = MuscleEntry(name: "Pecho")
+        #expect(entry.lastSets == nil)
+        #expect(entry.lastReps == nil)
+    }
+
+    @Test
+    func testLastSetsAndRepsReturnMostRecent() {
+        let entry = MuscleEntry(name: "Pecho")
+        let cal = Date.appCalendar
+        let yesterday = cal.date(byAdding: .day, value: -1, to: Date())!
+
+        entry.sessions.append(WorkoutSession(weight: 70, sets: 3, reps: 12, date: yesterday))
+        entry.sessions.append(WorkoutSession(weight: 80, sets: 5, reps: 8, date: Date()))
+
+        #expect(entry.lastSets == 5)
+        #expect(entry.lastReps == 8)
+    }
+
+    @Test
+    func testLastSetsSkipsSessionsWithoutValue() {
+        let entry = MuscleEntry(name: "Pecho")
+        let cal = Date.appCalendar
+        let yesterday = cal.date(byAdding: .day, value: -1, to: Date())!
+
+        entry.sessions.append(WorkoutSession(weight: 70, sets: 3, reps: 12, date: yesterday))
+        entry.sessions.append(WorkoutSession(weight: 80, date: Date())) // no sets/reps
+
+        #expect(entry.lastSets == 3)
+        #expect(entry.lastReps == 12)
+    }
 }

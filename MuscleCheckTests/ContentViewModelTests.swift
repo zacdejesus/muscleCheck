@@ -74,15 +74,17 @@ struct ContentViewModelTests {
     }
 
     @MainActor @Test
-    func testSaveWeightPersistsAndMarksChecked() async {
+    func testSaveSessionPersistsAndMarksChecked() async {
         let entry = MuscleEntry(name: "Pecho")
         let viewModel = ContentViewModel()
         await viewModel.setup(context: MockContext(), entries: [entry])
 
-        viewModel.saveWeight(80.0, for: entry)
+        viewModel.saveSession(weight: 80.0, sets: 4, reps: 10, for: entry)
 
         #expect(entry.isChecked == true)
         #expect(entry.lastWeight == 80.0)
+        #expect(entry.lastSets == 4)
+        #expect(entry.lastReps == 10)
         #expect(entry.sessions.count == 1)
     }
 }
