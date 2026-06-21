@@ -210,15 +210,15 @@ final class ContentViewModel: ObservableObject {
     }
   }
   
-  /// Saves a weight for the muscle entry today. Premise: "if I set the weight, I trained today",
-  /// so this also marks the entry as checked for the current week.
-  /// Weight is expected to be in kg (the canonical storage unit).
-  func saveWeight(_ weight: Double?, for entry: MuscleEntry) {
-    entry.setTodaysWeight(weight)
+  /// Saves today's session (weight + optional sets/reps) for the muscle entry.
+  /// Premise: "if I log something today, I trained today", so this also marks the entry as
+  /// checked for the current week. Weight is expected to be in kg (the canonical storage unit).
+  func saveSession(weight: Double?, sets: Int?, reps: Int?, for entry: MuscleEntry) {
+    entry.setTodaySession(weight: weight, sets: sets, reps: reps)
     do {
       try context?.save()
     } catch {
-      assertionFailure("Failed to save weight: \(error)")
+      assertionFailure("Failed to save session: \(error)")
     }
     updateCurrentEntries()
   }

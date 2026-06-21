@@ -33,6 +33,7 @@ struct AddMuscleGroupView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .accessibilityIdentifier("add.categoryPicker")
                 }
 
                 Section("select_icon") {

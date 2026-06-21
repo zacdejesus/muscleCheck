@@ -11,7 +11,7 @@ import SwiftUI
 struct MuscleEntryRowView: View {
     var entry: MuscleEntry
     var onTap: (MuscleEntry) -> Void
-    var onSaveWeight: (MuscleEntry, Double?) -> Void = { _, _ in }
+    var onSaveSession: (MuscleEntry, Double?, Int?, Int?) -> Void = { _, _, _, _ in }
 
     @State private var isShowingModal: Bool = false
 
@@ -54,8 +54,8 @@ struct MuscleEntryRowView: View {
             .buttonStyle(.plain)
         }
         .sheet(isPresented: $isShowingModal) {
-            ModalWeightView(entry: entry) { newWeight in
-                onSaveWeight(entry, newWeight)
+            SessionLogView(entry: entry) { newWeight, newSets, newReps in
+                onSaveSession(entry, newWeight, newSets, newReps)
             }
         }
     }

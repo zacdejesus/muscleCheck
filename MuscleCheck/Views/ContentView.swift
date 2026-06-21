@@ -51,7 +51,7 @@ struct ContentView: View {
               MuscleEntryRowView(
                 entry: entry,
                 onTap: { _ in viewModel.toggleActivity(for: entry) },
-                onSaveWeight: { target, weight in viewModel.saveWeight(weight, for: target) }
+                onSaveSession: { target, weight, sets, reps in viewModel.saveSession(weight: weight, sets: sets, reps: reps, for: target) }
               )
             }
             .onDelete { offsets in
@@ -65,7 +65,7 @@ struct ContentView: View {
                   MuscleEntryRowView(
                     entry: entry,
                     onTap: { _ in viewModel.toggleActivity(for: entry) },
-                    onSaveWeight: { target, weight in viewModel.saveWeight(weight, for: target) }
+                    onSaveSession: { target, weight, sets, reps in viewModel.saveSession(weight: weight, sets: sets, reps: reps, for: target) }
                   )
                 }
                 .onDelete { offsets in
