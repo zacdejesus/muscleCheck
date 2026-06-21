@@ -67,6 +67,27 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		199B4C2F2FE4DC9F007CAFC7 /* Exceptions for "MuscleCheck" folder in "MuscleCheckTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Localizable.xcstrings,
+			);
+			target = CBE9126B2DD93DE1001F511B /* MuscleCheckTests */;
+		};
+		199B4C302FE4DC9F007CAFC7 /* Exceptions for "MuscleCheck" folder in "MuscleCheckUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Localizable.xcstrings,
+			);
+			target = CBE912752DD93DE1001F511B /* MuscleCheckUITests */;
+		};
+		199B4C312FE4DC9F007CAFC7 /* Exceptions for "MuscleCheck" folder in "MuscleCheckWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Localizable.xcstrings,
+			);
+			target = CB1DFA7F2EA828AC00B2047E /* MuscleCheckWidgetExtension */;
+		};
 		19C9A0C32F98EF97007BD023 /* Exceptions for "MuscleCheck" folder in "MuscleCheck" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -96,6 +117,9 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				19C9A0C32F98EF97007BD023 /* Exceptions for "MuscleCheck" folder in "MuscleCheck" target */,
+				199B4C2F2FE4DC9F007CAFC7 /* Exceptions for "MuscleCheck" folder in "MuscleCheckTests" target */,
+				199B4C302FE4DC9F007CAFC7 /* Exceptions for "MuscleCheck" folder in "MuscleCheckUITests" target */,
+				199B4C312FE4DC9F007CAFC7 /* Exceptions for "MuscleCheck" folder in "MuscleCheckWidgetExtension" target */,
 			);
 			path = MuscleCheck;
 			sourceTree = "<group>";
