@@ -111,49 +111,47 @@ struct ContentView: View {
       .navigationBarTitleDisplayMode(.automatic)
       .toolbar {
         ToolbarItem(placement: .navigationBarLeading) {
-          NavigationLink("workout_history") {
+          // Short label ("Historial"/"History") + smaller font: frees horizontal space so
+          // the trailing icons fit before iOS has to collapse any into the overflow.
+          NavigationLink("navigation_history_button") {
             HistoryView(entries: entries)
           }
           .foregroundColor(Color("PrimaryButtonColor"))
-          .font(.headline.bold())
+          .font(.subheadline)
         }
         
-        ToolbarItem(placement: .navigationBarTrailing) {
-          HStack(spacing: 4) {
-            Button {
-              showingProgressPhotos = true
-            } label: {
-              Image(systemName: "camera")
-                .font(.headline)
-                .foregroundColor(Color("PrimaryButtonColor"))
-            }
-            .accessibilityLabel("progress_photos_title")
-            Button {
-              showingStats = true
-            } label: {
-              Image(systemName: "chart.bar.xaxis")
-                .font(.headline)
-                .foregroundColor(Color("PrimaryButtonColor"))
-            }
-            .accessibilityLabel("stats_title")
-            Button {
-              showingSettings = true
-            } label: {
-              Image(systemName: "gearshape")
-                .font(.headline)
-                .foregroundColor(Color("PrimaryButtonColor"))
-            }
-            Button {
-              showingAddSheet = true
-            } label: {
-              Image(systemName: "plus.circle")
-                .font(.headline)
-                .padding(.horizontal, 4)
-                .foregroundColor(Color("PrimaryButtonColor"))
-            }
-            .accessibilityLabel("add_new_muscle_group")
+        // One toolbar item per action (instead of an HStack crammed into a single
+        // ToolbarItem): lets iOS lay them out individually and, when horizontal space is
+        // tight (Display Zoom / large Dynamic Type / long leading title), collapse them
+        // into a WORKING overflow "···" menu. Each Button uses a Label so the overflow
+        // shows a readable, tappable row — icon-only buttons collapse into a dead menu.
+        // Color comes from the NavigationStack's .tint.
+        // Order matters: iOS collapses the LAST-declared items into the overflow "···"
+        // first. Declaring Add + Settings first keeps them visible the longest; Stats and
+        // Photos are the ones that fall into the overflow when space runs out.
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+          Button {
+            showingAddSheet = true
+          } label: {
+            Label("add_new_muscle_group", systemImage: "plus.circle")
+          }
+          Button {
+            showingSettings = true
+          } label: {
+            Label("settings_title", systemImage: "gearshape")
+          }
+          Button {
+            showingStats = true
+          } label: {
+            Label("stats_title", systemImage: "chart.bar.xaxis")
+          }
+          Button {
+            showingProgressPhotos = true
+          } label: {
+            Label("progress_photos_title", systemImage: "camera")
           }
         }
+
       }
       .onAppear {
         Task {
