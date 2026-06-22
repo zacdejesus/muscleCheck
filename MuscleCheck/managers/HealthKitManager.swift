@@ -111,9 +111,11 @@ final class HealthKitManager: ObservableObject {
             return .pilates
         case .coreTraining, .highIntensityIntervalTraining:
             return .calisthenics
-        case .running, .cycling, .swimming, .walking, .hiking,
+        case .cycling, .swimming, .walking, .hiking,
              .elliptical, .rowing, .stairClimbing, .jumpRope, .mixedCardio:
             return .cardio
+        case .running:
+            return .running
         case .cooldown, .preparationAndRecovery, .flexibility:
             return .stretching
         default:

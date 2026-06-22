@@ -7,6 +7,7 @@ import Foundation
 
 enum ActivityCategory: String, CaseIterable, Codable, Identifiable, Sendable {
     case gym
+    case running
     case yoga
     case pilates
     case calisthenics
@@ -25,6 +26,7 @@ enum ActivityCategory: String, CaseIterable, Codable, Identifiable, Sendable {
         case .cardio: return NSLocalizedString("category_cardio", comment: "")
         case .stretching: return NSLocalizedString("category_stretching", comment: "")
         case .custom: return NSLocalizedString("category_custom", comment: "")
+        case .running: return NSLocalizedString("category_running", comment: "")
         }
     }
 
@@ -37,6 +39,7 @@ enum ActivityCategory: String, CaseIterable, Codable, Identifiable, Sendable {
         case .cardio: return "figure.run"
         case .stretching: return "figure.flexibility"
         case .custom: return "star.fill"
+        case .running: return "figure.run"
         }
     }
 
@@ -75,11 +78,15 @@ enum ActivityCategory: String, CaseIterable, Codable, Identifiable, Sendable {
             ]
         case .cardio:
             return [
-                ("cardio_running", "figure.run"),
                 ("cardio_cycling", "figure.outdoor.cycle"),
                 ("cardio_swimming", "figure.pool.swim"),
                 ("cardio_hiit", "figure.highintensity.intervaltraining"),
                 ("cardio_walking", "figure.walk")
+            ]
+            
+        case .running:
+            return [
+                ("cardio_running", "figure.run")
             ]
         case .stretching:
             return [
@@ -118,12 +125,13 @@ enum ActivityCategory: String, CaseIterable, Codable, Identifiable, Sendable {
     var sortOrder: Int {
         switch self {
         case .gym: return 0
-        case .yoga: return 1
-        case .pilates: return 2
-        case .calisthenics: return 3
-        case .cardio: return 4
-        case .stretching: return 5
-        case .custom: return 6
+        case .running: return 1
+        case .yoga: return 2
+        case .pilates: return 3
+        case .calisthenics: return 4
+        case .cardio: return 5
+        case .stretching: return 6
+        case .custom: return 7
         }
     }
 }
