@@ -2612,25 +2612,25 @@
         }
       }
     },
-    "session_modal_title" : {
-      "comment" : "Title of the session log modal where a gym user records weight, sets and reps.",
+    "session_last_trained" : {
+      "comment" : "Subtitle in the session log showing when the muscle was last trained. %@ is a date.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Log"
+            "value" : "Last trained · %@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registro"
+            "value" : "Última vez · %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Journal"
+            "value" : "Dernière fois · %@"
           }
         }
       }

@@ -31,24 +31,28 @@ final class SessionLogUITests: XCTestCase {
         XCTAssertTrue(chestRow.waitForExistence(timeout: 15), "Chest gym row not rendered")
         chestRow.tap()
 
-        // 2. The session log modal opens with title "Log" and the three fields.
-        XCTAssertTrue(app.navigationBars["Log"].waitForExistence(timeout: 5),
-                      "Session log modal did not open on tapping a gym row")
+        // 2. The session log opens titled with the muscle name, with the weight field and
+        //    the sets/reps steppers. It must NOT auto-focus (no keyboard on entry).
+        XCTAssertTrue(app.navigationBars["Chest"].waitForExistence(timeout: 5),
+                      "Session log did not open on tapping a gym row")
         let weight = app.textFields["session.weight"]
-        let sets = app.textFields["session.sets"]
-        let reps = app.textFields["session.reps"]
         XCTAssertTrue(weight.waitForExistence(timeout: 5))
-        XCTAssertTrue(sets.exists)
-        XCTAssertTrue(reps.exists)
+        XCTAssertTrue(app.buttons["session.sets.plus"].exists)
+        XCTAssertTrue(app.buttons["session.reps.plus"].exists)
         attachScreenshot(app, name: "01-modal-open")
 
-        // 3. Enter weight + sets + reps and save.
+        // 3. Bump sets and reps via steppers FIRST (no keyboard), then type the weight (its
+        //    keyboard would otherwise cover the steppers). We capture whatever values the
+        //    steppers land on and assert THOSE survive the round-trip — robust to XCUITest
+        //    occasionally registering a fast tap twice on an animated button.
+        for _ in 0..<4 { app.buttons["session.sets.plus"].tap() }
+        for _ in 0..<10 { app.buttons["session.reps.plus"].tap() }
+        let setsValue = app.staticTexts["session.sets.value"].label
+        let repsValue = app.staticTexts["session.reps.value"].label
+        XCTAssertNotEqual(setsValue, "–", "Sets stepper did not increment")
+        XCTAssertNotEqual(repsValue, "–", "Reps stepper did not increment")
         weight.tap()
         weight.typeText("80")
-        sets.tap()
-        sets.typeText("4")
-        reps.tap()
-        reps.typeText("10")
         attachScreenshot(app, name: "02-filled")
         app.navigationBars.buttons["Save"].tap()
 
@@ -61,10 +65,10 @@ final class SessionLogUITests: XCTestCase {
 
         // 5. Reopen the same row and confirm the three values were persisted (prefill).
         chestRow.tap()
-        XCTAssertTrue(app.navigationBars["Log"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Chest"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.textFields["session.weight"].value as? String, "80")
-        XCTAssertEqual(app.textFields["session.sets"].value as? String, "4")
-        XCTAssertEqual(app.textFields["session.reps"].value as? String, "10")
+        XCTAssertEqual(app.staticTexts["session.sets.value"].label, setsValue)
+        XCTAssertEqual(app.staticTexts["session.reps.value"].label, repsValue)
         attachScreenshot(app, name: "04-reopened-prefilled")
     }
 
