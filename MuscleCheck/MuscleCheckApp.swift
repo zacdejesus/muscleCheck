@@ -33,8 +33,10 @@ struct MuscleCheckApp: App {
     } else {
       appearance.configureWithOpaqueBackground()
     }
-    appearance.titleTextAttributes = [.foregroundColor: UIColor(Color.brand)]
-    appearance.largeTitleTextAttributes = [.foregroundColor: UIColor(Color.brand)]
+    // Titles use the label colour, not the brand. Brand stays on actions (back button,
+    // bar buttons, tint) so it reads as "tappable", not as decoration on every screen.
+    appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
+    appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
     appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor(Color.brand)]
     appearance.setBackIndicatorImage(UIImage(systemName: "chevron.backward")?.withTintColor(UIColor(Color.brand), renderingMode: .alwaysOriginal), transitionMaskImage: UIImage(systemName: "chevron.backward"))
     
