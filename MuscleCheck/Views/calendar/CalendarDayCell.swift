@@ -15,7 +15,7 @@ struct CalendarDayCell: View {
     /// Number of muscles trained that day (0 = none); drives the intensity dot.
     let intensity: Int
 
-    private let accent = Color("PrimaryButtonColor")
+    private let accent = Color.brand
 
     var body: some View {
         VStack(spacing: 3) {

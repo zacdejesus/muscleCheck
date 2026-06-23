@@ -54,7 +54,7 @@ struct HealthKitSuggestionsView: View {
 
         HStack {
             Image(systemName: icon)
-                .foregroundColor(Color("PrimaryButtonColor"))
+                .foregroundColor(Color.brand)
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -75,7 +75,7 @@ struct HealthKitSuggestionsView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color("PrimaryButtonColor"))
+                    .background(Color.brand)
                     .cornerRadius(8)
             }
         }

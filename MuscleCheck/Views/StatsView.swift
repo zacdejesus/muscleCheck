@@ -83,14 +83,14 @@ private struct StatSummaryCard: View {
             HStack(spacing: 4) {
                 Image(systemName: icon)
                     .font(.appCaption)
-                    .foregroundColor(Color("PrimaryButtonColor"))
+                    .foregroundColor(Color.brand)
                 Text(LocalizedStringKey(titleKey))
                     .font(.appCaption)
                     .foregroundColor(.secondary)
             }
             Text(value)
                 .font(.appTitle.bold())
-                .foregroundColor(Color("PrimaryButtonColor"))
+                .foregroundColor(Color.brand)
                 .contentTransition(.numericText())
         }
         .frame(maxWidth: .infinity, alignment: .leading)

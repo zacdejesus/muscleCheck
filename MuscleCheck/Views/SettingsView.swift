@@ -24,7 +24,7 @@ struct SettingsView: View {
                         showingPaywall = true
                     } label: {
                         Label("settings_upgrade_pro", systemImage: "crown.fill")
-                            .foregroundColor(Color("PrimaryButtonColor"))
+                            .foregroundColor(Color.brand)
                     }
                 } else {
                     Label("settings_pro_active", systemImage: "checkmark.seal.fill")
@@ -60,7 +60,7 @@ struct SettingsView: View {
                     Text("settings_theme_dark").tag(2)
                 }
                 .pickerStyle(.menu)
-                .tint(Color("PrimaryButtonColor"))
+                .tint(Color.brand)
             }
 
             // MARK: - Activity Presets
@@ -79,7 +79,7 @@ struct SettingsView: View {
                                     .foregroundColor(.green)
                             } else {
                                 Image(systemName: "plus.circle")
-                                    .foregroundColor(Color("PrimaryButtonColor"))
+                                    .foregroundColor(Color.brand)
                             }
                         }
                     }
@@ -95,7 +95,7 @@ struct SettingsView: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .tint(Color("PrimaryButtonColor"))
+                .tint(Color.brand)
             }
 
             // MARK: - Health
@@ -103,7 +103,7 @@ struct SettingsView: View {
                 if HealthKitManager.isAvailable {
                     if storeManager.isPro {
                         Toggle("settings_healthkit_enabled", isOn: $viewModel.healthKitEnabled)
-                            .tint(Color("PrimaryButtonColor"))
+                            .tint(Color.brand)
                     } else {
                         ProFeatureGate(lockedMessage: NSLocalizedString("settings_healthkit_enabled", comment: "")) {
                             EmptyView()
@@ -118,7 +118,7 @@ struct SettingsView: View {
             // MARK: - Notifications
             Section("settings_section_notifications") {
                 Toggle("settings_notifications_enabled", isOn: $viewModel.notificationsEnabled)
-                    .tint(Color("PrimaryButtonColor"))
+                    .tint(Color.brand)
 
                 if viewModel.notificationsEnabled {
                     DatePicker(
@@ -126,7 +126,7 @@ struct SettingsView: View {
                         selection: $viewModel.reminderTime,
                         displayedComponents: .hourAndMinute
                     )
-                    .tint(Color("PrimaryButtonColor"))
+                    .tint(Color.brand)
                 }
             }
 

@@ -19,7 +19,7 @@ struct StreakCardView: View {
                         .font(.appTitle2)
                     Text("\(viewModel.currentStreak)")
                         .font(.appTitle.bold())
-                        .foregroundColor(viewModel.isStreakAlive ? Color("PrimaryButtonColor") : .secondary)
+                        .foregroundColor(viewModel.isStreakAlive ? .streak : .secondary)
                         .contentTransition(.numericText())
                         .animation(.spring, value: viewModel.currentStreak)
                 }

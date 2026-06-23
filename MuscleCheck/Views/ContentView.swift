@@ -100,14 +100,14 @@ struct ContentView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.regular)
-            .tint(Color("PrimaryButtonColor"))
+            .tint(Color.brand)
             .padding(.horizontal)
             .padding(.vertical, 8)
           }
         }
       }
       .navigationTitle("home_title")
-      .tint(Color("PrimaryButtonColor"))
+      .tint(Color.brand)
       .navigationBarTitleDisplayMode(.automatic)
       .toolbar {
         ToolbarItem(placement: .navigationBarLeading) {
@@ -116,7 +116,7 @@ struct ContentView: View {
           NavigationLink("navigation_history_button") {
             HistoryView(entries: entries)
           }
-          .foregroundColor(Color("PrimaryButtonColor"))
+          .foregroundColor(Color.brand)
           .font(.appSubheadline)
         }
         
@@ -234,7 +234,7 @@ struct ContentView: View {
         Text(category.displayName)
       }
       .font(.appSubheadline.bold())
-      .foregroundColor(Color("PrimaryButtonColor"))
+      .foregroundColor(Color.brand)
     } else {
       Text(categoryRaw)
     }

@@ -26,7 +26,7 @@ struct MuscleFrequencyChart: View {
                     x: .value("stats_days", item.count),
                     y: .value("stats_muscle", item.muscle)
                 )
-                .foregroundStyle(Color("PrimaryButtonColor").gradient)
+                .foregroundStyle(Color.brand.gradient)
                 .cornerRadius(4)
                 .annotation(position: .trailing) {
                     Text("\(item.count)")

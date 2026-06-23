@@ -30,14 +30,14 @@ struct HealthKitLogSheet: View {
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: entry.icon)
-                                    .foregroundColor(Color("PrimaryButtonColor"))
+                                    .foregroundColor(Color.brand)
                                     .frame(width: 24)
                                 Text(entry.name)
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 if selected.contains(entry.id) {
                                     Image(systemName: "checkmark")
-                                        .foregroundColor(Color("PrimaryButtonColor"))
+                                        .foregroundColor(Color.brand)
                                         .fontWeight(.semibold)
                                 }
                             }

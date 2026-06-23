@@ -49,14 +49,14 @@ struct ProgressPhotosView: View {
                                 }
                             } label: {
                                 Image(systemName: viewModel.isCompareMode ? "rectangle.split.2x1.fill" : "rectangle.split.2x1")
-                                    .foregroundColor(Color("PrimaryButtonColor"))
+                                    .foregroundColor(Color.brand)
                             }
                         }
                         Button {
                             showingAddSheet = true
                         } label: {
                             Image(systemName: "camera.fill")
-                                .foregroundColor(Color("PrimaryButtonColor"))
+                                .foregroundColor(Color.brand)
                         }
                     }
                 }
@@ -101,7 +101,7 @@ struct ProgressPhotosView: View {
                 Label("progress_photos_add", systemImage: "plus")
             }
             .buttonStyle(.borderedProminent)
-            .tint(Color("PrimaryButtonColor"))
+            .tint(Color.brand)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -128,7 +128,7 @@ struct ProgressPhotosView: View {
                     } header: {
                         Text(group.month)
                             .font(.appSubheadline.bold())
-                            .foregroundColor(Color("PrimaryButtonColor"))
+                            .foregroundColor(Color.brand)
                             .padding(.horizontal)
                     }
                 }
@@ -177,7 +177,7 @@ struct ProgressPhotosView: View {
                             .font(.appTitle3)
                             .foregroundColor(.white)
                             .padding(4)
-                            .background(Color("PrimaryButtonColor"))
+                            .background(Color.brand)
                             .clipShape(Circle())
                             .padding(6)
                     }
@@ -185,7 +185,7 @@ struct ProgressPhotosView: View {
                 .overlay {
                     if viewModel.isCompareMode && isSelected {
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color("PrimaryButtonColor"), lineWidth: 3)
+                            .stroke(Color.brand, lineWidth: 3)
                     }
                 }
         }
@@ -208,7 +208,7 @@ struct ProgressPhotosView: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(Color("PrimaryButtonColor"))
+                        .background(Color.brand)
                         .cornerRadius(8)
                 }
             } else {
@@ -270,7 +270,7 @@ struct PhotoDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("BUTTON_CLOSE") { dismiss() }
-                    .foregroundColor(Color("PrimaryButtonColor"))
+                    .foregroundColor(Color.brand)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(role: .destructive) {

@@ -20,7 +20,7 @@ struct PaywallView: View {
                     VStack(spacing: 12) {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 50))
-                            .foregroundColor(Color("PrimaryButtonColor"))
+                            .foregroundColor(Color.brand)
                         
                         Text("paywall_title")
                             .font(.appLargeTitle.bold())
@@ -85,7 +85,7 @@ struct PaywallView: View {
                         }
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(Color("PrimaryButtonColor"))
+                    .tint(Color.brand)
                     .disabled(viewModel.isLoading)
                     .padding(.horizontal, 24)
                     
@@ -156,7 +156,7 @@ private struct PlanComparisonView: View {
                 Spacer()
                 Text("paywall_compare_free").frame(width: 60)
                 Text("paywall_compare_pro").frame(width: 60)
-                    .foregroundColor(Color("PrimaryButtonColor"))
+                    .foregroundColor(Color.brand)
             }
             .font(.appCaption.bold())
             .padding(.bottom, 4)
@@ -179,7 +179,7 @@ private struct PlanComparisonView: View {
     private func cell(on: Bool, accent: Bool) -> some View {
         Image(systemName: on ? "checkmark" : "minus")
             .font(.appSubheadline.bold())
-            .foregroundStyle(on ? (accent ? Color("PrimaryButtonColor") : Color.secondary) : Color.secondary.opacity(0.4))
+            .foregroundStyle(on ? (accent ? Color.brand : Color.secondary) : Color.secondary.opacity(0.4))
     }
 }
 
@@ -202,7 +202,7 @@ private struct PackageOptionView: View {
                                 .font(.appCaption2.bold())
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color("PrimaryButtonColor"))
+                                .background(Color.brand)
                                 .foregroundColor(.white)
                                 .cornerRadius(4)
                         }
@@ -215,7 +215,7 @@ private struct PackageOptionView: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color("PrimaryButtonColor") : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 1)
+                    .stroke(isSelected ? Color.brand : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 1)
             )
         }
         .buttonStyle(.plain)

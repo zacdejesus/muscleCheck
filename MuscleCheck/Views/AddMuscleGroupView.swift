@@ -47,13 +47,13 @@ struct AddMuscleGroupView: View {
                                     .frame(width: 40, height: 40)
                                     .background(
                                         selectedIcon == icon
-                                            ? Color("PrimaryButtonColor").opacity(0.2)
+                                            ? Color.brand.opacity(0.2)
                                             : Color.clear
                                     )
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .foregroundColor(
                                         selectedIcon == icon
-                                            ? Color("PrimaryButtonColor")
+                                            ? Color.brand
                                             : .secondary
                                     )
                             }
@@ -87,7 +87,7 @@ struct AddMuscleGroupView: View {
                     }
                 }
             }
-            .tint(Color("PrimaryButtonColor"))
+            .tint(Color.brand)
         }
     }
 

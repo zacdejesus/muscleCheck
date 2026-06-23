@@ -33,15 +33,15 @@ struct MuscleCheckApp: App {
     } else {
       appearance.configureWithOpaqueBackground()
     }
-    appearance.titleTextAttributes = [.foregroundColor: UIColor(Color("PrimaryButtonColor"))]
-    appearance.largeTitleTextAttributes = [.foregroundColor: UIColor(Color("PrimaryButtonColor"))]
-    appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor(Color("PrimaryButtonColor"))]
-    appearance.setBackIndicatorImage(UIImage(systemName: "chevron.backward")?.withTintColor(UIColor(Color("PrimaryButtonColor")), renderingMode: .alwaysOriginal), transitionMaskImage: UIImage(systemName: "chevron.backward"))
+    appearance.titleTextAttributes = [.foregroundColor: UIColor(Color.brand)]
+    appearance.largeTitleTextAttributes = [.foregroundColor: UIColor(Color.brand)]
+    appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor(Color.brand)]
+    appearance.setBackIndicatorImage(UIImage(systemName: "chevron.backward")?.withTintColor(UIColor(Color.brand), renderingMode: .alwaysOriginal), transitionMaskImage: UIImage(systemName: "chevron.backward"))
     
     UINavigationBar.appearance().standardAppearance = appearance
     UINavigationBar.appearance().scrollEdgeAppearance = appearance
     UINavigationBar.appearance().compactAppearance = appearance
-    UINavigationBar.appearance().tintColor = UIColor(Color("PrimaryButtonColor"))
+    UINavigationBar.appearance().tintColor = UIColor(Color.brand)
   }
   
   var sharedModelContainer: ModelContainer = {

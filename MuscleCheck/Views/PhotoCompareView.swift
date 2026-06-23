@@ -109,7 +109,7 @@ struct PhotoCompareView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("BUTTON_CLOSE") { dismiss() }
-                    .foregroundColor(Color("PrimaryButtonColor"))
+                    .foregroundColor(Color.brand)
             }
         }
     }

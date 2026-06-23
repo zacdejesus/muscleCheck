@@ -25,7 +25,7 @@ struct MuscleEntryRowView: View {
             // modal for gym entries. Avoids the dead/ambiguous zones between icon and name.
             HStack {
                 Image(systemName: entry.icon)
-                    .foregroundColor(Color("PrimaryButtonColor"))
+                    .foregroundColor(Color.brand)
                     .frame(width: 24)
                 Text(entry.name)
                 if canEditWeight, let weightLabel = entry.formattedLastWeight {
@@ -47,7 +47,7 @@ struct MuscleEntryRowView: View {
                 onTap(entry)
             } label: {
                 Image(systemName: entry.isChecked ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(entry.isChecked ? .green : .gray)
+                    .foregroundColor(entry.isChecked ? .success : .gray)
                     .padding(.leading, 8)
                     .contentShape(Rectangle())
             }

@@ -71,7 +71,7 @@ struct ProFeatureGate<Content: View>: View {
         VStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 44))
-                .foregroundColor(Color("PrimaryButtonColor"))
+                .foregroundColor(Color.brand)
 
             Text(lockedMessage)
                 .font(.appTitle2.bold())
@@ -96,7 +96,7 @@ struct ProFeatureGate<Content: View>: View {
                 .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Color("PrimaryButtonColor"))
+            .tint(Color.brand)
             .padding(.top, 4)
         }
         .padding(28)

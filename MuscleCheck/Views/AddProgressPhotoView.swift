@@ -40,7 +40,7 @@ struct AddProgressPhotoView: View {
                         showingCamera = true
                     } label: {
                         Label("progress_photos_take", systemImage: "camera")
-                            .foregroundColor(Color("PrimaryButtonColor"))
+                            .foregroundColor(Color.brand)
                     }
                 }
 
@@ -52,7 +52,7 @@ struct AddProgressPhotoView: View {
                         selectedImage == nil ? "progress_photos_choose_library" : "progress_photos_change",
                         systemImage: "photo.on.rectangle"
                     )
-                    .foregroundColor(Color("PrimaryButtonColor"))
+                    .foregroundColor(Color.brand)
                 }
             }
 
@@ -66,13 +66,13 @@ struct AddProgressPhotoView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("Cancel") { dismiss() }
-                    .foregroundColor(Color("PrimaryButtonColor"))
+                    .foregroundColor(Color.brand)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Save") {
                     save()
                 }
-                .foregroundColor(Color("PrimaryButtonColor"))
+                .foregroundColor(Color.brand)
                 .fontWeight(.semibold)
                 .disabled(selectedImage == nil || isLoading)
             }

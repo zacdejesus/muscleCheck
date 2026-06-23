@@ -24,7 +24,7 @@ struct MonthCalendarView: View {
     let onToggleExpand: () -> Void
     let onSelect: (Date) -> Void
 
-    private let accent = Color("PrimaryButtonColor")
+    private let accent = Color.brand
     private let calendar = Date.appCalendar
 
     var body: some View {

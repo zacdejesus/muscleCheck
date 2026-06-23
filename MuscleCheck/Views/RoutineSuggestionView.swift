@@ -91,7 +91,7 @@ struct RoutineSuggestionView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(block.groupName)
                 .font(.appHeadline)
-                .foregroundColor(Color("PrimaryButtonColor"))
+                .foregroundColor(Color.brand)
             ForEach(block.exercises, id: \.self) { exercise in
                 Label(exercise, systemImage: "circle.fill")
                     .labelStyle(BulletLabelStyle())
@@ -120,7 +120,7 @@ struct RoutineSuggestionView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
-        .tint(Color("PrimaryButtonColor"))
+        .tint(Color.brand)
         .disabled(viewModel.isGeneratingRoutine)
     }
 }

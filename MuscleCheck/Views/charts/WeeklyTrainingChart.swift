@@ -21,7 +21,7 @@ struct WeeklyTrainingChart: View {
                     x: .value("stats_week", item.weekLabel),
                     y: .value("stats_days", item.count)
                 )
-                .foregroundStyle(Color("PrimaryButtonColor").gradient)
+                .foregroundStyle(Color.brand.gradient)
                 .cornerRadius(4)
             }
             .chartYScale(domain: 0...7)
