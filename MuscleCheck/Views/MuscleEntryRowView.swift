@@ -24,9 +24,14 @@ struct MuscleEntryRowView: View {
             // One tap target for the whole row (except the checkmark): opens the weight
             // modal for gym entries. Avoids the dead/ambiguous zones between icon and name.
             HStack {
+                // Icon in a soft tinted tile (Settings/Things-style) — adds depth and reads
+                // as designed rather than a flat coloured glyph. Ready to colour per category.
                 Image(systemName: entry.icon)
-                    .foregroundColor(Color.brand)
-                    .frame(width: 24)
+                    .font(.appSubheadline)
+                    .foregroundStyle(Color.brand)
+                    .frame(width: 32, height: 32)
+                    .background(Color.brand.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                    .padding(.trailing, 4)
                 Text(entry.name)
                 if canEditWeight, let weightLabel = entry.formattedLastWeight {
                     Text(weightLabel)
