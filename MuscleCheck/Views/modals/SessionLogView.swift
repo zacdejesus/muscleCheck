@@ -51,14 +51,14 @@ struct SessionLogView: View {
                             .accessibilityIdentifier("session.weight")
                             .accessibilityLabel(Text(NSLocalizedString("session_field_weight", comment: "")))
                         Text(unit.displayLabel)
-                            .font(.title2)
+                            .font(.appTitle2)
                             .foregroundStyle(.secondary)
                     }
 
                     if let lastTrained {
                         Text(String(format: NSLocalizedString("session_last_trained", comment: ""),
                                     lastTrained.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))))
-                            .font(.footnote)
+                            .font(.appFootnote)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -108,7 +108,7 @@ struct SessionLogView: View {
     private func stepperColumn(_ title: String, value: Binding<Int>, id: String) -> some View {
         VStack(spacing: 12) {
             Text(title)
-                .font(.subheadline)
+                .font(.appSubheadline)
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 12) {
@@ -116,7 +116,7 @@ struct SessionLogView: View {
                     if value.wrappedValue > 0 { value.wrappedValue -= 1 }
                 } label: {
                     Image(systemName: "minus")
-                        .font(.headline)
+                        .font(.appHeadline)
                         .frame(width: 34, height: 34)
                 }
                 .buttonStyle(.bordered)
@@ -125,7 +125,7 @@ struct SessionLogView: View {
                 .accessibilityIdentifier("\(id).minus")
 
                 Text(value.wrappedValue > 0 ? "\(value.wrappedValue)" : "–")
-                    .font(.title2)
+                    .font(.appTitle2)
                     .fontWeight(.semibold)
                     .monospacedDigit()
                     .frame(minWidth: 36)
@@ -135,7 +135,7 @@ struct SessionLogView: View {
                     value.wrappedValue += 1
                 } label: {
                     Image(systemName: "plus")
-                        .font(.headline)
+                        .font(.appHeadline)
                         .frame(width: 34, height: 34)
                 }
                 .buttonStyle(.bordered)

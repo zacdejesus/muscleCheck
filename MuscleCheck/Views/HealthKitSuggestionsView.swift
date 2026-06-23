@@ -26,13 +26,13 @@ struct HealthKitSuggestionsView: View {
                 Image(systemName: "heart.fill")
                     .foregroundColor(.red)
                 Text(String(format: NSLocalizedString("healthkit_workouts_detected", comment: ""), healthKitManager.unloggedWorkouts.count))
-                    .font(.subheadline.bold())
+                    .font(.appSubheadline.bold())
                 Spacer()
                 Button {
                     healthKitManager.dismissAllWorkouts()
                 } label: {
                     Text("healthkit_dismiss_all")
-                        .font(.caption)
+                        .font(.appCaption)
                         .foregroundColor(.secondary)
                 }
             }
@@ -59,9 +59,9 @@ struct HealthKitSuggestionsView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(name)
-                    .font(.subheadline.bold())
+                    .font(.appSubheadline.bold())
                 Text(Self.timeFormatter.string(from: workout.startDate))
-                    .font(.caption)
+                    .font(.appCaption)
                     .foregroundColor(.secondary)
             }
 
@@ -71,7 +71,7 @@ struct HealthKitSuggestionsView: View {
                 onSelect(workout)
             } label: {
                 Text("healthkit_log_workout")
-                    .font(.caption.bold())
+                    .font(.appCaption.bold())
                     .foregroundColor(.white)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)

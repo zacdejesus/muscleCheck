@@ -117,7 +117,7 @@ struct ContentView: View {
             HistoryView(entries: entries)
           }
           .foregroundColor(Color("PrimaryButtonColor"))
-          .font(.subheadline)
+          .font(.appSubheadline)
         }
         
         // One toolbar item per action (instead of an HStack crammed into a single
@@ -233,7 +233,7 @@ struct ContentView: View {
         Image(systemName: category.defaultIcon)
         Text(category.displayName)
       }
-      .font(.subheadline.bold())
+      .font(.appSubheadline.bold())
       .foregroundColor(Color("PrimaryButtonColor"))
     } else {
       Text(categoryRaw)

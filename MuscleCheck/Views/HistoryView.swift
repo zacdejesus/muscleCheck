@@ -15,7 +15,7 @@ struct HistoryView: View {
       VStack(alignment: .leading, spacing: 20) {
         // Month summary caption (per-month trained-day count — not shown in Stats/Streak)
         Text("history_month_summary \(viewModel.monthTrainedCount) \(viewModel.monthName)")
-          .font(.subheadline)
+          .font(.appSubheadline)
           .foregroundStyle(.secondary)
           .padding(.horizontal)
 

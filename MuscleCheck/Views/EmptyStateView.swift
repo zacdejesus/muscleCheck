@@ -11,11 +11,11 @@ struct EmptyStateView: View {
   var body: some View {
     VStack(spacing: 16) {
       Image(systemName: "tray")
-        .font(.largeTitle)
+        .font(.appLargeTitle)
         .foregroundColor(.gray)
       Text("No_muscles_added_please_add_some_in_top_rigth_corner")
         .foregroundColor(.gray)
-        .font(.headline)
+        .font(.appHeadline)
     }
     .frame(maxWidth: .infinity, minHeight: 200)
   }

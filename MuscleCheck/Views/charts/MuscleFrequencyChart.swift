@@ -19,7 +19,7 @@ struct MuscleFrequencyChart: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("stats_muscle_frequency_title")
-                .font(.headline)
+                .font(.appHeadline)
 
             Chart(Array(data.enumerated()), id: \.offset) { _, item in
                 BarMark(
@@ -30,7 +30,7 @@ struct MuscleFrequencyChart: View {
                 .cornerRadius(4)
                 .annotation(position: .trailing) {
                     Text("\(item.count)")
-                        .font(.caption2)
+                        .font(.appCaption2)
                         .foregroundColor(.secondary)
                 }
             }

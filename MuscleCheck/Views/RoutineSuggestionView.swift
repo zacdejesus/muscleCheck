@@ -40,7 +40,7 @@ struct RoutineSuggestionView: View {
         VStack(spacing: 12) {
             ProgressView()
             Text("ai_coach_generating")
-                .font(.subheadline)
+                .font(.appSubheadline)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -49,7 +49,7 @@ struct RoutineSuggestionView: View {
     private func errorState(_ message: String) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
-                .font(.largeTitle)
+                .font(.appLargeTitle)
                 .foregroundStyle(.secondary)
             Text(message)
                 .multilineTextAlignment(.center)
@@ -65,11 +65,11 @@ struct RoutineSuggestionView: View {
             VStack(alignment: .leading, spacing: 20) {
                 if !suggestion.focus.isEmpty {
                     Text(suggestion.focus)
-                        .font(.largeTitle.bold())
+                        .font(.appLargeTitle.bold())
                 }
                 if !suggestion.rationale.isEmpty {
                     Text(suggestion.rationale)
-                        .font(.body)
+                        .font(.appBody)
                         .foregroundStyle(.secondary)
                 }
 
@@ -90,12 +90,12 @@ struct RoutineSuggestionView: View {
     private func blockView(_ block: RoutineSuggestion.Block) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(block.groupName)
-                .font(.headline)
+                .font(.appHeadline)
                 .foregroundColor(Color("PrimaryButtonColor"))
             ForEach(block.exercises, id: \.self) { exercise in
                 Label(exercise, systemImage: "circle.fill")
                     .labelStyle(BulletLabelStyle())
-                    .font(.body)
+                    .font(.appBody)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

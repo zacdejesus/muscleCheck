@@ -24,7 +24,7 @@ struct WeekDetailSection: View {
                 ForEach(days) { day in
                     VStack(alignment: .leading, spacing: 8) {
                         Text(Self.dayLabel(day.date))
-                            .font(.subheadline.bold())
+                            .font(.appSubheadline.bold())
                             .foregroundStyle(Color("PrimaryButtonColor"))
                         ForEach(day.activities) { activity in
                             ActivityDetailRow(activity: activity)
@@ -68,7 +68,7 @@ private struct ActivityDetailRow: View {
             Text(activity.entry.name)
             if isGym, let kg = activity.weightKg {
                 Text(formattedWeight(kg))
-                    .font(.caption)
+                    .font(.appCaption)
                     .foregroundStyle(.secondary)
             }
             Spacer()

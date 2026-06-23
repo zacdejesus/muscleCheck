@@ -40,23 +40,23 @@ struct MonthCalendarView: View {
     private var header: some View {
         HStack {
             Button(action: onPrev) {
-                Image(systemName: "chevron.left").font(.headline)
+                Image(systemName: "chevron.left").font(.appHeadline)
             }
             Spacer()
             Button(action: onToggleExpand) {
                 HStack(spacing: 4) {
                     Text(monthTitle)
-                        .font(.headline)
+                        .font(.appHeadline)
                         .contentTransition(.numericText())
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption.weight(.bold))
+                        .font(.appCaption.weight(.bold))
                 }
             }
             .accessibilityLabel(monthTitle)
             .accessibilityHint(isExpanded ? "history_calendar_collapse_hint" : "history_calendar_expand_hint")
             Spacer()
             Button(action: onNext) {
-                Image(systemName: "chevron.right").font(.headline)
+                Image(systemName: "chevron.right").font(.appHeadline)
             }
         }
         .tint(accent)
@@ -69,7 +69,7 @@ struct MonthCalendarView: View {
         return HStack(spacing: 0) {
             ForEach(symbols.indices, id: \.self) { i in
                 Text(symbols[i])
-                    .font(.caption)
+                    .font(.appCaption)
                     .fontWeight(.medium)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)

@@ -23,10 +23,10 @@ struct PaywallView: View {
                             .foregroundColor(Color("PrimaryButtonColor"))
                         
                         Text("paywall_title")
-                            .font(.largeTitle.bold())
+                            .font(.appLargeTitle.bold())
                         
                         Text("paywall_subtitle")
-                            .font(.body)
+                            .font(.appBody)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
@@ -79,7 +79,7 @@ struct PaywallView: View {
                                 .padding(.vertical, 14)
                         } else {
                             Text("paywall_subscribe")
-                                .font(.headline)
+                                .font(.appHeadline)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
                         }
@@ -94,7 +94,7 @@ struct PaywallView: View {
                         Task { await viewModel.restore() }
                     } label: {
                         Text("paywall_restore")
-                            .font(.footnote)
+                            .font(.appFootnote)
                             .foregroundColor(.secondary)
                     }
                     .disabled(viewModel.isLoading)
@@ -158,13 +158,13 @@ private struct PlanComparisonView: View {
                 Text("paywall_compare_pro").frame(width: 60)
                     .foregroundColor(Color("PrimaryButtonColor"))
             }
-            .font(.caption.bold())
+            .font(.appCaption.bold())
             .padding(.bottom, 4)
 
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                 HStack {
                     Text(LocalizedStringKey(row.labelKey))
-                        .font(.subheadline)
+                        .font(.appSubheadline)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     cell(on: row.free, accent: false).frame(width: 60)
                     cell(on: true, accent: true).frame(width: 60)
@@ -178,7 +178,7 @@ private struct PlanComparisonView: View {
     @ViewBuilder
     private func cell(on: Bool, accent: Bool) -> some View {
         Image(systemName: on ? "checkmark" : "minus")
-            .font(.subheadline.bold())
+            .font(.appSubheadline.bold())
             .foregroundStyle(on ? (accent ? Color("PrimaryButtonColor") : Color.secondary) : Color.secondary.opacity(0.4))
     }
 }
@@ -196,10 +196,10 @@ private struct PackageOptionView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text(title)
-                            .font(.headline)
+                            .font(.appHeadline)
                         if let badge {
                             Text(badge)
-                                .font(.caption2.bold())
+                                .font(.appCaption2.bold())
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(Color("PrimaryButtonColor"))
@@ -210,7 +210,7 @@ private struct PackageOptionView: View {
                 }
                 Spacer()
                 Text(price)
-                    .font(.subheadline.bold())
+                    .font(.appSubheadline.bold())
             }
             .padding()
             .background(

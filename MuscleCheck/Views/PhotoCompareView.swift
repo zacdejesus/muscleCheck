@@ -64,7 +64,7 @@ struct PhotoCompareView: View {
                         .frame(width: 36, height: 36)
                         .overlay {
                             Image(systemName: "arrow.left.and.right")
-                                .font(.caption)
+                                .font(.appCaption)
                                 .foregroundColor(.black)
                         }
                         .shadow(radius: 4)
@@ -84,10 +84,10 @@ struct PhotoCompareView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text("progress_photos_before")
-                        .font(.caption.bold())
+                        .font(.appCaption.bold())
                         .foregroundColor(.secondary)
                     Text(Self.dateFormatter.string(from: photoBefore.dateTaken))
-                        .font(.caption)
+                        .font(.appCaption)
                         .foregroundColor(.secondary)
                 }
 
@@ -95,10 +95,10 @@ struct PhotoCompareView: View {
 
                 VStack(alignment: .trailing) {
                     Text("progress_photos_after")
-                        .font(.caption.bold())
+                        .font(.appCaption.bold())
                         .foregroundColor(.secondary)
                     Text(Self.dateFormatter.string(from: photoAfter.dateTaken))
-                        .font(.caption)
+                        .font(.appCaption)
                         .foregroundColor(.secondary)
                 }
             }

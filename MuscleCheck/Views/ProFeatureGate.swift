@@ -74,12 +74,12 @@ struct ProFeatureGate<Content: View>: View {
                 .foregroundColor(Color("PrimaryButtonColor"))
 
             Text(lockedMessage)
-                .font(.title2.bold())
+                .font(.appTitle2.bold())
                 .multilineTextAlignment(.center)
 
             if let description {
                 Text(description)
-                    .font(.subheadline)
+                    .font(.appSubheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
             }

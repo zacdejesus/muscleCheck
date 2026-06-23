@@ -14,7 +14,7 @@ struct WeeklyTrainingChart: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("stats_weekly_title")
-                .font(.headline)
+                .font(.appHeadline)
 
             Chart(Array(data.enumerated()), id: \.offset) { index, item in
                 BarMark(
@@ -34,7 +34,7 @@ struct WeeklyTrainingChart: View {
             .chartXAxis {
                 AxisMarks { value in
                     AxisValueLabel()
-                        .font(.caption2)
+                        .font(.appCaption2)
                 }
             }
             .frame(height: 180)

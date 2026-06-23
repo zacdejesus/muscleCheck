@@ -43,7 +43,7 @@ struct AddMuscleGroupView: View {
                                 selectedIcon = icon
                             } label: {
                                 Image(systemName: icon)
-                                    .font(.title3)
+                                    .font(.appTitle3)
                                     .frame(width: 40, height: 40)
                                     .background(
                                         selectedIcon == icon
@@ -66,7 +66,7 @@ struct AddMuscleGroupView: View {
                 if let errorMessage {
                     Section {
                         Text(errorMessage)
-                            .font(.subheadline)
+                            .font(.appSubheadline)
                             .foregroundStyle(.red)
                     }
                 }

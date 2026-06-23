@@ -92,7 +92,7 @@ struct ProgressPhotosView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.secondary)
             Text("progress_photos_empty")
-                .font(.headline)
+                .font(.appHeadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             Button {
@@ -127,7 +127,7 @@ struct ProgressPhotosView: View {
                         .padding(.horizontal)
                     } header: {
                         Text(group.month)
-                            .font(.subheadline.bold())
+                            .font(.appSubheadline.bold())
                             .foregroundColor(Color("PrimaryButtonColor"))
                             .padding(.horizontal)
                     }
@@ -174,7 +174,7 @@ struct ProgressPhotosView: View {
                 .overlay(alignment: .bottomTrailing) {
                     if viewModel.isCompareMode && isSelected {
                         Image(systemName: isSelectedA ? "1.circle.fill" : "2.circle.fill")
-                            .font(.title3)
+                            .font(.appTitle3)
                             .foregroundColor(.white)
                             .padding(4)
                             .background(Color("PrimaryButtonColor"))
@@ -197,14 +197,14 @@ struct ProgressPhotosView: View {
     private var compareBanner: some View {
         HStack {
             Text("progress_photos_compare")
-                .font(.subheadline.bold())
+                .font(.appSubheadline.bold())
             Spacer()
             if viewModel.canCompare {
                 Button {
                     showingCompare = true
                 } label: {
                     Text("progress_photos_compare")
-                        .font(.subheadline.bold())
+                        .font(.appSubheadline.bold())
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
@@ -213,7 +213,7 @@ struct ProgressPhotosView: View {
                 }
             } else {
                 Text(selectPrompt)
-                    .font(.caption)
+                    .font(.appCaption)
                     .foregroundColor(.secondary)
             }
         }
@@ -255,12 +255,12 @@ struct PhotoDetailView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(Self.dateFormatter.string(from: photo.dateTaken))
-                    .font(.subheadline)
+                    .font(.appSubheadline)
                     .foregroundColor(.secondary)
 
                 if !photo.note.isEmpty {
                     Text(photo.note)
-                        .font(.body)
+                        .font(.appBody)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -26,7 +26,7 @@ struct CalendarDayCell: View {
                     Circle().stroke(accent, lineWidth: 1.5)
                 }
                 Text("\(dayNumber)")
-                    .font(.callout)
+                    .font(.appCallout)
                     .fontWeight(isSelected || isToday ? .semibold : .regular)
                     .foregroundStyle(numberColor)
             }

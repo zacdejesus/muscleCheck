@@ -16,15 +16,15 @@ struct StreakCardView: View {
             VStack(spacing: 4) {
                 HStack(spacing: 4) {
                     Text(viewModel.isStreakAlive ? "🔥" : "💤")
-                        .font(.title2)
+                        .font(.appTitle2)
                     Text("\(viewModel.currentStreak)")
-                        .font(.title.bold())
+                        .font(.appTitle.bold())
                         .foregroundColor(viewModel.isStreakAlive ? Color("PrimaryButtonColor") : .secondary)
                         .contentTransition(.numericText())
                         .animation(.spring, value: viewModel.currentStreak)
                 }
                 Text("streak_current")
-                    .font(.caption)
+                    .font(.appCaption)
                     .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity)
@@ -36,13 +36,13 @@ struct StreakCardView: View {
             VStack(spacing: 4) {
                 HStack(spacing: 4) {
                     Text("🏆")
-                        .font(.title2)
+                        .font(.appTitle2)
                     Text("\(viewModel.maxStreak)")
-                        .font(.title.bold())
+                        .font(.appTitle.bold())
                         .foregroundColor(.secondary)
                 }
                 Text("streak_max")
-                    .font(.caption)
+                    .font(.appCaption)
                     .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity)

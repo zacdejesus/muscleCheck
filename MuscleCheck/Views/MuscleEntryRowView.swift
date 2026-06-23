@@ -30,7 +30,7 @@ struct MuscleEntryRowView: View {
                 Text(entry.name)
                 if canEditWeight, let weightLabel = entry.formattedLastWeight {
                     Text(weightLabel)
-                        .font(.caption)
+                        .font(.appCaption)
                         .foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 8)
