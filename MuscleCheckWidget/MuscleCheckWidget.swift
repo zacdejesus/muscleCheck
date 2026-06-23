@@ -53,15 +53,19 @@ struct MuscleCheckWidgetEntryView: View {
         VStack(alignment: .leading, spacing: 6) {
             // Streak row
             HStack(spacing: 4) {
-                Text(entry.currentStreak > 0 ? "🔥" : "💤")
+                Image(systemName: entry.currentStreak > 0 ? "flame.fill" : "moon.zzz.fill")
                     .font(.caption)
+                    .foregroundColor(entry.currentStreak > 0 ? .orange : .secondary)
                 Text("widget_streak_days \(entry.currentStreak)")
                     .font(.caption.bold())
-                    .foregroundColor(.orange)
+                    .foregroundColor(entry.currentStreak > 0 ? .orange : .secondary)
                 Spacer()
-                Text("🏆 \(entry.maxStreak)")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                HStack(spacing: 3) {
+                    Image(systemName: "trophy.fill")
+                    Text("\(entry.maxStreak)")
+                }
+                .font(.caption2)
+                .foregroundColor(.secondary)
             }
 
             Divider()
@@ -72,8 +76,9 @@ struct MuscleCheckWidgetEntryView: View {
                         .font(.caption2)
                         .foregroundColor(.accentColor)
                         .frame(width: 16)
-                    Text(muscle.isChecked ? "✅" : "⬜️")
+                    Image(systemName: muscle.isChecked ? "checkmark.circle.fill" : "circle")
                         .font(.caption)
+                        .foregroundColor(muscle.isChecked ? .green : .secondary)
                     Text(muscle.name)
                         .font(.caption)
                         .lineLimit(1)
