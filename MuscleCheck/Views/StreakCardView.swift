@@ -14,9 +14,10 @@ struct StreakCardView: View {
         HStack(spacing: 16) {
             // Current streak
             VStack(spacing: 4) {
-                HStack(spacing: 4) {
-                    Text(viewModel.isStreakAlive ? "🔥" : "💤")
-                        .font(.appTitle2)
+                HStack(spacing: 6) {
+                    Image(systemName: viewModel.isStreakAlive ? "flame.fill" : "moon.zzz.fill")
+                        .font(.appTitle3)
+                        .foregroundStyle(viewModel.isStreakAlive ? .streak : .secondary)
                     Text("\(viewModel.currentStreak)")
                         .font(.appTitle.bold())
                         .foregroundColor(viewModel.isStreakAlive ? .streak : .secondary)
@@ -34,9 +35,10 @@ struct StreakCardView: View {
 
             // Max streak
             VStack(spacing: 4) {
-                HStack(spacing: 4) {
-                    Text("🏆")
-                        .font(.appTitle2)
+                HStack(spacing: 6) {
+                    Image(systemName: "trophy.fill")
+                        .font(.appTitle3)
+                        .foregroundStyle(.secondary)
                     Text("\(viewModel.maxStreak)")
                         .font(.appTitle.bold())
                         .foregroundColor(.secondary)
