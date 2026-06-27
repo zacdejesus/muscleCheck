@@ -152,9 +152,13 @@ final class ContentViewModel: ObservableObject {
           let grouped = Dictionary(grouping: currentWeekEntries) { $0.category }
           groupedCurrentWeekEntries = grouped
               .sorted { lhs, rhs in
+                  // Built-ins keep their declared order; custom categories (no enum match)
+                  // share the trailing bucket, so break ties on the key for a STABLE order
+                  // — Swift's sort isn't stable, and without this several customs jittered.
                   let lOrder = ActivityCategory(rawValue: lhs.key)?.sortOrder ?? 99
                   let rOrder = ActivityCategory(rawValue: rhs.key)?.sortOrder ?? 99
-                  return lOrder < rOrder
+                  if lOrder != rOrder { return lOrder < rOrder }
+                  return lhs.key < rhs.key
               }
               .map { (category: $0.key, entries: $0.value) }
 
