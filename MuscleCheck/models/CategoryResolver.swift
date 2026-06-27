@@ -42,11 +42,12 @@ enum CategoryResolver {
                 isBuiltIn: false
             )
         }
-        // 3. Orphan: the custom category was deleted but entries still reference it.
-        //    Degrade gracefully — show the raw string, no weight, a usable icon.
+        // 3. Orphan: the custom category was deleted but entries still reference its
+        //    (UUID) id. Degrade to the neutral "Custom" label/icon — never echo the
+        //    raw id (it's an opaque UUID), never crash, never track weight.
         return ResolvedCategory(
             id: raw,
-            displayName: raw,
+            displayName: ActivityCategory.custom.displayName,
             icon: ActivityCategory.custom.defaultIcon,
             tracksWeight: false,
             isBuiltIn: false

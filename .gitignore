@@ -65,3 +65,4 @@ MuscleCheck.xcodeproj/xcuserdata/adjesus.xcuserdatad/xcdebugger/Breakpoints_v2.x
 MuscleCheck/GoogleService-Info.plist
 /GoogleService-Info.plist
 */GoogleService-Info.plist
+.build-dd/

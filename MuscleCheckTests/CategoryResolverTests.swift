@@ -62,10 +62,11 @@ struct CategoryResolverTests {
     @Test
     func orphanStringFallsBackGracefully() {
         // Category whose CustomCategory was deleted: must not crash, must degrade sanely.
-        let r = CategoryResolver.resolve("deleted-cat", custom: [])
+        let r = CategoryResolver.resolve("DEAD-BEEF-UUID", custom: [])
         #expect(!r.isBuiltIn)
-        #expect(r.id == "deleted-cat")
-        #expect(r.displayName == "deleted-cat")       // shows the raw string, not empty
+        #expect(r.id == "DEAD-BEEF-UUID")             // preserves the id (for round-tripping)
+        #expect(!r.displayName.isEmpty)               // neutral label, never the raw UUID
+        #expect(r.displayName != "DEAD-BEEF-UUID")    // must NOT echo the opaque id
         #expect(!r.tracksWeight)
         #expect(!r.icon.isEmpty)                      // always a usable icon
     }
