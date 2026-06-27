@@ -233,18 +233,16 @@ struct ContentView: View {
     }
   }
 
-  @ViewBuilder
   private func categoryHeader(_ categoryRaw: String) -> some View {
-    if let category = ActivityCategory(rawValue: categoryRaw) {
-      HStack(spacing: 6) {
-        Image(systemName: category.defaultIcon)
-        Text(category.displayName)
-      }
-      .font(.appSubheadline.bold())
-      .foregroundColor(Color.brand)
-    } else {
-      Text(categoryRaw)
+    // Resolve through CategoryResolver so custom categories show their name + icon —
+    // a raw category string here is a custom category's UUID, never a display label.
+    let resolved = CategoryResolver.resolve(categoryRaw, custom: customCategories)
+    return HStack(spacing: 6) {
+      Image(systemName: resolved.icon)
+      Text(resolved.displayName)
     }
+    .font(.appSubheadline.bold())
+    .foregroundColor(Color.brand)
   }
 }
 
