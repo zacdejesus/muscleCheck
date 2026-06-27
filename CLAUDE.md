@@ -264,6 +264,24 @@ Validar `groupIndex` en rango y `blocks.count == 2`; descartar/recortar lo invá
 
 ---
 
+### ✅ Feature 17: Categorías definidas por el usuario (branch: `feature/custom-categories`, PR #23)
+Implementado. El usuario crea categorías propias (nombre + ícono + toggle "registrar peso") más allá de las 7 built-in, en **Settings → Activity Presets → Custom Categories**. Las custom aparecen en el picker de alta; si optan por peso, se comportan como gym.
+
+**Arquitectura (test-first, aditiva — no rompe versiones anteriores):**
+- `CustomCategory` (`@Model`) cuyo `id` es el mismo string que ya guarda `MuscleEntry.category` → migración **aditiva**, entries viejas intactas.
+- `CategoryResolver` (puro): unifica built-in (enum) + custom; built-in siempre gana; categoría borrada degrada a "Custom" sin crashear.
+- `CategoryStore` (CRUD sobre `ModelContextProtocol`, ids UUID anti-colisión, validación, orden post built-ins).
+- `ActivityCategory.tracksWeight` reemplaza los `== .gym` hardcodeados en `MuscleEntryRowView` / `WeekDetailSection`. El AI Coach se deja **gym-only** (es por diseño, no por peso).
+- Widget sin cambios (renderiza ícono+nombre por entry).
+
+Archivos nuevos: `models/CustomCategory.swift`, `models/CategoryResolver.swift`, `managers/CategoryStore.swift`, `managers/protocols/CategoryStoreProtocol.swift`, `Views/ManageCategoriesView.swift`, tests `CategoryResolverTests`/`CategoryStoreTests`. Modificados: ActivityCategory, MuscleCheckApp (schema), MuscleEntryRowView, WeekDetailSection, ContentView, HistoryView, AddMuscleGroupView, SettingsView, Localizable.xcstrings.
+
+**Decisiones abiertas:** categorías custom empiezan vacías; borrar una **no** borra sus entries (quedan huérfanas → "Custom", no-destructivo). Evaluar cascade-delete o reasignación.
+
+**Versión:** 2.1.x
+
+---
+
 ## Backlog de feedback de usuarios (EN EVALUACIÓN — no construir aún)
 
 > Recomendaciones que salieron del review de la tester (Ro) y no se aplicaron en el release 2.1.x. Quedan acá registradas con su trade-off para decidir más adelante. **No son features aprobados** — varios tensionan el posicionamiento core. Lo que sí se aplicó de ese review: fix de sensibilidad de tap ("se borra todo"), validación de add-group con error inline, y comparación Free vs Pro en el paywall.
