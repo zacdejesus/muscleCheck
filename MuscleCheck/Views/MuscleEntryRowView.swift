@@ -10,13 +10,17 @@ import SwiftUI
 
 struct MuscleEntryRowView: View {
     var entry: MuscleEntry
+    /// User-defined categories, so a custom category that opted into weight tracking
+    /// behaves like gym. Defaults to [] — built-ins resolve correctly without it,
+    /// which keeps previews container-free.
+    var customCategories: [CustomCategory] = []
     var onTap: (MuscleEntry) -> Void
     var onSaveSession: (MuscleEntry, Double?, Int?, Int?) -> Void = { _, _, _, _ in }
 
     @State private var isShowingModal: Bool = false
 
     private var canEditWeight: Bool {
-        entry.category == ActivityCategory.gym.rawValue
+        CategoryResolver.resolve(entry.category, custom: customCategories).tracksWeight
     }
 
     var body: some View {
