@@ -76,9 +76,14 @@ struct MonthCalendarCalculator {
 
     /// Monday-first single-letter weekday headers, localized.
     static func weekdaySymbols() -> [String] {
-        let calendar = Date.appCalendar
+        // `Date.appCalendar` is a bare gregorian calendar with no `locale`, so its
+        // symbol arrays fall back to English regardless of the app's language. We set
+        // an explicit locale ONLY here (not on `appCalendar`) so week-of-year math
+        // elsewhere keeps its fixed firstWeekday/minimumDaysInFirstWeek behaviour.
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = Locale.current
         let symbols = calendar.veryShortStandaloneWeekdaySymbols // index 0 = Sunday
-        let firstIndex = calendar.firstWeekday - 1                // 1 for Monday
+        let firstIndex = Date.appCalendar.firstWeekday - 1        // 1 → Monday-first
         return Array(symbols[firstIndex...] + symbols[..<firstIndex])
     }
 
