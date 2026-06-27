@@ -28,7 +28,8 @@ struct ContentView: View {
   @State private var workoutToLog: IdentifiableWorkout?
 
   @Query private var entries: [MuscleEntry]
-  
+  @Query private var customCategories: [CustomCategory]
+
   var body: some View {
     NavigationStack {
       VStack(spacing: 0) {
@@ -54,6 +55,7 @@ struct ContentView: View {
             ForEach(group.entries) { entry in
               MuscleEntryRowView(
                 entry: entry,
+                customCategories: customCategories,
                 onTap: { _ in viewModel.toggleActivity(for: entry) },
                 onSaveSession: { target, weight, sets, reps in viewModel.saveSession(weight: weight, sets: sets, reps: reps, for: target) }
               )
@@ -68,6 +70,7 @@ struct ContentView: View {
                 ForEach(group.entries) { entry in
                   MuscleEntryRowView(
                     entry: entry,
+                    customCategories: customCategories,
                     onTap: { _ in viewModel.toggleActivity(for: entry) },
                     onSaveSession: { target, weight, sets, reps in viewModel.saveSession(weight: weight, sets: sets, reps: reps, for: target) }
                   )

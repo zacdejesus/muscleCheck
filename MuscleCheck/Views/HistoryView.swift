@@ -3,6 +3,7 @@ import SwiftData
 
 struct HistoryView: View {
   let entries: [MuscleEntry]
+  @Query private var customCategories: [CustomCategory]
   @StateObject private var viewModel: HistoryViewModel
 
   init(entries: [MuscleEntry]) {
@@ -40,7 +41,7 @@ struct HistoryView: View {
         .padding(.horizontal)
 
         // Selected week, day by day
-        WeekDetailSection(days: viewModel.weekBreakdown)
+        WeekDetailSection(days: viewModel.weekBreakdown, customCategories: customCategories)
       }
       .padding(.vertical)
     }

@@ -50,6 +50,7 @@ struct MuscleCheckApp: App {
     let schema = Schema([
       MuscleEntry.self,
       ProgressPhoto.self,
+      CustomCategory.self,
     ])
     let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

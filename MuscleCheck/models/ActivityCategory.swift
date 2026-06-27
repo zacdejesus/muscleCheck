@@ -43,6 +43,11 @@ enum ActivityCategory: String, CaseIterable, Codable, Identifiable, Sendable {
         }
     }
 
+    /// Whether activities in this category prompt for/show weight. Only gym does
+    /// among the built-ins. Replaces the hardcoded `== .gym` checks scattered in
+    /// WorkoutEligibility / MuscleEntryRowView / WeekDetailSection.
+    var tracksWeight: Bool { self == .gym }
+
     var presetEntries: [(nameKey: String, icon: String)] {
         switch self {
         case .gym:

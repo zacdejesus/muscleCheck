@@ -10,6 +10,10 @@ import SwiftUI
 /// The per-day breakdown of the selected week, shown below the calendar.
 struct WeekDetailSection: View {
     let days: [DayActivities]
+    /// User-defined categories, forwarded to each row so custom weight-tracking
+    /// categories show their weight in history. Defaults to [] (built-ins resolve
+    /// without it), keeping the preview container-free.
+    var customCategories: [CustomCategory] = []
 
     var body: some View {
         if days.isEmpty {
@@ -27,7 +31,7 @@ struct WeekDetailSection: View {
                             .font(.appSubheadline.bold())
                             .foregroundStyle(Color.brand)
                         ForEach(day.activities) { activity in
-                            ActivityDetailRow(activity: activity)
+                            ActivityDetailRow(activity: activity, customCategories: customCategories)
                         }
                     }
                 }
@@ -57,8 +61,11 @@ struct WeekDetailSection: View {
 /// Deliberately omits the checkmark/weight-edit affordances — history doesn't mutate state.
 private struct ActivityDetailRow: View {
     let activity: DayActivity
+    var customCategories: [CustomCategory] = []
 
-    private var isGym: Bool { activity.entry.category == ActivityCategory.gym.rawValue }
+    private var tracksWeight: Bool {
+        CategoryResolver.resolve(activity.entry.category, custom: customCategories).tracksWeight
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -66,7 +73,7 @@ private struct ActivityDetailRow: View {
                 .foregroundColor(Color.brand)
                 .frame(width: 24)
             Text(activity.entry.name)
-            if isGym, let kg = activity.weightKg {
+            if tracksWeight, let kg = activity.weightKg {
                 Text(formattedWeight(kg))
                     .font(.appCaption)
                     .foregroundStyle(.secondary)
