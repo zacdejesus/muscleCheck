@@ -32,8 +32,12 @@ struct ContentView: View {
   var body: some View {
     NavigationStack {
       VStack(spacing: 0) {
+        // Fixed gap below the streak card so it never sticks to the activity list.
+        // A flexible Spacer() collapsed to 0 when the list filled the screen (card
+        // stuck to the table) and ballooned when the list was short — inconsistent.
+        // A constant padding keeps the same separation in every configuration.
         StreakCardView(viewModel: streakViewModel)
-          Spacer()
+          .padding(.bottom, 16)
         if !healthKitManager.unloggedWorkouts.isEmpty && storeManager.isPro {
           HealthKitSuggestionsView(healthKitManager: healthKitManager) { workout in
             selectWorkoutToLog(workout)
