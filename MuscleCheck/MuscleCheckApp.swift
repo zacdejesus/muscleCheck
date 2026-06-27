@@ -47,11 +47,7 @@ struct MuscleCheckApp: App {
   }
   
   var sharedModelContainer: ModelContainer = {
-    let schema = Schema([
-      MuscleEntry.self,
-      ProgressPhoto.self,
-      CustomCategory.self,
-    ])
+    let schema = AppSchema.schema
     let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
     do {

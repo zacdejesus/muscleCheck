@@ -9,9 +9,11 @@ import SwiftData
 @ModelActor
 actor MuscleDataActor {
 
+    // Shares AppSchema with MuscleCheckApp — both open the same default.store, so the
+    // entity sets must match or SwiftData refuses to open it ("could not open default.store").
     static let sharedContainer: ModelContainer = {
         do {
-            return try ModelContainer(for: MuscleEntry.self, ProgressPhoto.self)
+            return try ModelContainer(for: AppSchema.schema)
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
