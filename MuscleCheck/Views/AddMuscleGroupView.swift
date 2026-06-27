@@ -11,8 +11,9 @@ import SwiftData
 struct AddMuscleGroupView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
+    @Query(sort: \CustomCategory.sortOrder) private var customCategories: [CustomCategory]
     @State private var muscleName: String = ""
-    @State private var selectedCategory: ActivityCategory = .gym
+    @State private var selectedCategoryID: String = ActivityCategory.gym.rawValue
     @State private var selectedIcon: String = ActivityCategory.gym.defaultIcon
     @State private var errorMessage: String?
 
@@ -26,10 +27,14 @@ struct AddMuscleGroupView: View {
                 }
 
                 Section("select_category") {
-                    Picker("select_category", selection: $selectedCategory) {
+                    Picker("select_category", selection: $selectedCategoryID) {
                         ForEach(ActivityCategory.allCases) { category in
                             Label(category.displayName, systemImage: category.defaultIcon)
-                                .tag(category)
+                                .tag(category.rawValue)
+                        }
+                        ForEach(customCategories) { category in
+                            Label(category.name, systemImage: category.icon)
+                                .tag(category.id)
                         }
                     }
                     .pickerStyle(.menu)
@@ -72,8 +77,8 @@ struct AddMuscleGroupView: View {
                 }
             }
             .navigationTitle("add_exercise")
-            .onChange(of: selectedCategory) { _, newCategory in
-                selectedIcon = newCategory.defaultIcon
+            .onChange(of: selectedCategoryID) { _, newID in
+                selectedIcon = CategoryResolver.resolve(newID, custom: customCategories).icon
             }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -98,7 +103,7 @@ struct AddMuscleGroupView: View {
         do {
             try MuscleEntryManager(context: context).addEntry(
                 name: muscleName,
-                category: selectedCategory.rawValue,
+                category: selectedCategoryID,
                 icon: selectedIcon
             )
             dismiss()

@@ -85,6 +85,13 @@ struct SettingsView: View {
                     }
                     .disabled(viewModel.addedPresets.contains(category.rawValue))
                 }
+
+                NavigationLink {
+                    ManageCategoriesView()
+                } label: {
+                    Label("settings_custom_categories", systemImage: "folder.badge.plus")
+                        .foregroundColor(Color.brand)
+                }
             }
 
             // MARK: - Units
