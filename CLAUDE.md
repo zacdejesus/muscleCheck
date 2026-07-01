@@ -7,6 +7,7 @@
 > - Testing y cobertura
 > - Limpieza de warnings y code smells
 > - Consistencia de patrones entre managers
+> - **CI/CD: agregar pipeline en GitHub Actions** (build + tests en cada PR; idealmente lint y, a futuro, distribución a TestFlight)
 > Apple Watch y cualquier otra feature quedan diferidos hasta después del próximo release.
 
 ## Visión y Posicionamiento
@@ -255,6 +256,8 @@ Validar `groupIndex` en rango y `blocks.count == 2`; descartar/recortar lo invá
 **Modelo:** on-device ~3B de Apple (FoundationModels). Suficiente para esta tarea acotada (conocimiento común de ejercicios + split simple + output estructurado); flojo en razonamiento profundo, mitigado con tarea acotada + "dame otra".
 
 **Diferido a v2:** chips (tiempo/energía), discovery de grupos nuevos ("considerá agregar X"), historial completo de sugerencias, catálogo curado de ejercicios (el modelo selecciona por índice en vez de generar), pista de rotación precomputada.
+
+**Fuente candidata de catálogo (pendiente licencia):** ExerciseDB v1 (mirror `github.com/hasaneyldrm/exercises-dataset`, 1.324 ejercicios, JSON + GIF/JPG, instrucciones EN/ES/IT/TR, metadata body part/target/secondary muscles). Encaja con el "catálogo curado" diferido: el modelo elegiría ejercicios por índice en vez de generarlos → cero alucinación + GIFs read-only. **Blockers:** (1) el mirror es non-commercial → habría que licenciar ExerciseDB en la fuente (AscendAPI/RapidAPI) ya que la app es monetizada; (2) los 1.324 assets inflarían el bundle → embeber solo un subset chico por grupo muscular o fetch on-demand; (3) usar solo como ideas visuales gym-only, no derivar a logging de ejercicios (eso es Feature 13).
 
 **Stack:** FoundationModels (`@Generable`), SwiftUI, UserDefaults (cache).
 
