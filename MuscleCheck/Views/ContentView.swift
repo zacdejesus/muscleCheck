@@ -85,6 +85,11 @@ struct ContentView: View {
           }
         }
         .background(Color(.systemGray6))
+        // Kill the rubber-band bounce on the activity list entirely (even when it's long
+        // enough to scroll). SwiftUI's scrollBounceBehavior has no ".never" — its options
+        // still bounce once the content overflows — so we reach the backing UIScrollView
+        // and set bounces = false. Scoped to this list via a background probe.
+        .background(NoScrollBounce())
         // AI Coach: suggested day. Free + on-device, so no Pro gate — only hidden when
         // Apple Intelligence isn't available (iOS < 26, ineligible hardware, AI off).
         // Pinned to the bottom with a transparent background so the list shows through
@@ -272,5 +277,52 @@ extension MuscleEntry {
 }
 
 extension ModelContext: ModelContextProtocol {
-  
+
+}
+
+/// Disables the rubber-band bounce on the scroll view that backs the attached `List`/
+/// `ScrollView`, without disabling scrolling. SwiftUI exposes no native "never bounce"
+/// option, so we drop an invisible probe into the hierarchy and locate the UIScrollView.
+///
+/// We try the responder chain first (tightest scope). SwiftUI sometimes hosts a List's
+/// `.background` as a *sibling* of the backing UICollectionView, so the chain misses it —
+/// in that case we climb to the nearest ancestor and search its descendants.
+private struct NoScrollBounce: UIViewRepresentable {
+  func makeUIView(context: Context) -> UIView {
+    let probe = UIView()
+    probe.isUserInteractionEnabled = false
+    DispatchQueue.main.async { [weak probe] in
+      guard let probe, let scrollView = probe.enclosingScrollView() else { return }
+      scrollView.bounces = false
+    }
+    return probe
+  }
+
+  func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+private extension UIView {
+  /// Finds the scroll view backing this view's list: first up the responder chain, then,
+  /// failing that, by climbing a couple of ancestors and searching their subtrees.
+  func enclosingScrollView() -> UIScrollView? {
+    var responder: UIResponder? = self
+    while let current = responder {
+      if let scrollView = current as? UIScrollView { return scrollView }
+      responder = current.next
+    }
+    var ancestor: UIView? = superview
+    for _ in 0..<4 {
+      if let found = ancestor?.firstScrollViewInSubtree() { return found }
+      ancestor = ancestor?.superview
+    }
+    return nil
+  }
+
+  func firstScrollViewInSubtree() -> UIScrollView? {
+    if let scrollView = self as? UIScrollView { return scrollView }
+    for subview in subviews {
+      if let found = subview.firstScrollViewInSubtree() { return found }
+    }
+    return nil
+  }
 }
