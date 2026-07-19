@@ -3,8 +3,8 @@
 //  MuscleCheck — Feature: user-defined categories
 //
 //  Lets the user create their own categories beyond the built-in disciplines,
-//  list them and delete them. Persists via CategoryStore. Reuses the icon grid
-//  pattern from AddMuscleGroupView.
+//  list them and delete them. Persists via CategoryStore. Creation also lives
+//  inline in AddExerciseView; both funnel through the same store.
 //
 
 import SwiftUI
@@ -18,8 +18,6 @@ struct ManageCategoriesView: View {
     @State private var selectedIcon: String = ActivityCategory.availableIcons.first ?? "star.fill"
     @State private var defaultMetric: MetricType = .none
     @State private var errorMessage: String?
-
-    private let columns = Array(repeating: GridItem(.flexible()), count: 6)
 
     private var trimmedName: String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -39,7 +37,7 @@ struct ManageCategoriesView: View {
             }
 
             Section("select_icon") {
-                iconGrid
+                IconGridPicker(selectedIcon: $selectedIcon)
             }
 
             if let errorMessage {
@@ -81,25 +79,6 @@ struct ManageCategoriesView: View {
         .navigationTitle("settings_custom_categories")
         .navigationBarTitleDisplayMode(.inline)
         .tint(Color.brand)
-    }
-
-    private var iconGrid: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
-            ForEach(ActivityCategory.availableIcons, id: \.self) { icon in
-                Button {
-                    selectedIcon = icon
-                } label: {
-                    Image(systemName: icon)
-                        .font(.appTitle3)
-                        .frame(width: 40, height: 40)
-                        .background(selectedIcon == icon ? Color.brand.opacity(0.2) : Color.clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .foregroundColor(selectedIcon == icon ? Color.brand : .secondary)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.vertical, 4)
     }
 
     private func add() {

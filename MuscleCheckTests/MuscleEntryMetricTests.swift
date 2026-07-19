@@ -96,6 +96,27 @@ struct MuscleEntryMetricTests {
         #expect(run.formattedLastMetric == nil)
     }
 
+    // MARK: - Manager default resolution
+
+    @MainActor
+    @Test
+    func addEntryWithoutMetricFollowsCustomCategoryDefault() throws {
+        let container = try ModelContainer(
+            for: MuscleEntry.self, CustomCategory.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let context = ModelContext(container)
+        let custom = CustomCategory(id: "CUSTOM-S", name: "Pesas caseras", icon: "dumbbell.fill", sortOrder: 9, defaultMetric: .strength)
+        context.insert(custom)
+        try context.save()
+
+        let manager = MuscleEntryManager(context: context)
+        try manager.addEntry(name: "Kettlebell", category: "CUSTOM-S", icon: "dumbbell.fill")
+
+        let saved = try manager.fetchAllEntries().first { $0.name == "Kettlebell" }
+        #expect(saved?.metric == .strength)
+    }
+
     // MARK: - Backfill
 
     @MainActor

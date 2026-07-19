@@ -89,7 +89,7 @@ final class SessionLogUITests: XCTestCase {
         let entryName = "Str\(Int(Date().timeIntervalSince1970) % 100000)"
 
         app.buttons["Add new muscle group"].tap()
-        let nameField = app.textFields["Calf"] // placeholder is the field's identifier
+        let nameField = app.textFields["add.nameField"]
         XCTAssertTrue(nameField.waitForExistence(timeout: 5), "Add sheet name field not found")
         nameField.tap()
         nameField.typeText(entryName)

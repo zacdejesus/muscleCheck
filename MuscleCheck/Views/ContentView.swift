@@ -184,7 +184,7 @@ struct ContentView: View {
         streakViewModel.update(with: newEntries)
       }
       .sheet(isPresented: $showingAddSheet) {
-        AddMuscleGroupView()
+        AddExerciseView()
       }
       .sheet(isPresented: $showingSettings) {
         NavigationStack {
