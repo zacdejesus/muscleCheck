@@ -17,15 +17,30 @@ final class CustomCategory {
     var name: String
     var icon: String
     var sortOrder: Int
-    /// Whether activities in this category prompt for weight (the gym behaviour,
-    /// generalized). Off by default; the user opts in per category.
+    /// Pre-metric flag, kept stored because removing a property is also a schema
+    /// change. Still written by the `defaultMetric` setter for coherence; only read
+    /// as the migration source in the getter fallback.
     var tracksWeight: Bool
+    /// Raw `MetricType`. Empty string = category created before metrics existed —
+    /// resolved lazily from `tracksWeight` (that fallback IS the migration).
+    var defaultMetricRaw: String = ""
 
-    init(id: String, name: String, icon: String, sortOrder: Int, tracksWeight: Bool = false) {
+    /// Default metric for NEW entries in this category (mirror of
+    /// `ActivityCategory.defaultMetric` for user-defined categories).
+    var defaultMetric: MetricType {
+        get { MetricType(rawValue: defaultMetricRaw) ?? (tracksWeight ? .strength : .none) }
+        set {
+            defaultMetricRaw = newValue.rawValue
+            tracksWeight = newValue == .strength
+        }
+    }
+
+    init(id: String, name: String, icon: String, sortOrder: Int, defaultMetric: MetricType = .none) {
         self.id = id
         self.name = name
         self.icon = icon
         self.sortOrder = sortOrder
-        self.tracksWeight = tracksWeight
+        self.tracksWeight = defaultMetric == .strength
+        self.defaultMetricRaw = defaultMetric.rawValue
     }
 }

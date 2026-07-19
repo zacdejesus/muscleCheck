@@ -16,7 +16,7 @@ struct ManageCategoriesView: View {
 
     @State private var name: String = ""
     @State private var selectedIcon: String = ActivityCategory.availableIcons.first ?? "star.fill"
-    @State private var tracksWeight: Bool = false
+    @State private var defaultMetric: MetricType = .none
     @State private var errorMessage: String?
 
     private let columns = Array(repeating: GridItem(.flexible()), count: 6)
@@ -30,8 +30,12 @@ struct ManageCategoriesView: View {
             // MARK: - New category
             Section("custom_category_section_new") {
                 TextField("custom_category_name_placeholder", text: $name)
-                Toggle("custom_category_tracks_weight", isOn: $tracksWeight)
-                    .tint(Color.brand)
+                Picker("custom_category_default_metric", selection: $defaultMetric) {
+                    ForEach(MetricType.allCases) { metric in
+                        Text(metric.displayName).tag(metric)
+                    }
+                }
+                .tint(Color.brand)
             }
 
             Section("select_icon") {
@@ -64,8 +68,8 @@ struct ManageCategoriesView: View {
                                 .foregroundStyle(Color.brand)
                             Text(category.name)
                             Spacer()
-                            if category.tracksWeight {
-                                Image(systemName: "scalemass")
+                            if category.defaultMetric != .none {
+                                Image(systemName: category.defaultMetric.icon)
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -103,11 +107,11 @@ struct ManageCategoriesView: View {
             try CategoryStore(context: context).add(
                 name: name,
                 icon: selectedIcon,
-                tracksWeight: tracksWeight
+                defaultMetric: defaultMetric
             )
             // Reset the form for the next one.
             name = ""
-            tracksWeight = false
+            defaultMetric = .none
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription

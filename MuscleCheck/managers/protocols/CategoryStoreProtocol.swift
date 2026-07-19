@@ -13,7 +13,7 @@ protocol CategoryStoreProtocol {
     /// Creates and persists a custom category. Validates the name and assigns a
     /// collision-free UUID id and a sortOrder after the built-ins.
     @discardableResult
-    func add(name: String, icon: String, tracksWeight: Bool) throws -> CustomCategory
+    func add(name: String, icon: String, defaultMetric: MetricType) throws -> CustomCategory
 
     func delete(_ category: CustomCategory) throws
 }

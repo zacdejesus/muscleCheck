@@ -102,6 +102,9 @@ final class ContentViewModel: ObservableObject {
 
     self.muscleEntryManager = .init(context: context)
 
+    // One-time persist of the lazily-derived metric for pre-metric entries.
+    try? muscleEntryManager?.backfillMetricTypes()
+
     insertDefaultMuscleEntries()
 
     resetCheckedEntriesIfnewWeek()
@@ -245,11 +248,10 @@ final class ContentViewModel: ObservableObject {
       entry.removeSession(matching: today)
     } else {
         entry.addSession(today)
-        // First-ever check completes the "how to check" lesson; checking a gym-style
-        // entry makes the weight-log tip eligible (built-ins only — custom categories
-        // opting into weight don't need the gym-worded tip).
+        // First-ever check completes the "how to check" lesson; checking a strength
+        // entry makes the weight-log tip eligible (the tip copy is weight-worded).
         CheckActivityTip().invalidate(reason: .actionPerformed)
-        if ActivityCategory(rawValue: entry.category)?.tracksWeight == true {
+        if entry.metric == .strength {
           Task { await LogWeightTip.didCheckGymActivity.donate() }
         }
     }

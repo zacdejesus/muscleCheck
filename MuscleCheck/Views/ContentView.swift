@@ -245,12 +245,11 @@ struct ContentView: View {
     viewModel.groupedCurrentWeekEntries.first?.entries.first?.persistentModelID
   }
 
-  /// First row of the first weight-tracking (gym) category — anchor for the
-  /// "tap the name to log weight" tip. Built-ins only: the tip copy is gym-worded.
+  /// First strength-metric row — anchor for the "tap the name to log weight" tip.
   private var weightTipEntryID: PersistentIdentifier? {
     viewModel.groupedCurrentWeekEntries
-      .first { ActivityCategory(rawValue: $0.category)?.tracksWeight == true }?
-      .entries.first?.persistentModelID
+      .compactMap { $0.entries.first { $0.metric == .strength } }
+      .first?.persistentModelID
   }
 
   /// Entries in the same category as the workout — the picker's options.
