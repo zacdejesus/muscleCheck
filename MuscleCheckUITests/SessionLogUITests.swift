@@ -88,7 +88,7 @@ final class SessionLogUITests: XCTestCase {
         // duration and DO open the modal.
         let entryName = "Str\(Int(Date().timeIntervalSince1970) % 100000)"
 
-        app.buttons["Add new muscle group"].tap()
+        app.buttons["home.addFAB"].tap()
         let nameField = app.textFields["add.nameField"]
         XCTAssertTrue(nameField.waitForExistence(timeout: 5), "Add sheet name field not found")
         nameField.tap()

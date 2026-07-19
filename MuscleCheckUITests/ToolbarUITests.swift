@@ -26,9 +26,10 @@ final class ToolbarUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars.firstMatch.waitForExistence(timeout: 15))
         attach(app, "01-toolbar-large-text")
 
-        // Priority: Add and Settings must stay directly visible (never the first to collapse).
-        XCTAssertTrue(app.buttons["Add new muscle group"].waitForExistence(timeout: 5),
-                      "Add button not directly visible (lost overflow priority)")
+        // Add lives in the FAB now (not the toolbar) — it must be visible even at max
+        // Dynamic Type. Settings keeps top overflow priority among the toolbar items.
+        XCTAssertTrue(app.buttons["home.addFAB"].waitForExistence(timeout: 5),
+                      "Add FAB not visible")
         XCTAssertTrue(app.buttons["Settings"].exists,
                       "Settings button not directly visible (lost overflow priority)")
 

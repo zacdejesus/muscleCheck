@@ -55,7 +55,7 @@ struct ContentView: View {
 
         List {
           if viewModel.currentWeekEntries.isEmpty {
-            EmptyStateView()
+            EmptyStateView { showingAddSheet = true }
           } else if viewModel.groupedCurrentWeekEntries.count == 1 {
             // Single category — no section headers for clean look
             let group = viewModel.groupedCurrentWeekEntries[0]
@@ -115,6 +115,14 @@ struct ContentView: View {
           }
         }
       }
+      // FAB floats above the AI Coach bottom button when that one is present.
+      // Fixed offset (Coach button ≈ 56pt incl. padding) beats measuring: the
+      // overlay/safe-area interaction is version-fragile and this is deterministic.
+      .overlay(alignment: .bottomTrailing) {
+        AddFAB { showingAddSheet = true }
+          .padding(.trailing, 20)
+          .padding(.bottom, viewModel.isAppleIntelligenceAvailable() ? 72 : 16)
+      }
       .navigationTitle("home_title")
       .tint(Color.brand)
       .navigationBarTitleDisplayMode(.automatic)
@@ -139,11 +147,6 @@ struct ContentView: View {
         // first. Declaring Add + Settings first keeps them visible the longest; Stats and
         // Photos are the ones that fall into the overflow when space runs out.
         ToolbarItemGroup(placement: .navigationBarTrailing) {
-          Button {
-            showingAddSheet = true
-          } label: {
-            Label("add_new_muscle_group", systemImage: "plus.circle")
-          }
           Button {
             showingSettings = true
           } label: {
