@@ -7,6 +7,7 @@
 import SwiftUI
 import SwiftData
 import HealthKit
+import TipKit
 
 struct ContentView: View {
   
@@ -17,11 +18,12 @@ struct ContentView: View {
   @EnvironmentObject var settingsViewModel: SettingsViewModel
   @Environment(\.modelContext) private var context
   @Environment(\.scenePhase) private var scenePhase
-  @AppStorage("hasInsertedInitialData") private var hasInsertedInitialData: Bool = false
-  
+  // Same key UserDefaultsManager owns; @AppStorage so the cover dismisses reactively
+  // when OnboardingViewModel flips the flag.
+  @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+
   @State private var showingRoutineModal = false
   @State private var showingAddSheet = false
-  @State private var showingPaywall = false
   @State private var showingSettings = false
   @State private var showingStats = false
   @State private var showingProgressPhotos = false
@@ -46,6 +48,11 @@ struct ContentView: View {
           .padding(.top, 4)
         }
 
+        // First time a weekly reset clears the checks, explain the mental model
+        // ("fresh list every Monday") right where the checks just disappeared.
+        TipView(WeeklyResetTip())
+          .padding(.horizontal)
+
         List {
           if viewModel.currentWeekEntries.isEmpty {
             EmptyStateView()
@@ -53,12 +60,7 @@ struct ContentView: View {
             // Single category — no section headers for clean look
             let group = viewModel.groupedCurrentWeekEntries[0]
             ForEach(group.entries) { entry in
-              MuscleEntryRowView(
-                entry: entry,
-                customCategories: customCategories,
-                onTap: { _ in viewModel.toggleActivity(for: entry) },
-                onSaveSession: { target, weight, sets, reps in viewModel.saveSession(weight: weight, sets: sets, reps: reps, for: target) }
-              )
+              entryRow(entry)
             }
             .onDelete { offsets in
               viewModel.deleteEntries(from: group.entries, at: offsets)
@@ -68,12 +70,7 @@ struct ContentView: View {
             ForEach(viewModel.groupedCurrentWeekEntries, id: \.category) { group in
               Section {
                 ForEach(group.entries) { entry in
-                  MuscleEntryRowView(
-                    entry: entry,
-                    customCategories: customCategories,
-                    onTap: { _ in viewModel.toggleActivity(for: entry) },
-                    onSaveSession: { target, weight, sets, reps in viewModel.saveSession(weight: weight, sets: sets, reps: reps, for: target) }
-                  )
+                  entryRow(entry)
                 }
                 .onDelete { offsets in
                   viewModel.deleteEntries(from: group.entries, at: offsets)
@@ -219,7 +216,41 @@ struct ContentView: View {
           healthKitManager.dismissWorkout(item.workout)
         }
       }
+      // First run only: the initial seed is decided inside (category picker).
+      // Dismisses itself when OnboardingViewModel flips hasCompletedOnboarding.
+      .fullScreenCover(isPresented: Binding(
+        get: { !hasCompletedOnboarding },
+        set: { hasCompletedOnboarding = !$0 }
+      )) {
+        OnboardingView()
+      }
     }
+  }
+
+  /// Shared row construction for both list layouts. The tip flags mark exactly one
+  /// row app-wide as the anchor for each onboarding tip.
+  private func entryRow(_ entry: MuscleEntry) -> some View {
+    MuscleEntryRowView(
+      entry: entry,
+      customCategories: customCategories,
+      showsCheckTip: entry.persistentModelID == checkTipEntryID,
+      showsWeightTip: entry.persistentModelID == weightTipEntryID,
+      onTap: { _ in viewModel.toggleActivity(for: entry) },
+      onSaveSession: { target, weight, sets, reps in viewModel.saveSession(weight: weight, sets: sets, reps: reps, for: target) }
+    )
+  }
+
+  /// First visible row — anchor for the "tap the circle when you train" tip.
+  private var checkTipEntryID: PersistentIdentifier? {
+    viewModel.groupedCurrentWeekEntries.first?.entries.first?.persistentModelID
+  }
+
+  /// First row of the first weight-tracking (gym) category — anchor for the
+  /// "tap the name to log weight" tip. Built-ins only: the tip copy is gym-worded.
+  private var weightTipEntryID: PersistentIdentifier? {
+    viewModel.groupedCurrentWeekEntries
+      .first { ActivityCategory(rawValue: $0.category)?.tracksWeight == true }?
+      .entries.first?.persistentModelID
   }
 
   /// Entries in the same category as the workout — the picker's options.

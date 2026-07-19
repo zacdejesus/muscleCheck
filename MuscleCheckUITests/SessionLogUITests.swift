@@ -15,8 +15,13 @@ final class SessionLogUITests: XCTestCase {
 
     private func makeApp() -> XCUIApplication {
         let app = XCUIApplication()
-        // Force English + kg so the assertions are deterministic.
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        // Force English + kg so the assertions are deterministic. Skip onboarding
+        // (arguments domain wins over the persisted flag) so the gym seed still
+        // happens on a fresh simulator, and disable tips so no popover covers rows.
+        app.launchArguments += [
+            "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+            "-hasCompletedOnboarding", "YES", "-uiTesting", "YES"
+        ]
         return app
     }
 
@@ -94,8 +99,11 @@ final class SessionLogUITests: XCTestCase {
         yogaOption.tap()
         app.navigationBars.buttons["Save"].tap()
 
-        // Tap the new yoga row — the modal must NOT open (gym-only guard).
+        // Tap the new yoga row — the modal must NOT open (gym-only guard). The row can
+        // land below the fold of the lazy List (other suites may have seeded more
+        // entries on this simulator), so scroll it into existence first.
         let yogaRow = app.staticTexts[yogaName]
+        for _ in 0..<4 where !yogaRow.exists { app.swipeUp() }
         XCTAssertTrue(yogaRow.waitForExistence(timeout: 5), "Yoga row was not created")
         yogaRow.tap()
         XCTAssertFalse(app.navigationBars["Log"].waitForExistence(timeout: 2),

@@ -27,6 +27,22 @@ final class UserDefaultsManager {
         set { defaults.set(newValue, forKey: "defaultEntriesCreated") }
     }
 
+    /// True once the user finished (or skipped) the first-run onboarding. The initial
+    /// seed is decided there, so `insertDefaultMuscleEntries` stays dormant until then.
+    var hasCompletedOnboarding: Bool {
+        get { defaults.bool(forKey: "hasCompletedOnboarding") }
+        set { defaults.set(newValue, forKey: "hasCompletedOnboarding") }
+    }
+
+    /// Users who predate onboarding already got the gym seed — they must never see the
+    /// welcome flow. Runs at app init, before the first body evaluation, so the
+    /// fullScreenCover never flashes for them.
+    func migrateOnboardingFlagIfNeeded() {
+        if defaultEntriesCreated && !hasCompletedOnboarding {
+            hasCompletedOnboarding = true
+        }
+    }
+
     // 0 = system, 1 = light, 2 = dark
     var appTheme: Int {
         get { defaults.integer(forKey: "appTheme") }

@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import Firebase
+import TipKit
 
 @main
 struct MuscleCheckApp: App {
@@ -18,9 +19,27 @@ struct MuscleCheckApp: App {
   init() {
     setNavalBarAppearance()
 
+    // UI-test hook: forces the first-run experience on an already-installed build
+    // (persisted flags would otherwise skip onboarding on every run after the first).
+    if UserDefaults.standard.bool(forKey: "resetOnboarding") {
+      UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
+      UserDefaults.standard.removeObject(forKey: "defaultEntriesCreated")
+      try? Tips.resetDatastore()
+    }
+
+    // Before the first body evaluation, so pre-onboarding users never see the
+    // welcome cover flash.
+    UserDefaultsManager.shared.migrateOnboardingFlagIfNeeded()
+
     FirebaseApp.configure()
     StoreManager.shared.configure()
     MuscleCheckShortcuts.updateAppShortcutParameters()
+
+    // UI tests pass -uiTesting (arguments domain): unconfigured TipKit never shows
+    // tips, so popovers can't sit on top of the rows the tests need to tap.
+    if !UserDefaults.standard.bool(forKey: "uiTesting") {
+      try? Tips.configure()
+    }
   }
   
   private func setNavalBarAppearance() {

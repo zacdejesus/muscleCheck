@@ -11,11 +11,15 @@ import Testing
 import SwiftData
 import Foundation
 
+// Serialized: these tests contend on shared UserDefaults flags (onboarding/seed state).
+@Suite(.serialized)
 struct ContentViewModelTests {
 
     @MainActor @Test
     func testInsertDefaultMuscleEntriesOnlyOnce() async {
         let context = MockContext()
+        // Fallback seed path: onboarded but never seeded.
+        UserDefaultsManager.shared.hasCompletedOnboarding = true
         UserDefaultsManager.shared.defaultEntriesCreated = false
 
         let viewModel = ContentViewModel()
@@ -23,6 +27,20 @@ struct ContentViewModelTests {
 
         #expect(context.inserted.count > 0)
         #expect(UserDefaultsManager.shared.defaultEntriesCreated == true)
+    }
+
+    @MainActor @Test
+    func testSeedSkippedWhileOnboardingPending() async {
+        let context = MockContext()
+        // New install: onboarding decides the seed, so setup must not insert anything.
+        UserDefaultsManager.shared.hasCompletedOnboarding = false
+        UserDefaultsManager.shared.defaultEntriesCreated = false
+
+        let viewModel = ContentViewModel()
+        await viewModel.setup(context: context, entries: [])
+
+        #expect(context.inserted.isEmpty)
+        #expect(UserDefaultsManager.shared.defaultEntriesCreated == false)
     }
 
     @MainActor @Test
