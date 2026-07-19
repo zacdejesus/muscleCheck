@@ -15,11 +15,13 @@ struct CalendarDay: Identifiable, Hashable {
     var id: Date { date }
 }
 
-/// One trained muscle on a given day, carrying THAT day's logged weight (kg, may be nil)
-/// — not the entry's latest weight, so historical rows show the load actually used.
+/// One trained muscle on a given day, carrying THAT day's logged values (may be nil)
+/// — not the entry's latest, so historical rows show what was actually done.
 struct DayActivity: Identifiable {
     let entry: MuscleEntry
     let weightKg: Double?
+    var durationSeconds: Int? = nil
+    var distanceMeters: Double? = nil
     var id: UUID { entry.id }
 }
 
@@ -145,7 +147,12 @@ struct MonthCalendarCalculator {
             let activities = entries
                 .compactMap { entry -> DayActivity? in
                     guard let session = entry.sessions.first(where: { calendar.isDate($0.date, inSameDayAs: dayStart) }) else { return nil }
-                    return DayActivity(entry: entry, weightKg: session.weight)
+                    return DayActivity(
+                        entry: entry,
+                        weightKg: session.weight,
+                        durationSeconds: session.durationSeconds,
+                        distanceMeters: session.distanceMeters
+                    )
                 }
                 .sorted { $0.entry.name < $1.entry.name }
             if !activities.isEmpty {

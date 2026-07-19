@@ -229,11 +229,17 @@ final class ContentViewModel: ObservableObject {
     }
   }
   
-  /// Saves today's session (weight + optional sets/reps) for the muscle entry.
+  /// Saves today's session (whatever fields the entry's metric captures).
   /// Premise: "if I log something today, I trained today", so this also marks the entry as
-  /// checked for the current week. Weight is expected to be in kg (the canonical storage unit).
-  func saveSession(weight: Double?, sets: Int?, reps: Int?, for entry: MuscleEntry) {
-    entry.setTodaySession(weight: weight, sets: sets, reps: reps)
+  /// checked for the current week. Values arrive in canonical storage units (kg/s/m).
+  func saveSession(_ input: SessionInput, for entry: MuscleEntry) {
+    entry.setTodaySession(
+      weight: input.weightKg,
+      sets: input.sets,
+      reps: input.reps,
+      durationSeconds: input.durationSeconds,
+      distanceMeters: input.distanceMeters
+    )
     do {
       try context?.save()
     } catch {

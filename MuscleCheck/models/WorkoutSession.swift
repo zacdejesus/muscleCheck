@@ -8,6 +8,17 @@
 import SwiftData
 import Foundation
 
+/// Everything the session-log modal can capture in one save. Which fields are
+/// non-nil depends on the entry's `MetricType`. Weight is in kg, distance in
+/// meters, duration in seconds (canonical storage units).
+struct SessionInput {
+    var weightKg: Double? = nil
+    var sets: Int? = nil
+    var reps: Int? = nil
+    var durationSeconds: Int? = nil
+    var distanceMeters: Double? = nil
+}
+
 struct WorkoutSession: Codable, Identifiable, Hashable {
     let id: UUID
     var date: Date

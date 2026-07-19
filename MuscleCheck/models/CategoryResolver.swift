@@ -54,9 +54,3 @@ enum CategoryResolver {
         )
     }
 }
-
-extension ResolvedCategory {
-    /// Transitional bridge for call sites still gating on weight; removed once the
-    /// UI switches to `MuscleEntry.metric` (Fase 2 del refactor).
-    var tracksWeight: Bool { defaultMetric == .strength }
-}

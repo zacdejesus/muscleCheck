@@ -78,37 +78,39 @@ final class SessionLogUITests: XCTestCase {
     }
 
     @MainActor
-    func testNonGymRowDoesNotOpenModal() throws {
+    func testNoneMetricRowDoesNotOpenModal() throws {
         let app = makeApp()
         app.launch()
 
-        // Create a yoga (non-gym) entry through the add flow. Unique name avoids the
-        // manager's duplicate rejection across repeated runs on the same simulator.
-        let yogaName = "Yoga\(Int(Date().timeIntervalSince1970) % 100000)"
+        // Create a stretching entry (default metric: check-only) through the add flow.
+        // Unique name avoids the manager's duplicate rejection across repeated runs.
+        // Yoga is no longer suitable here: since per-exercise metrics, yoga rows log
+        // duration and DO open the modal.
+        let entryName = "Str\(Int(Date().timeIntervalSince1970) % 100000)"
 
         app.buttons["Add new muscle group"].tap()
         let nameField = app.textFields["Calf"] // placeholder is the field's identifier
         XCTAssertTrue(nameField.waitForExistence(timeout: 5), "Add sheet name field not found")
         nameField.tap()
-        nameField.typeText(yogaName)
+        nameField.typeText(entryName)
 
-        // Switch the category picker from Gym to Yoga (menu picker → tap, then pick option by label).
+        // Switch the category picker from Gym to Stretching (menu picker → tap, then pick by label).
         app.buttons["add.categoryPicker"].tap()
-        let yogaOption = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Yoga")).firstMatch
-        XCTAssertTrue(yogaOption.waitForExistence(timeout: 5), "Yoga option not found in category picker")
-        yogaOption.tap()
+        let option = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Stretching")).firstMatch
+        XCTAssertTrue(option.waitForExistence(timeout: 5), "Stretching option not found in category picker")
+        option.tap()
         app.navigationBars.buttons["Save"].tap()
 
-        // Tap the new yoga row — the modal must NOT open (gym-only guard). The row can
-        // land below the fold of the lazy List (other suites may have seeded more
+        // Tap the new row — the modal must NOT open (its metric logs nothing). The row
+        // can land below the fold of the lazy List (other suites may have seeded more
         // entries on this simulator), so scroll it into existence first.
-        let yogaRow = app.staticTexts[yogaName]
-        for _ in 0..<4 where !yogaRow.exists { app.swipeUp() }
-        XCTAssertTrue(yogaRow.waitForExistence(timeout: 5), "Yoga row was not created")
-        yogaRow.tap()
-        XCTAssertFalse(app.navigationBars["Log"].waitForExistence(timeout: 2),
-                       "Session log modal opened for a non-gym entry (should be gym-only)")
-        attachScreenshot(app, name: "05-yoga-no-modal")
+        let row = app.staticTexts[entryName]
+        for _ in 0..<4 where !row.exists { app.swipeUp() }
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "Stretching row was not created")
+        row.tap()
+        XCTAssertFalse(app.navigationBars[entryName].waitForExistence(timeout: 2),
+                       "Session log modal opened for a check-only entry")
+        attachScreenshot(app, name: "05-none-metric-no-modal")
     }
 
     private func attachScreenshot(_ app: XCUIApplication, name: String) {

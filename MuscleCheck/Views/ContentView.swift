@@ -232,11 +232,10 @@ struct ContentView: View {
   private func entryRow(_ entry: MuscleEntry) -> some View {
     MuscleEntryRowView(
       entry: entry,
-      customCategories: customCategories,
       showsCheckTip: entry.persistentModelID == checkTipEntryID,
       showsWeightTip: entry.persistentModelID == weightTipEntryID,
       onTap: { _ in viewModel.toggleActivity(for: entry) },
-      onSaveSession: { target, weight, sets, reps in viewModel.saveSession(weight: weight, sets: sets, reps: reps, for: target) }
+      onSaveSession: { target, input in viewModel.saveSession(input, for: target) }
     )
   }
 
