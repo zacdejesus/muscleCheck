@@ -17,6 +17,8 @@ final class ToolbarUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments += [
             "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+            // Skip onboarding and disable tips — this test drives the home toolbar.
+            "-hasCompletedOnboarding", "YES", "-uiTesting", "YES",
             // Force the largest accessibility text size to provoke toolbar overflow.
             "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraExtraExtraLarge"
         ]

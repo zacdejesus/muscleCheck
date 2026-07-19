@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 import HealthKit
+import TipKit
 
 @MainActor
 final class ContentViewModel: ObservableObject {
@@ -117,7 +118,14 @@ final class ContentViewModel: ObservableObject {
     
     if currentWeek != UserDefaultsManager.shared.lastResetWeek ||
         currentYear != UserDefaultsManager.shared.lastResetYear {
-      
+
+      // Teach the weekly-reset model only when checks are actually being cleared —
+      // this also keeps the very first launch (lastResetWeek == 0, nothing checked)
+      // from counting as a "reset".
+      if entries.contains(where: { $0.isChecked }) {
+        Task { await WeeklyResetTip.didResetWeek.donate() }
+      }
+
       entries.forEach {
         $0.isChecked = false
         $0.weekOfYear = currentWeek
@@ -188,6 +196,10 @@ final class ContentViewModel: ObservableObject {
   
   func insertDefaultMuscleEntries() {
 
+    // The initial seed is chosen in onboarding now; this stays only as a safety net
+    // for the odd state "onboarded but never seeded" (e.g. pre-onboarding installs
+    // whose defaults survived a store wipe).
+    guard UserDefaultsManager.shared.hasCompletedOnboarding else { return }
     guard !UserDefaultsManager.shared.defaultEntriesCreated else { return }
     
     let defaultGroups = [
@@ -233,6 +245,13 @@ final class ContentViewModel: ObservableObject {
       entry.removeSession(matching: today)
     } else {
         entry.addSession(today)
+        // First-ever check completes the "how to check" lesson; checking a gym-style
+        // entry makes the weight-log tip eligible (built-ins only — custom categories
+        // opting into weight don't need the gym-worded tip).
+        CheckActivityTip().invalidate(reason: .actionPerformed)
+        if ActivityCategory(rawValue: entry.category)?.tracksWeight == true {
+          Task { await LogWeightTip.didCheckGymActivity.donate() }
+        }
     }
     entry.isChecked.toggle()
     do {
