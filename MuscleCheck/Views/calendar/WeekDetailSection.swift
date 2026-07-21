@@ -75,26 +75,15 @@ private struct ActivityDetailRow: View {
     }
 
     /// That day's values formatted for the entry's metric, nil when nothing was logged.
+    /// Same formatter as the home row (`MuscleEntry.formattedLastMetric`), so the two
+    /// can't drift.
     private var metricLabel: String? {
-        switch activity.entry.metric {
-        case .none:
-            return nil
-        case .strength:
-            return activity.weightKg.map(formattedWeight)
-        case .duration:
-            return activity.durationSeconds.map(SessionFormatting.formatDuration)
-        case .distanceDuration:
-            let parts = [
-                activity.distanceMeters.map(SessionFormatting.formatDistance),
-                activity.durationSeconds.map(SessionFormatting.formatDuration)
-            ].compactMap { $0 }
-            return parts.isEmpty ? nil : parts.joined(separator: " · ")
-        }
-    }
-
-    private func formattedWeight(_ kg: Double) -> String {
-        let unit = UserDefaultsManager.shared.weightUnit
-        return String(format: "%.0f", unit.displayValue(fromKg: kg)) + " " + unit.displayLabel
+        SessionFormatting.label(
+            metric: activity.entry.metric,
+            weightKg: activity.weightKg,
+            durationSeconds: activity.durationSeconds,
+            distanceMeters: activity.distanceMeters
+        )
     }
 }
 

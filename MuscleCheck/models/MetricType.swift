@@ -42,9 +42,10 @@ enum MetricType: String, Codable, CaseIterable, Identifiable, Sendable {
     }
 }
 
-/// Display formatting for the non-weight metrics. Weight keeps its own path
-/// (`MuscleEntry.formattedLastWeight` + WeightUnit); these are unit-invariant for
-/// v1 — minutes and km only, mirroring how "kg"/"lbs" labels are literal.
+/// Display formatting for session values. Single source for the metric labels shown
+/// on home rows AND history rows, so separator/order/empty-handling can't drift.
+/// Duration/distance are unit-invariant for v1 — minutes and km only, mirroring how
+/// "kg"/"lbs" labels are literal.
 enum SessionFormatting {
 
     /// "45 min" — whole minutes, storage is seconds.
@@ -55,5 +56,31 @@ enum SessionFormatting {
     /// "5.2 km" — one decimal, storage is meters.
     static func formatDistance(meters: Double) -> String {
         String(format: "%.1f km", meters / 1000)
+    }
+
+    /// "20 kg" / "44 lbs" — whole numbers in the user's display unit; storage is kg.
+    static func formatWeight(kg: Double) -> String {
+        let unit = UserDefaultsManager.shared.weightUnit
+        return String(format: "%.0f", unit.displayValue(fromKg: kg)) + " " + unit.displayLabel
+    }
+
+    /// The label for a set of session values under a given metric: "20 kg",
+    /// "45 min", "5.2 km · 32 min". Nil when the metric logs nothing or no
+    /// relevant value is present.
+    static func label(metric: MetricType, weightKg: Double?, durationSeconds: Int?, distanceMeters: Double?) -> String? {
+        switch metric {
+        case .none:
+            return nil
+        case .strength:
+            return weightKg.map(formatWeight)
+        case .duration:
+            return durationSeconds.map(formatDuration)
+        case .distanceDuration:
+            let parts = [
+                distanceMeters.map(formatDistance),
+                durationSeconds.map(formatDuration)
+            ].compactMap { $0 }
+            return parts.isEmpty ? nil : parts.joined(separator: " · ")
+        }
     }
 }

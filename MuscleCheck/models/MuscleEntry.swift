@@ -30,59 +30,58 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
     get { MetricType(rawValue: metricRaw) ?? ActivityCategory(rawValue: category)?.defaultMetric ?? .none }
     set { metricRaw = newValue.rawValue }
   }
-    var lastWeight: Double? {
-        get {
-            return sessions.sorted { $0.date > $1.date }.first(where: { $0.weight != nil })?.weight
+    /// Most recent session for which `value` is non-nil. Single O(n) scan — these
+    /// getters run per row per render, so no sorting of the whole array.
+    private func latestValue<T>(_ value: (WorkoutSession) -> T?) -> T? {
+        var best: (date: Date, value: T)?
+        for session in sessions {
+            if let v = value(session), best.map({ session.date > $0.date }) ?? true {
+                best = (session.date, v)
+            }
         }
+        return best?.value
     }
+
+    var lastWeight: Double? { latestValue { $0.weight } }
 
     /// Most recent recorded sets ("series"), looking back across sessions. Nil if never recorded.
-    var lastSets: Int? {
-        sessions.sorted { $0.date > $1.date }.first(where: { $0.sets != nil })?.sets
-    }
+    var lastSets: Int? { latestValue { $0.sets } }
 
     /// Most recent recorded reps, looking back across sessions. Nil if never recorded.
-    var lastReps: Int? {
-        sessions.sorted { $0.date > $1.date }.first(where: { $0.reps != nil })?.reps
-    }
+    var lastReps: Int? { latestValue { $0.reps } }
 
     /// `lastWeight` (stored in kg) formatted in the user's preferred display unit,
     /// e.g. "20 kg" or "44 lbs". Nil if no session has a weight recorded yet.
     var formattedLastWeight: String? {
-        guard let kg = lastWeight else { return nil }
-        let unit = UserDefaultsManager.shared.weightUnit
-        let display = unit.displayValue(fromKg: kg)
-        // Weights are shown as whole numbers (no decimals) — round at the display boundary.
-        return String(format: "%.0f", display) + " " + unit.displayLabel
+        lastWeight.map(SessionFormatting.formatWeight)
     }
 
     /// Most recent recorded duration (seconds), looking back across sessions.
-    var lastDurationSeconds: Int? {
-        sessions.sorted { $0.date > $1.date }.first(where: { $0.durationSeconds != nil })?.durationSeconds
-    }
+    var lastDurationSeconds: Int? { latestValue { $0.durationSeconds } }
 
     /// Most recent recorded distance (meters), looking back across sessions.
-    var lastDistanceMeters: Double? {
-        sessions.sorted { $0.date > $1.date }.first(where: { $0.distanceMeters != nil })?.distanceMeters
+    var lastDistanceMeters: Double? { latestValue { $0.distanceMeters } }
+
+    /// Most recent session that recorded distance OR duration. Distance+duration
+    /// consumers must read BOTH values from this one session — mixing per-field
+    /// lookbacks would pair a Monday distance with a Wednesday time as if they
+    /// happened together.
+    var lastDistanceDurationSession: WorkoutSession? {
+        sessions
+            .filter { $0.distanceMeters != nil || $0.durationSeconds != nil }
+            .max { $0.date < $1.date }
     }
 
     /// Row label for the entry's metric: "20 kg", "45 min", "5.2 km · 32 min".
     /// Nil when the metric logs nothing or nothing was recorded yet.
     var formattedLastMetric: String? {
-        switch metric {
-        case .none:
-            return nil
-        case .strength:
-            return formattedLastWeight
-        case .duration:
-            return lastDurationSeconds.map(SessionFormatting.formatDuration)
-        case .distanceDuration:
-            let parts = [
-                lastDistanceMeters.map(SessionFormatting.formatDistance),
-                lastDurationSeconds.map(SessionFormatting.formatDuration)
-            ].compactMap { $0 }
-            return parts.isEmpty ? nil : parts.joined(separator: " · ")
-        }
+        let cardio = metric == .distanceDuration ? lastDistanceDurationSession : nil
+        return SessionFormatting.label(
+            metric: metric,
+            weightKg: lastWeight,
+            durationSeconds: metric == .distanceDuration ? cardio?.durationSeconds : lastDurationSeconds,
+            distanceMeters: cardio?.distanceMeters
+        )
     }
 
   /// `metric` nil = follow the category default (a default parameter can't reference
@@ -142,11 +141,19 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
       isChecked = true
   }
 
-  /// Sets (or updates) today's weight for this muscle, preserving any sets/reps already
-  /// recorded for today. Premise: "if I set the weight, I trained today" — marks `isChecked = true`.
+  /// Sets (or updates) today's weight for this muscle, preserving everything else already
+  /// recorded for today (sets/reps/duration/distance — `setTodaySession` overwrites all
+  /// fields, so anything not carried over here would be silently blanked).
+  /// Premise: "if I set the weight, I trained today" — marks `isChecked = true`.
   func setTodaysWeight(_ weight: Double?) {
       let today = Date()
       let existing = sessions.first { Date.appCalendar.isDate($0.date, inSameDayAs: today) }
-      setTodaySession(weight: weight, sets: existing?.sets, reps: existing?.reps)
+      setTodaySession(
+          weight: weight,
+          sets: existing?.sets,
+          reps: existing?.reps,
+          durationSeconds: existing?.durationSeconds,
+          distanceMeters: existing?.distanceMeters
+      )
   }
 }

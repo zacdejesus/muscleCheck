@@ -174,11 +174,16 @@ struct SessionLogView: View {
                 minutes = "\(seconds / 60)"
             }
         case .distanceDuration:
-            if let meters = entry.lastDistanceMeters {
-                distanceKm = String(format: "%.1f", meters / 1000)
-            }
-            if let seconds = entry.lastDurationSeconds {
-                minutes = "\(seconds / 60)"
+            // Both values from the SAME session — per-field lookbacks could pair a
+            // Monday distance with a Wednesday time and Save would persist that
+            // blend as today's session.
+            if let last = entry.lastDistanceDurationSession {
+                if let meters = last.distanceMeters {
+                    distanceKm = String(format: "%.1f", meters / 1000)
+                }
+                if let seconds = last.durationSeconds {
+                    minutes = "\(seconds / 60)"
+                }
             }
         }
     }

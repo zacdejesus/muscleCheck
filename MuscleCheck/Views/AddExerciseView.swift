@@ -28,6 +28,7 @@ struct AddExerciseView: View {
     @State private var metricEdited: Bool = false
     @State private var newCategoryName: String = ""
     @State private var newCategoryMetric: MetricType = .none
+    @State private var newCategoryIcon: String = ActivityCategory.custom.defaultIcon
     @State private var errorMessage: String?
 
     /// Sentinel picker tag for "create a new category". Can't collide: built-ins are
@@ -40,13 +41,14 @@ struct AddExerciseView: View {
         CategoryResolver.resolve(selectedCategoryID, custom: customCategories)
     }
 
-    /// Presets of the selected category not yet added — same case-insensitive rule as
-    /// the manager's duplicate check, so a tapped chip can never hit the duplicate error.
+    /// Presets of the selected category not yet added — same normalization as
+    /// `MuscleEntryManager.isDuplicateName`, so a tapped chip can never hit the
+    /// duplicate error and the two paths agree on what "already exists" means.
     private var pendingPresets: [(nameKey: String, icon: String)] {
         guard let builtIn = ActivityCategory(rawValue: selectedCategoryID) else { return [] }
-        let existingNames = Set(entries.map { $0.name.lowercased() })
+        let existingNames = Set(entries.map { MuscleEntryManager.normalizedName($0.name) })
         return builtIn.presetEntries.filter {
-            !existingNames.contains(NSLocalizedString($0.nameKey, comment: "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
+            !existingNames.contains(MuscleEntryManager.normalizedName(NSLocalizedString($0.nameKey, comment: "")))
         }
     }
 
@@ -89,6 +91,10 @@ struct AddExerciseView: View {
                                 Text(metric.displayName).tag(metric)
                             }
                         }
+                        // Own icon state: the category's icon is a different concept
+                        // than the exercise's — sharing selectedIcon left the new
+                        // category with the previous category's leftover glyph.
+                        IconGridPicker(selectedIcon: $newCategoryIcon)
                     }
                 }
 
@@ -108,13 +114,19 @@ struct AddExerciseView: View {
                 // MARK: Rare overrides, collapsed so the happy path stays two decisions.
                 Section {
                     DisclosureGroup("add_section_options") {
-                        Picker("metric_picker_label", selection: $selectedMetric) {
+                        // The edited flag is set in the Binding's setter, NOT via
+                        // .onChange — onChange also fires for the programmatic sync
+                        // in syncDefaults, which latched the flag without user input
+                        // and froze the metric on the first category switch.
+                        Picker("metric_picker_label", selection: Binding(
+                            get: { selectedMetric },
+                            set: { selectedMetric = $0; metricEdited = true }
+                        )) {
                             ForEach(MetricType.allCases) { metric in
                                 Text(metric.displayName).tag(metric)
                             }
                         }
                         .accessibilityIdentifier("add.metricPicker")
-                        .onChange(of: selectedMetric) { _, _ in metricEdited = true }
 
                         IconGridPicker(selectedIcon: $selectedIcon)
                     }
@@ -207,27 +219,30 @@ struct AddExerciseView: View {
     }
 
     /// If the new category is created but the entry fails validation, the category
-    /// persists — acceptable: it's valid data the user meant to create.
+    /// persists — acceptable: it's valid data the user meant to create. Crucially the
+    /// picker is moved onto the created category right away, so retrying Save after an
+    /// entry error does NOT re-run the category creation (which would now throw
+    /// duplicateName against the category we just made and wedge the flow).
     private func save() {
         do {
-            let categoryID: String
-            if creatingNewCategory {
+            // Captured before mutating selectedCategoryID (creatingNewCategory is
+            // computed from it).
+            let wasCreatingCategory = creatingNewCategory
+            if wasCreatingCategory {
                 let category = try CategoryStore(context: context).add(
                     name: newCategoryName,
-                    icon: selectedIcon,
+                    icon: newCategoryIcon,
                     defaultMetric: newCategoryMetric
                 )
-                categoryID = category.id
-            } else {
-                categoryID = selectedCategoryID
+                selectedCategoryID = category.id
             }
             try MuscleEntryManager(context: context).addEntry(
                 name: muscleName,
-                category: categoryID,
-                icon: selectedIcon,
+                category: selectedCategoryID,
+                icon: wasCreatingCategory ? newCategoryIcon : selectedIcon,
                 metric: metricEdited ? selectedMetric : nil
             )
-            lastAddCategory = categoryID
+            lastAddCategory = selectedCategoryID
             dismiss()
         } catch {
             errorMessage = error.localizedDescription

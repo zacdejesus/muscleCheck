@@ -87,41 +87,39 @@ struct ContentView: View {
         // still bounce once the content overflows — so we reach the backing UIScrollView
         // and set bounces = false. Scoped to this list via a background probe.
         .background(NoScrollBounce())
-        // AI Coach: suggested day. Free + on-device, so no Pro gate — only hidden when
-        // Apple Intelligence isn't available (iOS < 26, ineligible hardware, AI off).
-        // Pinned to the bottom with a transparent background so the list shows through
-        // (no bar-material band behind the button).
+        // Bottom stack: FAB (always) above the AI Coach button (when available).
+        // Both live in the SAME safe-area inset so the layout system positions the
+        // FAB over the coach button's REAL height — a fixed offset broke as soon as
+        // Dynamic Type grew the coach label past the guessed constant. Transparent
+        // background so the list shows through (no bar-material band).
         .safeAreaInset(edge: .bottom) {
-          if viewModel.isAppleIntelligenceAvailable() {
-            Button {
-              showingRoutineModal = true
-              if viewModel.routineSuggestion == nil {
-                Task { await viewModel.generateRoutine() }
+          VStack(spacing: 8) {
+            AddFAB { showingAddSheet = true }
+              .frame(maxWidth: .infinity, alignment: .trailing)
+              .padding(.trailing, 20)
+            if viewModel.isAppleIntelligenceAvailable() {
+              Button {
+                showingRoutineModal = true
+                if viewModel.routineSuggestion == nil {
+                  Task { await viewModel.generateRoutine() }
+                }
+              } label: {
+                HStack {
+                  Image(systemName: "sparkles")
+                  Text("ai_coach_suggest_day")
+                    .fontWeight(.medium)
+                }
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
               }
-            } label: {
-              HStack {
-                Image(systemName: "sparkles")
-                Text("ai_coach_suggest_day")
-                  .fontWeight(.medium)
-              }
-              .padding(.vertical, 10)
-              .frame(maxWidth: .infinity)
+              .buttonStyle(.borderedProminent)
+              .controlSize(.regular)
+              .tint(Color.brand)
+              .padding(.horizontal)
+              .padding(.bottom, 8)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.regular)
-            .tint(Color.brand)
-            .padding(.horizontal)
-            .padding(.vertical, 8)
           }
         }
-      }
-      // FAB floats above the AI Coach bottom button when that one is present.
-      // Fixed offset (Coach button ≈ 56pt incl. padding) beats measuring: the
-      // overlay/safe-area interaction is version-fragile and this is deterministic.
-      .overlay(alignment: .bottomTrailing) {
-        AddFAB { showingAddSheet = true }
-          .padding(.trailing, 20)
-          .padding(.bottom, viewModel.isAppleIntelligenceAvailable() ? 72 : 16)
       }
       .navigationTitle("home_title")
       .tint(Color.brand)

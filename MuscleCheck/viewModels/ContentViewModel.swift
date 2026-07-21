@@ -102,8 +102,16 @@ final class ContentViewModel: ObservableObject {
 
     self.muscleEntryManager = .init(context: context)
 
-    // One-time persist of the lazily-derived metric for pre-metric entries.
-    try? muscleEntryManager?.backfillMetricTypes()
+    // One-time persist of the lazily-derived metric for pre-metric entries. A
+    // failure is NOT fatal (entries keep metricRaw == "" and the backfill retries
+    // on the next launch), but it must not pass silently: custom-category entries
+    // can't self-heal through the getter fallback (built-in-only), so a swallowed
+    // error here would leave them rendered as check-only.
+    do {
+      try muscleEntryManager?.backfillMetricTypes()
+    } catch {
+      assertionFailure("Metric backfill failed (will retry next launch): \(error)")
+    }
 
     insertDefaultMuscleEntries()
 
