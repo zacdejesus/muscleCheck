@@ -97,12 +97,26 @@ struct ContentViewModelTests {
         let viewModel = ContentViewModel()
         await viewModel.setup(context: MockContext(), entries: [entry])
 
-        viewModel.saveSession(weight: 80.0, sets: 4, reps: 10, for: entry)
+        viewModel.saveSession(SessionInput(weightKg: 80.0, sets: 4, reps: 10), for: entry)
 
         #expect(entry.isChecked == true)
         #expect(entry.lastWeight == 80.0)
         #expect(entry.lastSets == 4)
         #expect(entry.lastReps == 10)
+        #expect(entry.sessions.count == 1)
+    }
+
+    @MainActor @Test
+    func testSaveSessionPersistsDurationAndDistance() async {
+        let entry = MuscleEntry(name: "Correr", category: "running")
+        let viewModel = ContentViewModel()
+        await viewModel.setup(context: MockContext(), entries: [entry])
+
+        viewModel.saveSession(SessionInput(durationSeconds: 1800, distanceMeters: 5000), for: entry)
+
+        #expect(entry.isChecked == true)
+        #expect(entry.lastDurationSeconds == 1800)
+        #expect(entry.lastDistanceMeters == 5000)
         #expect(entry.sessions.count == 1)
     }
 }

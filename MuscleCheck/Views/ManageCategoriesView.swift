@@ -3,8 +3,8 @@
 //  MuscleCheck — Feature: user-defined categories
 //
 //  Lets the user create their own categories beyond the built-in disciplines,
-//  list them and delete them. Persists via CategoryStore. Reuses the icon grid
-//  pattern from AddMuscleGroupView.
+//  list them and delete them. Persists via CategoryStore. Creation also lives
+//  inline in AddExerciseView; both funnel through the same store.
 //
 
 import SwiftUI
@@ -16,10 +16,8 @@ struct ManageCategoriesView: View {
 
     @State private var name: String = ""
     @State private var selectedIcon: String = ActivityCategory.availableIcons.first ?? "star.fill"
-    @State private var tracksWeight: Bool = false
+    @State private var defaultMetric: MetricType = .none
     @State private var errorMessage: String?
-
-    private let columns = Array(repeating: GridItem(.flexible()), count: 6)
 
     private var trimmedName: String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -30,12 +28,16 @@ struct ManageCategoriesView: View {
             // MARK: - New category
             Section("custom_category_section_new") {
                 TextField("custom_category_name_placeholder", text: $name)
-                Toggle("custom_category_tracks_weight", isOn: $tracksWeight)
-                    .tint(Color.brand)
+                Picker("custom_category_default_metric", selection: $defaultMetric) {
+                    ForEach(MetricType.allCases) { metric in
+                        Text(metric.displayName).tag(metric)
+                    }
+                }
+                .tint(Color.brand)
             }
 
             Section("select_icon") {
-                iconGrid
+                IconGridPicker(selectedIcon: $selectedIcon)
             }
 
             if let errorMessage {
@@ -64,8 +66,8 @@ struct ManageCategoriesView: View {
                                 .foregroundStyle(Color.brand)
                             Text(category.name)
                             Spacer()
-                            if category.tracksWeight {
-                                Image(systemName: "scalemass")
+                            if category.defaultMetric != .none {
+                                Image(systemName: category.defaultMetric.icon)
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -79,35 +81,16 @@ struct ManageCategoriesView: View {
         .tint(Color.brand)
     }
 
-    private var iconGrid: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
-            ForEach(ActivityCategory.availableIcons, id: \.self) { icon in
-                Button {
-                    selectedIcon = icon
-                } label: {
-                    Image(systemName: icon)
-                        .font(.appTitle3)
-                        .frame(width: 40, height: 40)
-                        .background(selectedIcon == icon ? Color.brand.opacity(0.2) : Color.clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .foregroundColor(selectedIcon == icon ? Color.brand : .secondary)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.vertical, 4)
-    }
-
     private func add() {
         do {
             try CategoryStore(context: context).add(
                 name: name,
                 icon: selectedIcon,
-                tracksWeight: tracksWeight
+                defaultMetric: defaultMetric
             )
             // Reset the form for the next one.
             name = ""
-            tracksWeight = false
+            defaultMetric = .none
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription

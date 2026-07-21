@@ -40,7 +40,7 @@ final class CategoryStore: CategoryStoreProtocol {
     }
 
     @discardableResult
-    func add(name: String, icon: String, tracksWeight: Bool) throws -> CustomCategory {
+    func add(name: String, icon: String, defaultMetric: MetricType) throws -> CustomCategory {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw CategoryStoreError.invalidName }
 
@@ -56,7 +56,7 @@ final class CategoryStore: CategoryStoreProtocol {
             name: trimmed,
             icon: icon,
             sortOrder: nextOrder,
-            tracksWeight: tracksWeight
+            defaultMetric: defaultMetric
         )
         context.insert(category)
         try context.save()

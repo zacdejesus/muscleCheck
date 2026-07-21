@@ -10,10 +10,6 @@ import SwiftUI
 /// The per-day breakdown of the selected week, shown below the calendar.
 struct WeekDetailSection: View {
     let days: [DayActivities]
-    /// User-defined categories, forwarded to each row so custom weight-tracking
-    /// categories show their weight in history. Defaults to [] (built-ins resolve
-    /// without it), keeping the preview container-free.
-    var customCategories: [CustomCategory] = []
 
     var body: some View {
         if days.isEmpty {
@@ -31,7 +27,7 @@ struct WeekDetailSection: View {
                             .font(.appSubheadline.bold())
                             .foregroundStyle(Color.brand)
                         ForEach(day.activities) { activity in
-                            ActivityDetailRow(activity: activity, customCategories: customCategories)
+                            ActivityDetailRow(activity: activity)
                         }
                     }
                 }
@@ -57,15 +53,11 @@ struct WeekDetailSection: View {
 
 // MARK: - Activity row (read-only)
 
-/// Read-only mirror of `MuscleEntryRowView`'s visual: icon + name + that day's weight (gym only).
-/// Deliberately omits the checkmark/weight-edit affordances — history doesn't mutate state.
+/// Read-only mirror of `MuscleEntryRowView`'s visual: icon + name + that day's
+/// logged values per the entry's metric. Deliberately omits the checkmark/edit
+/// affordances — history doesn't mutate state.
 private struct ActivityDetailRow: View {
     let activity: DayActivity
-    var customCategories: [CustomCategory] = []
-
-    private var tracksWeight: Bool {
-        CategoryResolver.resolve(activity.entry.category, custom: customCategories).tracksWeight
-    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -73,8 +65,8 @@ private struct ActivityDetailRow: View {
                 .foregroundColor(Color.brand)
                 .frame(width: 24)
             Text(activity.entry.name)
-            if tracksWeight, let kg = activity.weightKg {
-                Text(formattedWeight(kg))
+            if let label = metricLabel {
+                Text(label)
                     .font(.appCaption)
                     .foregroundStyle(.secondary)
             }
@@ -82,9 +74,16 @@ private struct ActivityDetailRow: View {
         }
     }
 
-    private func formattedWeight(_ kg: Double) -> String {
-        let unit = UserDefaultsManager.shared.weightUnit
-        return String(format: "%.0f", unit.displayValue(fromKg: kg)) + " " + unit.displayLabel
+    /// That day's values formatted for the entry's metric, nil when nothing was logged.
+    /// Same formatter as the home row (`MuscleEntry.formattedLastMetric`), so the two
+    /// can't drift.
+    private var metricLabel: String? {
+        SessionFormatting.label(
+            metric: activity.entry.metric,
+            weightKg: activity.weightKg,
+            durationSeconds: activity.durationSeconds,
+            distanceMeters: activity.distanceMeters
+        )
     }
 }
 

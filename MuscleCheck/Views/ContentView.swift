@@ -55,7 +55,7 @@ struct ContentView: View {
 
         List {
           if viewModel.currentWeekEntries.isEmpty {
-            EmptyStateView()
+            EmptyStateView { showingAddSheet = true }
           } else if viewModel.groupedCurrentWeekEntries.count == 1 {
             // Single category — no section headers for clean look
             let group = viewModel.groupedCurrentWeekEntries[0]
@@ -87,31 +87,37 @@ struct ContentView: View {
         // still bounce once the content overflows — so we reach the backing UIScrollView
         // and set bounces = false. Scoped to this list via a background probe.
         .background(NoScrollBounce())
-        // AI Coach: suggested day. Free + on-device, so no Pro gate — only hidden when
-        // Apple Intelligence isn't available (iOS < 26, ineligible hardware, AI off).
-        // Pinned to the bottom with a transparent background so the list shows through
-        // (no bar-material band behind the button).
+        // Bottom stack: FAB (always) above the AI Coach button (when available).
+        // Both live in the SAME safe-area inset so the layout system positions the
+        // FAB over the coach button's REAL height — a fixed offset broke as soon as
+        // Dynamic Type grew the coach label past the guessed constant. Transparent
+        // background so the list shows through (no bar-material band).
         .safeAreaInset(edge: .bottom) {
-          if viewModel.isAppleIntelligenceAvailable() {
-            Button {
-              showingRoutineModal = true
-              if viewModel.routineSuggestion == nil {
-                Task { await viewModel.generateRoutine() }
+          VStack(spacing: 8) {
+            AddFAB { showingAddSheet = true }
+              .frame(maxWidth: .infinity, alignment: .trailing)
+              .padding(.trailing, 20)
+            if viewModel.isAppleIntelligenceAvailable() {
+              Button {
+                showingRoutineModal = true
+                if viewModel.routineSuggestion == nil {
+                  Task { await viewModel.generateRoutine() }
+                }
+              } label: {
+                HStack {
+                  Image(systemName: "sparkles")
+                  Text("ai_coach_suggest_day")
+                    .fontWeight(.medium)
+                }
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
               }
-            } label: {
-              HStack {
-                Image(systemName: "sparkles")
-                Text("ai_coach_suggest_day")
-                  .fontWeight(.medium)
-              }
-              .padding(.vertical, 10)
-              .frame(maxWidth: .infinity)
+              .buttonStyle(.borderedProminent)
+              .controlSize(.regular)
+              .tint(Color.brand)
+              .padding(.horizontal)
+              .padding(.bottom, 8)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.regular)
-            .tint(Color.brand)
-            .padding(.horizontal)
-            .padding(.vertical, 8)
           }
         }
       }
@@ -139,11 +145,6 @@ struct ContentView: View {
         // first. Declaring Add + Settings first keeps them visible the longest; Stats and
         // Photos are the ones that fall into the overflow when space runs out.
         ToolbarItemGroup(placement: .navigationBarTrailing) {
-          Button {
-            showingAddSheet = true
-          } label: {
-            Label("add_new_muscle_group", systemImage: "plus.circle")
-          }
           Button {
             showingSettings = true
           } label: {
@@ -184,7 +185,7 @@ struct ContentView: View {
         streakViewModel.update(with: newEntries)
       }
       .sheet(isPresented: $showingAddSheet) {
-        AddMuscleGroupView()
+        AddExerciseView()
       }
       .sheet(isPresented: $showingSettings) {
         NavigationStack {
@@ -232,11 +233,10 @@ struct ContentView: View {
   private func entryRow(_ entry: MuscleEntry) -> some View {
     MuscleEntryRowView(
       entry: entry,
-      customCategories: customCategories,
       showsCheckTip: entry.persistentModelID == checkTipEntryID,
       showsWeightTip: entry.persistentModelID == weightTipEntryID,
       onTap: { _ in viewModel.toggleActivity(for: entry) },
-      onSaveSession: { target, weight, sets, reps in viewModel.saveSession(weight: weight, sets: sets, reps: reps, for: target) }
+      onSaveSession: { target, input in viewModel.saveSession(input, for: target) }
     )
   }
 
@@ -245,12 +245,11 @@ struct ContentView: View {
     viewModel.groupedCurrentWeekEntries.first?.entries.first?.persistentModelID
   }
 
-  /// First row of the first weight-tracking (gym) category — anchor for the
-  /// "tap the name to log weight" tip. Built-ins only: the tip copy is gym-worded.
+  /// First strength-metric row — anchor for the "tap the name to log weight" tip.
   private var weightTipEntryID: PersistentIdentifier? {
     viewModel.groupedCurrentWeekEntries
-      .first { ActivityCategory(rawValue: $0.category)?.tracksWeight == true }?
-      .entries.first?.persistentModelID
+      .compactMap { $0.entries.first { $0.metric == .strength } }
+      .first?.persistentModelID
   }
 
   /// Entries in the same category as the workout — the picker's options.

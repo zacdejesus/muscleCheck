@@ -11,25 +11,19 @@ import TipKit
 
 struct MuscleEntryRowView: View {
     var entry: MuscleEntry
-    /// User-defined categories, so a custom category that opted into weight tracking
-    /// behaves like gym. Defaults to [] — built-ins resolve correctly without it,
-    /// which keeps previews container-free.
-    var customCategories: [CustomCategory] = []
     /// Tip anchors: ContentView marks exactly one row per tip (first row overall /
-    /// first weight-tracking row) so the popovers don't repeat on every row.
+    /// first strength row) so the popovers don't repeat on every row.
     var showsCheckTip: Bool = false
     var showsWeightTip: Bool = false
     var onTap: (MuscleEntry) -> Void
-    var onSaveSession: (MuscleEntry, Double?, Int?, Int?) -> Void = { _, _, _, _ in }
+    var onSaveSession: (MuscleEntry, SessionInput) -> Void = { _, _ in }
 
     @State private var isShowingModal: Bool = false
 
     private let checkTip = CheckActivityTip()
     private let weightTip = LogWeightTip()
 
-    private var canEditWeight: Bool {
-        CategoryResolver.resolve(entry.category, custom: customCategories).tracksWeight
-    }
+    private var canOpenLog: Bool { entry.metric != .none }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -46,14 +40,14 @@ struct MuscleEntryRowView: View {
             }
         }
         .sheet(isPresented: $isShowingModal) {
-            SessionLogView(entry: entry) { newWeight, newSets, newReps in
-                onSaveSession(entry, newWeight, newSets, newReps)
+            SessionLogView(entry: entry) { input in
+                onSaveSession(entry, input)
             }
         }
     }
 
-    // One tap target for the whole row (except the checkmark): opens the weight
-    // modal for gym entries. Avoids the dead/ambiguous zones between icon and name.
+    // One tap target for the whole row (except the checkmark): opens the session
+    // log for entries whose metric records something. Avoids dead/ambiguous zones.
     private var rowBody: some View {
         HStack {
             // Icon in a soft tinted tile (Settings/Things-style) — adds depth and reads
@@ -65,8 +59,8 @@ struct MuscleEntryRowView: View {
                 .background(Color.brand.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
                 .padding(.trailing, 4)
             Text(entry.name)
-            if canEditWeight, let weightLabel = entry.formattedLastWeight {
-                Text(weightLabel)
+            if let metricLabel = entry.formattedLastMetric {
+                Text(metricLabel)
                     .font(.appCaption)
                     .foregroundStyle(.secondary)
             }
@@ -74,7 +68,7 @@ struct MuscleEntryRowView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            guard canEditWeight else { return }
+            guard canOpenLog else { return }
             isShowingModal = true
         }
     }

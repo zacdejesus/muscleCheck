@@ -43,10 +43,17 @@ enum ActivityCategory: String, CaseIterable, Codable, Identifiable, Sendable {
         }
     }
 
-    /// Whether activities in this category prompt for/show weight. Only gym does
-    /// among the built-ins. Replaces the hardcoded `== .gym` checks scattered in
-    /// WorkoutEligibility / MuscleEntryRowView / WeekDetailSection.
-    var tracksWeight: Bool { self == .gym }
+    /// Default metric for NEW entries in this category. The metric lives on each
+    /// entry (`MuscleEntry.metric`) and can be overridden at creation — this is
+    /// only the starting point, and the lazy fallback for pre-metric entries.
+    var defaultMetric: MetricType {
+        switch self {
+        case .gym: return .strength
+        case .running: return .distanceDuration
+        case .cardio, .yoga, .pilates: return .duration
+        case .calisthenics, .stretching, .custom: return .none
+        }
+    }
 
     var presetEntries: [(nameKey: String, icon: String)] {
         switch self {

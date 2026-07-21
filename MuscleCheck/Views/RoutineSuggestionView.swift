@@ -76,6 +76,15 @@ struct RoutineSuggestionView: View {
                 ForEach(Array(suggestion.blocks.enumerated()), id: \.offset) { _, block in
                     blockView(block)
                 }
+
+                // Siri-language mismatch: the on-device model answers in Siri's
+                // language regardless of the prompt — tell the user why the text
+                // above may not be in their language, and where to fix it.
+                if viewModel.aiLanguageMismatch {
+                    Label("ai_coach_language_hint", systemImage: "globe")
+                        .font(.appFootnote)
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)

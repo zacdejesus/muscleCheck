@@ -17,9 +17,9 @@ struct CategoryResolverTests {
         _ id: String,
         name: String = "Custom",
         icon: String = "star.fill",
-        tracksWeight: Bool = false
+        defaultMetric: MetricType = .none
     ) -> CustomCategory {
-        CustomCategory(id: id, name: name, icon: icon, sortOrder: 99, tracksWeight: tracksWeight)
+        CustomCategory(id: id, name: name, icon: icon, sortOrder: 99, defaultMetric: defaultMetric)
     }
 
     @Test
@@ -27,36 +27,50 @@ struct CategoryResolverTests {
         let r = CategoryResolver.resolve("gym", custom: [])
         #expect(r.isBuiltIn)
         #expect(r.id == "gym")
-        #expect(r.tracksWeight)                       // gym is the weight-tracking category
+        #expect(r.defaultMetric == .strength)         // gym defaults to weight logging
         #expect(!r.displayName.isEmpty)
         #expect(r.icon == ActivityCategory.gym.defaultIcon)
     }
 
     @Test
-    func builtInNonGymDoesNotTrackWeight() {
-        let r = CategoryResolver.resolve("yoga", custom: [])
-        #expect(r.isBuiltIn)
-        #expect(!r.tracksWeight)
+    func builtInDefaultMetrics() {
+        #expect(CategoryResolver.resolve("running", custom: []).defaultMetric == .distanceDuration)
+        #expect(CategoryResolver.resolve("yoga", custom: []).defaultMetric == .duration)
+        #expect(CategoryResolver.resolve("stretching", custom: []).defaultMetric == MetricType.none)
     }
 
     @Test
     func customResolvesFromStore() {
-        let cat = customCat("escalada", name: "Escalada", icon: "figure.climbing", tracksWeight: true)
+        let cat = customCat("escalada", name: "Escalada", icon: "figure.climbing", defaultMetric: .strength)
         let r = CategoryResolver.resolve("escalada", custom: [cat])
         #expect(!r.isBuiltIn)
         #expect(r.id == "escalada")
         #expect(r.displayName == "Escalada")
         #expect(r.icon == "figure.climbing")
-        #expect(r.tracksWeight)
+        #expect(r.defaultMetric == .strength)
+    }
+
+    @Test
+    func legacyCustomCategoryDerivesMetricFromTracksWeight() {
+        // A category saved by a pre-metric app version has an empty defaultMetricRaw;
+        // the tracksWeight flag is the migration source.
+        let legacy = customCat("vieja", name: "Vieja")
+        legacy.tracksWeight = true
+        legacy.defaultMetricRaw = ""
+        let r = CategoryResolver.resolve("vieja", custom: [legacy])
+        #expect(r.defaultMetric == .strength)
+
+        legacy.tracksWeight = false
+        #expect(CategoryResolver.resolve("vieja", custom: [legacy]).defaultMetric == MetricType.none)
     }
 
     @Test
     func builtInWinsOverCustomWithSameId() {
         // A custom category must never shadow a built-in rawValue.
-        let shadow = customCat("gym", name: "Hacked", tracksWeight: false)
+        let shadow = customCat("gym", name: "Hacked", defaultMetric: .none)
         let r = CategoryResolver.resolve("gym", custom: [shadow])
         #expect(r.isBuiltIn)
-        #expect(r.tracksWeight)                       // still the real gym, not the shadow
+        #expect(r.defaultMetric == .strength)         // still the real gym, not the shadow
     }
 
     @Test
@@ -67,7 +81,7 @@ struct CategoryResolverTests {
         #expect(r.id == "DEAD-BEEF-UUID")             // preserves the id (for round-tripping)
         #expect(!r.displayName.isEmpty)               // neutral label, never the raw UUID
         #expect(r.displayName != "DEAD-BEEF-UUID")    // must NOT echo the opaque id
-        #expect(!r.tracksWeight)
+        #expect(r.defaultMetric == MetricType.none)
         #expect(!r.icon.isEmpty)                      // always a usable icon
     }
 

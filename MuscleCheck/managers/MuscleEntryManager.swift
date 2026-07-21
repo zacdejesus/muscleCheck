@@ -37,37 +37,75 @@ final class MuscleEntryManager {
         self.context = context
     }
 
+    /// Canonical name normalization for duplicate detection — the ONE definition of
+    /// "already exists", shared with the add screen's preset-chip filter (so a chip
+    /// never shows for a name the save path would reject, and vice versa).
+    static func normalizedName(_ name: String) -> String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
     /// Adds a new muscle entry with validation
-    /// - Parameter name: The name of the muscle group
-    /// - Throws: MuscleEntryError.duplicateEntry if entry already exists, MuscleEntryError.invalidName if name is invalid
-    func addEntry(name: String, category: String = ActivityCategory.gym.rawValue, icon: String = ActivityCategory.gym.defaultIcon) throws {
+    /// - Parameters:
+    ///   - name: The name of the exercise/muscle group
+    ///   - metric: What the entry logs. Nil = the category's default (resolved here
+    ///     so custom-category entries don't silently fall to `.none`).
+    /// - Throws: MuscleEntryError.duplicateEntry if entry already exists (case-insensitive), MuscleEntryError.invalidName if name is invalid
+    func addEntry(name: String, category: String = ActivityCategory.gym.rawValue, icon: String = ActivityCategory.gym.defaultIcon, metric: MetricType? = nil) throws {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
             throw MuscleEntryError.invalidName
         }
-        
-        let exists = try context.fetch(FetchDescriptor<MuscleEntry>(predicate: #Predicate { $0.name == trimmedName }))
-        guard exists.isEmpty else {
+
+        // Case-insensitive: "chest" vs "Chest" are the same exercise to the user.
+        // The entry set is small, so fetching all beats predicate contortions.
+        let normalized = Self.normalizedName(trimmedName)
+        let existing = try context.fetch(FetchDescriptor<MuscleEntry>())
+        guard !existing.contains(where: { Self.normalizedName($0.name) == normalized }) else {
             throw MuscleEntryError.duplicateEntry(trimmedName)
         }
 
-        let entry = MuscleEntry(name: trimmedName, category: category, icon: icon)
+        let resolvedMetric = try metric ?? defaultMetric(forCategory: category)
+        let entry = MuscleEntry(name: trimmedName, category: category, icon: icon, metric: resolvedMetric)
         context.insert(entry)
         try context.save()
     }
 
     /// Adds all preset entries for a given activity category, skipping duplicates
+    /// (same case-insensitive rule as `addEntry`).
     func addPresetEntries(for category: ActivityCategory) throws {
+        let existing = try context.fetch(FetchDescriptor<MuscleEntry>())
+        var existingNames = Set(existing.map { Self.normalizedName($0.name) })
+
         for preset in category.presetEntries {
             let name = NSLocalizedString(preset.nameKey, comment: "")
             let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmedName.isEmpty else { continue }
-
-            let exists = try context.fetch(FetchDescriptor<MuscleEntry>(predicate: #Predicate { $0.name == trimmedName }))
-            guard exists.isEmpty else { continue }
+            guard existingNames.insert(Self.normalizedName(trimmedName)).inserted else { continue }
 
             let entry = MuscleEntry(name: trimmedName, category: category.rawValue, icon: preset.icon)
             context.insert(entry)
+        }
+        try context.save()
+    }
+
+    /// Category default metric, resolver-aware so custom categories count.
+    private func defaultMetric(forCategory category: String) throws -> MetricType {
+        let customs = try context.fetch(FetchDescriptor<CustomCategory>())
+        return CategoryResolver.resolve(category, custom: customs).defaultMetric
+    }
+
+    /// Persists the lazily-derived metric for pre-metric entries (empty `metricRaw`).
+    /// Idempotent and cheap — the empty raw IS the "needs backfill" flag, so there's
+    /// nothing to do on every launch after the first.
+    func backfillMetricTypes() throws {
+        let pending = try context.fetch(
+            FetchDescriptor<MuscleEntry>(predicate: #Predicate { $0.metricRaw == "" })
+        )
+        guard !pending.isEmpty else { return }
+
+        let customs = try context.fetch(FetchDescriptor<CustomCategory>())
+        for entry in pending {
+            entry.metric = CategoryResolver.resolve(entry.category, custom: customs).defaultMetric
         }
         try context.save()
     }
