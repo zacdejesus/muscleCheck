@@ -197,13 +197,18 @@ Diferido hasta después del release 2.1.0. Log desde la muñeca con complication
 Trackear la carga (peso) usada en cada grupo muscular para ver progreso real, no solo asistencia.
 
 **Funcionalidad (2.1.0):**
-- Campo de peso opcional por entrada (último peso usado), solo para la categoria gym, la de yoga por ejemplo no lo necesita ✅
+- Campo de peso opcional por entrada (último peso usado) ✅
 - Historial de pesos por sesión, junto a `activityDates` ✅ (`WorkoutSession.weight`)
 - UI mínima: input numérico al marcar como entrenado (no romper el flujo "2 segundos") ✅ (`ModalWeightView`, auto-focus al abrir)
 - Toggle kg / lbs en Settings ✅ (`WeightUnit`, sección Units)
-- Label pequeño con el peso al lado del nombre del músculo, solo para gym ✅ (`MuscleEntry.formattedLastWeight` + `MuscleEntryRowView`)
-- Tap en ícono / nombre / label abre el modal (solo gym) ✅
+- Label pequeño con el peso al lado del nombre del músculo ✅ (`MuscleEntry.formattedLastWeight` + `MuscleEntryRowView`)
+- Tap en ícono / nombre / label abre el modal ✅
 - Strings localizadas ES/EN/FR para el modal y Settings ✅
+
+> **Superseded por Feature 18 (PR #27):** el gating "solo gym" fue reemplazado por
+> `MetricType` **por ejercicio** (none / strength / duration / distanceDuration).
+> El modal (`SessionLogView`) ahora muestra campos según la métrica del ejercicio,
+> no según la categoría.
 
 **Diferido a 2.2.0:**
 - Stats: evolución de peso por grupo muscular (Swift Charts, línea temporal)
@@ -268,13 +273,13 @@ Validar `groupIndex` en rango y `blocks.count == 2`; descartar/recortar lo invá
 ---
 
 ### ✅ Feature 17: Categorías definidas por el usuario (branch: `feature/custom-categories`, PR #23)
-Implementado. El usuario crea categorías propias (nombre + ícono + toggle "registrar peso") más allá de las 7 built-in, en **Settings → Activity Presets → Custom Categories**. Las custom aparecen en el picker de alta; si optan por peso, se comportan como gym.
+Implementado. El usuario crea categorías propias (nombre + ícono + métrica default) más allá de las 7 built-in, en **Settings → Activity Presets → Custom Categories** y también inline desde la pantalla de alta (Feature 18). Las custom aparecen en el picker de alta.
 
 **Arquitectura (test-first, aditiva — no rompe versiones anteriores):**
 - `CustomCategory` (`@Model`) cuyo `id` es el mismo string que ya guarda `MuscleEntry.category` → migración **aditiva**, entries viejas intactas.
 - `CategoryResolver` (puro): unifica built-in (enum) + custom; built-in siempre gana; categoría borrada degrada a "Custom" sin crashear.
 - `CategoryStore` (CRUD sobre `ModelContextProtocol`, ids UUID anti-colisión, validación, orden post built-ins).
-- `ActivityCategory.tracksWeight` reemplaza los `== .gym` hardcodeados en `MuscleEntryRowView` / `WeekDetailSection`. El AI Coach se deja **gym-only** (es por diseño, no por peso).
+- ~~`ActivityCategory.tracksWeight`~~ → desde Feature 18 es `defaultMetric` (la categoría solo aporta el default de métrica para ejercicios nuevos). `CustomCategory.tracksWeight` sigue almacenado como fuente de migración del nuevo `defaultMetricRaw`. El AI Coach se deja **gym-only** por string de categoría (es por diseño, no por métrica).
 - Widget sin cambios (renderiza ícono+nombre por entry).
 
 Archivos nuevos: `models/CustomCategory.swift`, `models/CategoryResolver.swift`, `managers/CategoryStore.swift`, `managers/protocols/CategoryStoreProtocol.swift`, `Views/ManageCategoriesView.swift`, tests `CategoryResolverTests`/`CategoryStoreTests`. Modificados: ActivityCategory, MuscleCheckApp (schema), MuscleEntryRowView, WeekDetailSection, ContentView, HistoryView, AddMuscleGroupView, SettingsView, Localizable.xcstrings.
@@ -282,6 +287,25 @@ Archivos nuevos: `models/CustomCategory.swift`, `models/CategoryResolver.swift`,
 **Decisiones abiertas:** categorías custom empiezan vacías; borrar una **no** borra sus entries (quedan huérfanas → "Custom", no-destructivo). Evaluar cascade-delete o reasignación.
 
 **Versión:** 2.1.x
+
+---
+
+### ✅ Feature 18: Métrica por ejercicio + alta unificada + FAB (branch: `feature/exercise-metrics`, PR #27)
+Implementado. Refactor de UX nacido del feedback de usuarios ("no encuentro cómo agregar") y del pedido de trackear tiempo/distancia además de peso.
+
+**Métrica por ejercicio (`MetricType`):**
+- `none` (solo check) · `strength` (peso+series+reps) · `duration` (tiempo) · `distanceDuration` (km+tiempo). Vive en `MuscleEntry.metricRaw`; la categoría solo aporta el **default** (gym→strength, running→distancia+tiempo, cardio/yoga/pilates→tiempo, resto→none), cada ejercicio puede pisarlo al crearse.
+- Migración aditiva: `metricRaw == ""` = entrada pre-métrica, resuelta lazy desde la categoría (built-ins) y persistida por un backfill idempotente al arranque (`backfillMetricTypes`, resolver-aware para customs).
+- `SessionLogView` muestra campos según la métrica; `WorkoutSession` ganó `durationSeconds`/`distanceMeters` (opcionales, JSON legacy decodea nil). Peso en kg, distancia en metros (display km-only v1), duración en segundos. `SessionFormatting` es el formatter único de labels (home + historial).
+- Regla de duplicados de nombre unificada y case-insensitive (`MuscleEntryManager.normalizedName`).
+
+**Alta unificada (`AddExerciseView`, reemplaza `AddMuscleGroupView`):** categoría primero (recuerda la última usada), chips de presets de un tap (multi-alta), nombre libre, overrides de métrica/ícono colapsados en Options, y "+ Nueva categoría…" inline (mismo `CategoryStore` que Settings).
+
+**Discoverability:** FAB "+" bottom-right (en el mismo `safeAreaInset` que el botón del AI Coach → sin offsets mágicos, aguanta Dynamic Type); el "+" del toolbar se retiró; empty state con CTA real.
+
+**AI Coach idioma (mismo PR):** caso `it` agregado, directiva de idioma al final del prompt, `modelSupportsAppLanguage()` + aviso en el modal cuando Siri/Apple Intelligence está en otro idioma (el modelo responde en el idioma de SIRI, no del teléfono), y cache de sugerencia invalidado al cambiar idioma.
+
+**Versión:** 2.2.0
 
 ---
 
