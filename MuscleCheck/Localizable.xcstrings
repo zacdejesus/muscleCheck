@@ -6023,6 +6023,34 @@
           }
         }
       }
+    },
+    "ai_coach_language_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence answers in Siri's language. To get suggestions in your language, change the Siri & Apple Intelligence language in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence responde en el idioma de Siri. Para ver las sugerencias en tu idioma, cambia el idioma de Siri y Apple Intelligence en Ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence répond dans la langue de Siri. Pour des suggestions dans ta langue, change la langue de Siri et Apple Intelligence dans Réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence risponde nella lingua di Siri. Per suggerimenti nella tua lingua, cambia la lingua di Siri e Apple Intelligence in Impostazioni."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -26,6 +26,10 @@ final class ContentViewModel: ObservableObject {
   @Published var routineSuggestion: RoutineSuggestion?
   @Published var isGeneratingRoutine = false
   @Published var routineError: String?
+  /// True when Apple Intelligence can't answer in the app's UI language (Siri
+  /// language mismatch) — the modal shows a hint instead of silently answering
+  /// in English on a Spanish phone.
+  @Published private(set) var aiLanguageMismatch = false
   /// Groups from the last suggestion, excluded on "dame otra" to force a different day.
   private var lastSuggestedGroups: Set<String> = []
 
@@ -50,6 +54,7 @@ final class ContentViewModel: ObservableObject {
     let previous = routineSuggestion
     isGeneratingRoutine = true
     routineError = nil
+    aiLanguageMismatch = !MuscleCheckAI.modelSupportsAppLanguage()
 
     let excluded = regenerate ? lastSuggestedGroups : []
     let eligible = WorkoutEligibility.eligibleGymGroups(from: entries, excluding: excluded)
@@ -80,11 +85,15 @@ final class ContentViewModel: ObservableObject {
     guard let data = try? JSONEncoder().encode(suggestion) else { return }
     UserDefaultsManager.shared.cachedRoutineData = data
     UserDefaultsManager.shared.cachedRoutineDate = Date()
+    UserDefaultsManager.shared.cachedRoutineLanguage = LocalizedStrings.appLanguage
   }
 
   private func loadCachedRoutineIfToday() {
     guard let date = UserDefaultsManager.shared.cachedRoutineDate,
           Date.appCalendar.isDate(date, inSameDayAs: Date()),
+          // A cache from another language must not stick for the rest of the day
+          // (e.g. generated in English before switching the phone to Spanish).
+          UserDefaultsManager.shared.cachedRoutineLanguage == LocalizedStrings.appLanguage,
           let data = UserDefaultsManager.shared.cachedRoutineData,
           let cached = try? JSONDecoder().decode(RoutineSuggestion.self, from: data)
     else { return }

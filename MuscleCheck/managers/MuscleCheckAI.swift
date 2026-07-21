@@ -120,6 +120,17 @@ final class MuscleCheckAI {
         session.prewarm(promptPrefix: LocalizedStrings.promtPrefix)
     }
 
+    /// Whether the on-device model can answer in the app's UI language. Apple
+    /// Intelligence follows the SIRI language, not the device language — a phone in
+    /// Spanish with Siri in English answers in English no matter what the prompt
+    /// says. When this is false the coach modal shows a hint pointing at Settings.
+    static func modelSupportsAppLanguage() -> Bool {
+        guard let appLang = LocalizedStrings.appLanguage else { return true }
+        return SystemLanguageModel.default.supportedLanguages.contains {
+            $0.languageCode?.identifier == appLang
+        }
+    }
+
     func isAppleIntelligenceAvailable() -> Bool {
         let model = SystemLanguageModel.default
 

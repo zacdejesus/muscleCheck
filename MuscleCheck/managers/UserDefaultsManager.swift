@@ -100,4 +100,11 @@ final class UserDefaultsManager {
         get { defaults.object(forKey: "cachedRoutineDate") as? Date }
         set { defaults.set(newValue, forKey: "cachedRoutineDate") }
     }
+
+    /// Language the cached routine was generated in. A suggestion cached in English
+    /// must not survive a switch to Spanish for the rest of the day.
+    var cachedRoutineLanguage: String? {
+        get { defaults.string(forKey: "cachedRoutineLanguage") }
+        set { defaults.set(newValue, forKey: "cachedRoutineLanguage") }
+    }
 }
