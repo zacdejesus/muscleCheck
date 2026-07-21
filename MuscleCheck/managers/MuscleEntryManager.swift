@@ -49,8 +49,10 @@ final class MuscleEntryManager {
     ///   - name: The name of the exercise/muscle group
     ///   - metric: What the entry logs. Nil = the category's default (resolved here
     ///     so custom-category entries don't silently fall to `.none`).
+    /// - Returns: the created entry (used by the add picker for session-scoped undo).
     /// - Throws: MuscleEntryError.duplicateEntry if entry already exists (case-insensitive), MuscleEntryError.invalidName if name is invalid
-    func addEntry(name: String, category: String = ActivityCategory.gym.rawValue, icon: String = ActivityCategory.gym.defaultIcon, metric: MetricType? = nil) throws {
+    @discardableResult
+    func addEntry(name: String, category: String = ActivityCategory.gym.rawValue, icon: String = ActivityCategory.gym.defaultIcon, metric: MetricType? = nil) throws -> MuscleEntry {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
             throw MuscleEntryError.invalidName
@@ -68,6 +70,7 @@ final class MuscleEntryManager {
         let entry = MuscleEntry(name: trimmedName, category: category, icon: icon, metric: resolvedMetric)
         context.insert(entry)
         try context.save()
+        return entry
     }
 
     /// Adds all preset entries for a given activity category, skipping duplicates

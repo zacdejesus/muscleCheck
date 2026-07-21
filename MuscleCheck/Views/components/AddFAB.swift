@@ -22,6 +22,9 @@ struct AddFAB: View {
                 .shadow(color: .black.opacity(0.2), radius: 6, y: 3)
         }
         .accessibilityIdentifier("home.addFAB")
-        .accessibilityLabel(Text("add_new_muscle_group"))
+        // "Add to your list" — must match the sheet it opens; the old
+        // "Add new muscle group" label reintroduced the exercise/muscle
+        // confusion right at the doorway.
+        .accessibilityLabel(Text("add_sheet_title"))
     }
 }

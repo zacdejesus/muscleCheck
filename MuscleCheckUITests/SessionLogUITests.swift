@@ -89,17 +89,31 @@ final class SessionLogUITests: XCTestCase {
         let entryName = "Str\(Int(Date().timeIntervalSince1970) % 100000)"
 
         app.buttons["home.addFAB"].tap()
+
+        // Picker flow: pick the Stretching category chip, then the "create your own"
+        // escape hatch (presets can't be used — repeated runs would find them added).
+        let stretchingChip = app.buttons["add.category.stretching"]
+        XCTAssertTrue(stretchingChip.waitForExistence(timeout: 5), "Stretching category chip not found")
+        // Stretching is the last built-in chip, past the fold of the horizontal
+        // strip. Swipe the strip a fixed number of times before tapping —
+        // querying `isHittable` on an off-screen element throws instead of
+        // returning false ("Activation point invalid").
+        let chipStrip = app.scrollViews.containing(.button, identifier: "add.category.gym").firstMatch
+        chipStrip.swipeLeft()
+        chipStrip.swipeLeft()
+        stretchingChip.tap()
+        app.buttons["add.createCustom"].tap()
+
         let nameField = app.textFields["add.nameField"]
-        XCTAssertTrue(nameField.waitForExistence(timeout: 5), "Add sheet name field not found")
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5), "Create form name field not found")
         nameField.tap()
         nameField.typeText(entryName)
+        app.buttons["add.confirm"].tap()
 
-        // Switch the category picker from Gym to Stretching (menu picker → tap, then pick by label).
-        app.buttons["add.categoryPicker"].tap()
-        let option = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Stretching")).firstMatch
-        XCTAssertTrue(option.waitForExistence(timeout: 5), "Stretching option not found in category picker")
-        option.tap()
-        app.navigationBars.buttons["Save"].tap()
+        // Back on the picker — close the sheet.
+        let done = app.buttons["add.done"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5), "Done button not found after create")
+        done.tap()
 
         // Tap the new row — the modal must NOT open (its metric logs nothing). The row
         // can land below the fold of the lazy List (other suites may have seeded more

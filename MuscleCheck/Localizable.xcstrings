@@ -47,7 +47,92 @@
         }
       }
     },
+    "add_create_confirm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi"
+          }
+        }
+      }
+    },
+    "add_create_custom_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New activity"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva actividad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvelle activité"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuova attività"
+          }
+        }
+      }
+    },
+    "add_done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fatto"
+          }
+        }
+      }
+    },
     "add_exercise" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -104,6 +189,34 @@
         }
       }
     },
+    "add_in_your_list" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In your list"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En tu lista"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans ta liste"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nella tua lista"
+          }
+        }
+      }
+    },
     "add_new_category_option" : {
       "localizations" : {
         "en" : {
@@ -132,87 +245,86 @@
         }
       }
     },
-    "add_new_muscle_group" : {
-      "extractionState" : "manual",
+    "add_picker_prompt_generic" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add new muscle group"
+            "value" : "Which activities do you do?"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Agregar nuevo grupo muscular"
+            "value" : "¿Qué actividades haces?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter un nouveau groupe musculaire"
+            "value" : "Quelles activités pratiques-tu ?"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi nuovo gruppo muscolare"
+            "value" : "Quali attività pratichi?"
           }
         }
       }
     },
-    "add_section_options" : {
+    "add_picker_prompt_gym" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Options"
+            "value" : "Which muscle groups do you train?"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opciones"
+            "value" : "¿Qué grupos musculares entrenas?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Options"
+            "value" : "Quels groupes musculaires entraînes-tu ?"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opzioni"
+            "value" : "Quali gruppi muscolari alleni?"
           }
         }
       }
     },
-    "add_section_presets" : {
+    "add_sheet_title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Suggestions"
+            "value" : "Add to your list"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sugerencias"
+            "value" : "Agregar a tu lista"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Suggestions"
+            "value" : "Ajouter à ta liste"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Suggerimenti"
+            "value" : "Aggiungi alla tua lista"
           }
         }
       }
@@ -271,6 +383,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sto creando la tua giornata…"
+          }
+        }
+      }
+    },
+    "ai_coach_language_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence answers in Siri's language. To get suggestions in your language, change the Siri & Apple Intelligence language in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence responde en el idioma de Siri. Para ver las sugerencias en tu idioma, cambia el idioma de Siri y Apple Intelligence en Ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence répond dans la langue de Siri. Pour des suggestions dans ta langue, change la langue de Siri et Apple Intelligence dans Réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence risponde nella lingua di Siri. Per suggerimenti nella tua lingua, cambia la lingua di Siri e Apple Intelligence in Impostazioni."
           }
         }
       }
@@ -1159,25 +1299,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add exercise"
+            "value" : "Add activity"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Agregar ejercicio"
+            "value" : "Agregar actividad"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter un exercice"
+            "value" : "Ajouter une activité"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi esercizio"
+            "value" : "Aggiungi attività"
           }
         }
       }
@@ -1187,25 +1327,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nothing this week yet. Add your first exercise."
+            "value" : "Nothing this week yet. Add your first activity."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aún no hay nada esta semana. Agrega tu primer ejercicio."
+            "value" : "Aún no hay nada esta semana. Agrega tu primera actividad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rien cette semaine pour l'instant. Ajoute ton premier exercice."
+            "value" : "Rien cette semaine pour l'instant. Ajoute ta première activité."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ancora niente questa settimana. Aggiungi il tuo primo esercizio."
+            "value" : "Ancora niente questa settimana. Aggiungi la tua prima attività."
           }
         }
       }
@@ -2057,34 +2197,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Segna un gruppo muscolare come allenato oggi"
-          }
-        }
-      }
-    },
-    "metric_picker_label" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tracking"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registro"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suivi"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tracciamento"
           }
         }
       }
@@ -3762,6 +3874,7 @@
     },
     "select_category" : {
       "comment" : "A section that allows the user to select a category for the exercise.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "en" : {
@@ -6024,30 +6137,198 @@
         }
       }
     },
-    "ai_coach_language_hint" : {
+    "add_picker_all_added" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apple Intelligence answers in Siri's language. To get suggestions in your language, change the Siri & Apple Intelligence language in Settings."
+            "value" : "Everything here is already in your list ✓ Try another category or create your own."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apple Intelligence responde en el idioma de Siri. Para ver las sugerencias en tu idioma, cambia el idioma de Siri y Apple Intelligence en Ajustes."
+            "value" : "Todo esto ya está en tu lista ✓ Prueba otra categoría o crea algo propio."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apple Intelligence répond dans la langue de Siri. Pour des suggestions dans ta langue, change la langue de Siri et Apple Intelligence dans Réglages."
+            "value" : "Tout est déjà dans ta liste ✓ Essaie une autre catégorie ou crée le tien."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apple Intelligence risponde nella lingua di Siri. Per suggerimenti nella tua lingua, cambia la lingua di Siri e Apple Intelligence in Impostazioni."
+            "value" : "È già tutto nella tua lista ✓ Prova un'altra categoria o crea qualcosa di tuo."
+          }
+        }
+      }
+    },
+    "add_create_custom_gym" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create your own…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea el tuyo…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crée le tien…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea il tuo…"
+          }
+        }
+      }
+    },
+    "add_create_custom_generic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create your own…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea la tuya…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crée la tienne…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea la tua…"
+          }
+        }
+      }
+    },
+    "add_name_placeholder_gym" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glutes"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glúteos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fessiers"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glutei"
+          }
+        }
+      }
+    },
+    "add_name_placeholder_generic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Climbing"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escalada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escalade"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrampicata"
+          }
+        }
+      }
+    },
+    "add_create_custom_title_gym" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New group"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo grupo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveau groupe"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuovo gruppo"
+          }
+        }
+      }
+    },
+    "add_metric_question" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What do you want to log?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué quieres registrar?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Que veux-tu noter ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cosa vuoi registrare?"
           }
         }
       }
