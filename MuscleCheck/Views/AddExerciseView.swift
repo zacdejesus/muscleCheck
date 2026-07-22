@@ -212,7 +212,7 @@ struct AddExerciseView: View {
     @ViewBuilder
     private func pickerRow(_ row: PickerRow) -> some View {
         let locked = row.state == .addedBefore
-        Button {
+        return Button {
             switch row.state {
             case .available: add(row)
             case .addedNow: unadd(row)
@@ -226,24 +226,39 @@ struct AddExerciseView: View {
                 Text(row.name)
                     .foregroundStyle(locked ? Color.secondary : Color.primary)
                 Spacer()
-                switch row.state {
-                case .available:
-                    Image(systemName: "plus.circle")
-                        .foregroundStyle(Color.brand)
-                case .addedNow, .addedBefore:
-                    HStack(spacing: 4) {
-                        Text("add_in_your_list")
-                            .font(.appCaption)
-                        Image(systemName: "checkmark.circle.fill")
-                    }
-                    .foregroundStyle(locked ? Color.secondary : Color.success)
-                }
+                trailingControl(row.state)
             }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(locked)
         .accessibilityIdentifier("add.preset.\(row.a11yKey)")
+    }
+
+    /// The whole screen is "pick what you train", so the added-this-session state
+    /// reads as a SELECTION toggle (filled brand check, tap to deselect) — the
+    /// Apple News/Stocks pattern users already know — not a static "En tu lista"
+    /// badge that looks un-tappable. Rows added in a previous session keep the
+    /// muted badge: they're locked (un-adding would destroy training history).
+    @ViewBuilder
+    private func trailingControl(_ state: PickerRow.State) -> some View {
+        switch state {
+        case .available:
+            Image(systemName: "circle")
+                .font(.appTitle3)
+                .foregroundStyle(Color.secondary.opacity(0.5))
+        case .addedNow:
+            Image(systemName: "checkmark.circle.fill")
+                .font(.appTitle3)
+                .foregroundStyle(Color.brand)
+        case .addedBefore:
+            HStack(spacing: 4) {
+                Text("add_in_your_list")
+                    .font(.appCaption)
+                Image(systemName: "checkmark.circle.fill")
+            }
+            .foregroundStyle(Color.secondary)
+        }
     }
 
     private var createOwnRow: some View {
