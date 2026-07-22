@@ -2,13 +2,18 @@
 
 ## Foco actual (hasta el próximo release al App Store)
 
-> **MODO CALIDAD DE CÓDIGO.** No proponer ni planificar features nuevos. La única excepción es **Feature 11: Peso por grupo muscular** (ver roadmap). Todo el resto del esfuerzo va a:
+> **MODO CALIDAD DE CÓDIGO — SOLO MEJORAS DE CÓDIGO. Cero features nuevos.**
+>
+> El release 2.2.0 (métrica por ejercicio + alta unificada + FAB + ejercicios dentro del grupo, Features 18–19) ya está en `main`. De acá en más, hasta el próximo release al App Store, **NO se construyen ni se planifican features nuevos** — ni los del roadmap diferido, ni los del backlog. Si el developer quiere un feature, lo tiene que pedir **explícitamente**; por default, asumir que NO.
+>
+> Todo el esfuerzo va exclusivamente a:
 > - Refactors arquitectónicos (god objects, two-phase init, denormalización)
-> - Testing y cobertura
-> - Limpieza de warnings y code smells
+> - Testing y cobertura (incl. arreglar el bug de orden intra-suite de `OnboardingUITests` / hook `-resetOnboarding`)
+> - Limpieza de warnings, code smells y dead code
 > - Consistencia de patrones entre managers
-> - **CI/CD: agregar pipeline en GitHub Actions** (build + tests en cada PR; idealmente lint y, a futuro, distribución a TestFlight)
-> Apple Watch y cualquier otra feature quedan diferidos hasta después del próximo release.
+> - **CI/CD: pipeline en GitHub Actions** (build + tests en cada PR; idealmente lint y, a futuro, distribución a TestFlight) — todavía NO existe
+>
+> Apple Watch, stats por ejercicio, catálogo ExerciseDB, AI sobre ejercicios reales, y cualquier otra feature quedan diferidos hasta después del próximo release.
 
 ## Visión y Posicionamiento
 
@@ -122,8 +127,10 @@ main (always deployable, tagged for releases)
 - 1.8.0 — Customizable Activities & Categories ✅
 - 1.9.0 — Progress Photos ✅
 - 2.0.0 — HealthKit integration ✅
-- 2.1.0 — Peso por grupo muscular + refactors de calidad
-- 2.2.0 — Apple Watch app (diferido)
+- 2.1.0 — Peso por grupo muscular + refactors de calidad ✅
+- 2.1.x — Categorías custom (Feature 17) + onboarding + localización italiana ✅
+- 2.2.0 — Métrica por ejercicio + alta unificada + FAB (Feature 18) + ejercicios dentro del grupo (Feature 19) ✅ *(en `main`, build 1, pendiente subir a TestFlight)*
+- Apple Watch app (Feature 10) — diferido, post-2.2.0
 
 ---
 
@@ -393,6 +400,6 @@ Ver el detalle de un día específico (no solo la semana).
 - `group.zadkiel.musclecheck` — App Group para widget
 - Bundle ID: `com.zadkiel.musclecheck`
 - Calendario empieza en lunes (`firstWeekday = 2`)
-- Localización ES/EN/FR via `Localizable.xcstrings`
+- Localización ES/EN/FR/IT via `Localizable.xcstrings` (widget incluido; el catálogo es miembro de ambos targets, un solo `Localizable.xcstrings`)
 - `PrimaryButtonColor` — color asset en xcassets (usado en botones principales)
 - SF Symbols para iconos de actividades (nativo, no requiere assets custom)
