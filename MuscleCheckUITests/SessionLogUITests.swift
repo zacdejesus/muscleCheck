@@ -92,15 +92,9 @@ final class SessionLogUITests: XCTestCase {
 
         // Picker flow: pick the Stretching category chip, then the "create your own"
         // escape hatch (presets can't be used — repeated runs would find them added).
+        // Category chips wrap (FlowLayout), so every one is on screen — no scroll.
         let stretchingChip = app.buttons["add.category.stretching"]
         XCTAssertTrue(stretchingChip.waitForExistence(timeout: 5), "Stretching category chip not found")
-        // Stretching is the last built-in chip, past the fold of the horizontal
-        // strip. Swipe the strip a fixed number of times before tapping —
-        // querying `isHittable` on an off-screen element throws instead of
-        // returning false ("Activation point invalid").
-        let chipStrip = app.scrollViews.containing(.button, identifier: "add.category.gym").firstMatch
-        chipStrip.swipeLeft()
-        chipStrip.swipeLeft()
         stretchingChip.tap()
         app.buttons["add.createCustom"].tap()
 

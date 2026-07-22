@@ -158,36 +158,27 @@ struct AddExerciseView: View {
 
     // MARK: - Category chips
 
+    // Wrapping grid, not a horizontal scroll: every category is visible at once.
+    // A scroll hides options the first-timer can't know exist — and the cut-off
+    // chip on the right edge reads as "highlighted", not "there's more".
     private var categoryChips: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(selectableBuiltIns) { category in
-                        categoryChip(id: category.rawValue, name: category.displayName, icon: category.defaultIcon)
-                    }
-                    ForEach(customCategories) { category in
-                        categoryChip(id: category.id, name: category.name, icon: category.icon)
-                    }
-                    NavigationLink {
-                        NewCategoryFormView(selectedCategoryID: $selectedCategoryID)
-                    } label: {
-                        chipLabel(name: NSLocalizedString("add_new_category_option", comment: ""),
-                                  icon: "plus", isSelected: false)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("add.newCategory")
-                    .id("new-category-chip")
-                }
-                .padding(.horizontal)
+        FlowLayout(spacing: 8) {
+            ForEach(selectableBuiltIns) { category in
+                categoryChip(id: category.rawValue, name: category.displayName, icon: category.defaultIcon)
             }
-            // Keep the active chip on screen — a freshly created category (or the
-            // restored one) may otherwise be scrolled out of view, making its
-            // selection invisible.
-            .onChange(of: selectedCategoryID) { _, newID in
-                withAnimation { proxy.scrollTo(newID, anchor: .center) }
+            ForEach(customCategories) { category in
+                categoryChip(id: category.id, name: category.name, icon: category.icon)
             }
-            .onAppear { proxy.scrollTo(selectedCategoryID, anchor: .center) }
+            NavigationLink {
+                NewCategoryFormView(selectedCategoryID: $selectedCategoryID)
+            } label: {
+                chipLabel(name: NSLocalizedString("add_new_category_option", comment: ""),
+                          icon: "plus", isSelected: false)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("add.newCategory")
         }
+        .padding(.horizontal)
     }
 
     private func categoryChip(id: String, name: String, icon: String) -> some View {
@@ -199,7 +190,6 @@ struct AddExerciseView: View {
             chipLabel(name: name, icon: icon, isSelected: selectedCategoryID == id)
         }
         .buttonStyle(.plain)
-        .id(id)
         .accessibilityIdentifier("add.category.\(id)")
     }
 
@@ -377,11 +367,15 @@ private struct CreateEntryFormView: View {
                 TextField(isGym ? "add_name_placeholder_gym" : "add_name_placeholder_generic", text: $name)
                     .focused($nameFocused)
                     .accessibilityIdentifier("add.nameField")
+                // navigationLink, not the default menu: "Distancia y tiempo" is
+                // too long for an inline menu row and truncated in the middle
+                // ("Distan…iempo"). Pushing a sub-list gives each option a full row.
                 Picker("add_metric_question", selection: $metric) {
                     ForEach(MetricType.allCases) { metric in
                         Text(metric.displayName).tag(metric)
                     }
                 }
+                .pickerStyle(.navigationLink)
                 .accessibilityIdentifier("add.metricPicker")
             }
 
@@ -450,6 +444,7 @@ private struct NewCategoryFormView: View {
                         Text(metric.displayName).tag(metric)
                     }
                 }
+                .pickerStyle(.navigationLink)
             }
 
             Section("select_icon") {
