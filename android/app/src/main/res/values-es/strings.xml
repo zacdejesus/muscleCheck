@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MuscleCheck</string>
+    <string name="home_title">Activity Check</string>
+
+    <!-- Common actions -->
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="delete">Eliminar</string>
+    <string name="ok">OK</string>
+
+    <!-- Categories -->
+    <string name="category_gym">Gimnasio</string>
+    <string name="category_running">Correr</string>
+    <string name="category_yoga">Yoga</string>
+    <string name="category_pilates">Pilates</string>
+    <string name="category_calisthenics">Calistenia</string>
+    <string name="category_cardio">Cardio</string>
+    <string name="category_stretching">Estiramiento</string>
+    <string name="category_custom">Personalizado</string>
+
+    <!-- Preset entries -->
+    <string name="group_chest">Pecho</string>
+    <string name="group_back">Espalda</string>
+    <string name="group_legs">Piernas</string>
+    <string name="group_shoulders">Hombros</string>
+    <string name="group_biceps">Biceps</string>
+    <string name="group_triceps">Triceps</string>
+    <string name="group_abdomen">Abdomen</string>
+    <string name="yoga_vinyasa">Vinyasa</string>
+    <string name="yoga_hatha">Hatha</string>
+    <string name="yoga_ashtanga">Ashtanga</string>
+    <string name="yoga_yin">Yin</string>
+    <string name="yoga_power">Power Yoga</string>
+    <string name="pilates_mat">Suelo</string>
+    <string name="pilates_reformer">Reformer</string>
+    <string name="pilates_core">Core</string>
+    <string name="calisthenics_upper">Tren superior</string>
+    <string name="calisthenics_lower">Tren inferior</string>
+    <string name="calisthenics_full">Cuerpo completo</string>
+    <string name="calisthenics_skills">Habilidades</string>
+    <string name="cardio_cycling">Ciclismo</string>
+    <string name="cardio_swimming">Natación</string>
+    <string name="cardio_hiit">HIIT</string>
+    <string name="cardio_walking">Caminar</string>
+    <string name="cardio_running">Correr</string>
+    <string name="stretching_upper">Estiramiento superior</string>
+    <string name="stretching_lower">Estiramiento inferior</string>
+    <string name="stretching_full">Estiramiento completo</string>
+
+    <!-- Home -->
+    <string name="navigation_history_button">Historial</string>
+    <string name="add_new_muscle_group">Agregar nuevo grupo muscular</string>
+    <string name="empty_state_message">Añade tus grupos musculares tocando el botón [+] en la esquina superior derecha.</string>
+    <string name="streak_current">semanas seguidas</string>
+    <string name="streak_max">Mejor</string>
+    <string name="delete_entry_title">¿Eliminar actividad?</string>
+    <string name="delete_entry_message">Se eliminará "%1$s" y su historial.</string>
+    <string name="checked_today">Entrenado</string>
+    <string name="not_checked">Sin entrenar aún</string>
+
+    <!-- Add entry -->
+    <string name="add_exercise">Agregar ejercicio</string>
+    <string name="new_exercise_placeholder">Pantorrilla</string>
+    <string name="select_category">Selecciona categoría</string>
+    <string name="select_icon">Selecciona ícono</string>
+    <string name="error_duplicate_entry">Ya existe una actividad llamada "%1$s".</string>
+    <string name="error_invalid_name">El nombre no puede estar vacío.</string>
+
+    <!-- Session log -->
+    <string name="session_field_weight">Peso</string>
+    <string name="session_field_sets">Series</string>
+    <string name="session_field_reps">Repeticiones</string>
+    <string name="session_last_trained">Última vez · %1$s</string>
+
+    <!-- History -->
+    <string name="workout_history">Historial de ejercicios</string>
+    <string name="history_month_summary">%1$d días entrenados en %2$s</string>
+    <string name="history_week_empty_title">Sin entrenamientos esta semana</string>
+    <string name="history_week_empty_description">Elegí otra semana en el calendario.</string>
+    <string name="history_calendar_expand_hint">Expandir al mes completo</string>
+    <string name="history_calendar_collapse_hint">Colapsar a la semana seleccionada</string>
+    <string name="previous">Anterior</string>
+    <string name="next">Siguiente</string>
+
+    <!-- Stats -->
+    <string name="stats_title">Estadísticas</string>
+    <string name="stats_total_days">Días Totales</string>
+    <string name="stats_avg_per_week">Prom. / Sem.</string>
+    <string name="stats_weekly_title">Entrenamiento Semanal</string>
+    <string name="stats_muscle_frequency_title">Frecuencia por Músculo</string>
+    <string name="stats_no_data_title">Sin datos aún</string>
+    <string name="stats_no_data_description">Comienza a entrenar para ver tus estadísticas aquí.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_section_appearance">Apariencia</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_section_activity_presets">Actividades sugeridas</string>
+    <string name="settings_custom_categories">Categorías personalizadas</string>
+    <string name="settings_section_units">Unidades</string>
+    <string name="settings_weight_unit">Unidad de peso</string>
+    <string name="settings_section_about">Acerca de</string>
+    <string name="settings_version">Versión</string>
+
+    <!-- Custom categories -->
+    <string name="custom_category_section_new">Nueva categoría</string>
+    <string name="custom_category_section_yours">Tus categorías</string>
+    <string name="custom_category_name_placeholder">Nombre de la categoría</string>
+    <string name="custom_category_tracks_weight">Registrar peso</string>
+    <string name="custom_category_add">Agregar categoría</string>
+    <string name="custom_category_empty">Aún no tienes categorías personalizadas</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Registra tu entrenamiento en 2 segundos</string>
+    <string name="onboarding_welcome_body">Elige tus actividades y márcalas cuando entrenes. La lista se renueva cada lunes.</string>
+    <string name="onboarding_welcome_cta">Empezar</string>
+    <string name="onboarding_picker_title">¿Qué quieres registrar?</string>
+    <string name="onboarding_picker_subtitle">Elige una o varias; puedes cambiarlo todo después.</string>
+    <string name="onboarding_picker_cta">Crear mi lista</string>
+    <string name="onboarding_skip">Omitir</string>
+
+    <!-- Notifications -->
+    <string name="settings_section_notifications">Notificaciones</string>
+    <string name="settings_notifications_enabled">Recordatorio diario</string>
+    <string name="settings_reminder_time">Hora del recordatorio</string>
+    <string name="notification_channel_reminders">Recordatorios</string>
+    <string name="notification_daily_title">MuscleCheck</string>
+    <string name="notification_daily_body">¡Es hora de registrar tu entrenamiento de hoy! 💪</string>
+    <string name="notification_inactivity_title">¡Músculo olvidado!</string>
+    <string name="notification_inactivity_body">No has entrenado %1$s en %2$d días. ¡No lo dejes!</string>
+    <string name="notification_inactivity_body_multiple">%1$d actividades te están esperando: %2$s</string>
+
+    <!-- Widget -->
+    <string name="widget_description">Tu lista semanal y tu racha de un vistazo.</string>
+    <string name="widget_empty">Sin actividades esta semana</string>
+
+    <!-- Progress photos -->
+    <string name="progress_photos_title">Fotos de progreso</string>
+    <string name="progress_add_photo">Agregar foto</string>
+    <string name="progress_empty">Todavía no hay fotos. Tocá + para agregar tu primera foto de progreso.</string>
+    <string name="progress_compare">Comparar</string>
+    <string name="progress_delete">Eliminar foto</string>
+</resources>
