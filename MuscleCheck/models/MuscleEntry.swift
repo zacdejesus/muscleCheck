@@ -19,6 +19,10 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
   var category: String = ActivityCategory.gym.rawValue
   var icon: String = ActivityCategory.gym.defaultIcon
   var sessions: [WorkoutSession] = []
+  /// Named exercises inside this group (Fase 2), e.g. "Peso muerto" under "Piernas".
+  /// Additive Codable array with a `[]` default — the group's own `sessions` above
+  /// still drive the weekly check/date semantics; these carry the detailed values.
+  var exercises: [Exercise] = []
   /// Raw `MetricType`. Empty string = pre-metric entry — resolved lazily from the
   /// category (so legacy gym entries become `.strength` without a store write).
   /// Deliberately NOT defaulted to "none": that would mis-migrate old gym entries.
