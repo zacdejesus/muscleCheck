@@ -42,7 +42,7 @@ Repo separado: `~/Desktop/sideProjects/musclecheck-android`. Package `com.zadkie
 4. ✅ UI core loop: checklist semanal + add group + modal de peso
 5. ✅ Historial + stats + streak card
 6. ✅ Settings (units, theme, custom categories, presets) + onboarding
-7. Notificaciones (WorkManager) ✅ · widget Glance ✅ · progress photos (pendiente)
+7. ✅ Notificaciones (WorkManager) · widget Glance · progress photos
    - Notificaciones: `InactivityCalculator` (dominio puro, 11 tests portados de la suite iOS),
      `ReminderScheduler` (periodic daily + one-shot inactividad mañana 10:00, re-encolado
      al ir a background vía ProcessLifecycleOwner), workers con @HiltWorker, toggle + time
@@ -52,7 +52,20 @@ Repo separado: `~/Desktop/sideProjects/musclecheck-android`. Package `com.zadkie
      Lee Room directo vía Hilt EntryPoint (sin App Group). `MuscleRepository` refresca el
      widget tras cada mutación (espejo del reloadTimelines de iOS). Sin íconos por actividad
      en v1 (Glance no renderiza ImageVectors; evaluar drawables por categoría).
+   - Progress photos: `ProgressPhotoEntity` (Room, metadata) + imagen en internal storage
+     (`filesDir/progress_photos/`, no en DB — como iOS). `ProgressPhotoRepository` (CRUD +
+     file I/O), Coil para thumbnails, Android Photo Picker (`PickVisualMedia`, sin permisos),
+     galería `LazyVerticalGrid` agrupada por mes, visor con borrar, y slider before/after
+     (más viejo vs más nuevo, divisor arrastrable con `clipRect`). Ícono cámara en el Home.
+     DB a v2 con `fallbackToDestructiveMigration` (cero usuarios). **Sin gate Pro** todavía
+     (RevenueCat llega en fase 8).
 8. RevenueCat + paywall, localización FR/IT, build final
+   - **Localización FR/IT ✅** — `values-fr` y `values-it` completos (116 keys c/u, verificado
+     vs EN). Ahora ES/EN/FR/IT como iOS.
+   - **Pendiente (bloqueado por setup externo):** RevenueCat Android (purchases-android) +
+     paywall + gate Pro sobre progress photos/HealthKit. Blockers: cuenta Play Console
+     (USD 25 + closed test), productos en Play Billing, API key pública Android, app Android
+     en el proyecto RevenueCat. Sin eso, el SDK no puede fetchear ofertas → se difiere.
 
 ## Blockers externos (requieren acción del developer)
 
