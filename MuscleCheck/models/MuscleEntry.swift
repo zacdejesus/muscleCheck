@@ -19,6 +19,10 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
   var category: String = ActivityCategory.gym.rawValue
   var icon: String = ActivityCategory.gym.defaultIcon
   var sessions: [WorkoutSession] = []
+  /// Named exercises inside this group (Fase 2), e.g. "Peso muerto" under "Piernas".
+  /// Additive Codable array with a `[]` default — the group's own `sessions` above
+  /// still drive the weekly check/date semantics; these carry the detailed values.
+  var exercises: [Exercise] = []
   /// Raw `MetricType`. Empty string = pre-metric entry — resolved lazily from the
   /// category (so legacy gym entries become `.strength` without a store write).
   /// Deliberately NOT defaulted to "none": that would mis-migrate old gym entries.
@@ -155,5 +159,59 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
           durationSeconds: existing?.durationSeconds,
           distanceMeters: existing?.distanceMeters
       )
+  }
+
+  // MARK: - Exercises (Fase 2)
+
+  /// Appends a new exercise to this group and returns it.
+  @discardableResult
+  func addExercise(name: String, metric: MetricType, icon: String) -> Exercise {
+      let ex = Exercise(name: name.trimmingCharacters(in: .whitespacesAndNewlines), icon: icon, metric: metric)
+      exercises.append(ex)
+      return ex
+  }
+
+  func deleteExercise(id: UUID) {
+      exercises.removeAll { $0.id == id }
+  }
+
+  /// Logs today's values for one exercise AND marks the GROUP trained today, so the
+  /// weekly check / streak / stats (which read the group's `sessions`) keep working
+  /// untouched. Upserts today's session on the exercise (no duplicate per day).
+  func logExercise(id: UUID, input: SessionInput, date: Date = Date()) {
+      guard let idx = exercises.firstIndex(where: { $0.id == id }) else { return }
+      let cal = Date.appCalendar
+      if let sIdx = exercises[idx].sessions.firstIndex(where: { cal.isDate($0.date, inSameDayAs: date) }) {
+          exercises[idx].sessions[sIdx].weight = input.weightKg
+          exercises[idx].sessions[sIdx].sets = input.sets
+          exercises[idx].sessions[sIdx].reps = input.reps
+          exercises[idx].sessions[sIdx].durationSeconds = input.durationSeconds
+          exercises[idx].sessions[sIdx].distanceMeters = input.distanceMeters
+      } else {
+          exercises[idx].sessions.append(WorkoutSession(
+              weight: input.weightKg, sets: input.sets, reps: input.reps,
+              durationSeconds: input.durationSeconds, distanceMeters: input.distanceMeters, date: date))
+      }
+      // Group is trained today (drives check / streak / stats / history dots).
+      if !sessions.contains(where: { cal.isDate($0.date, inSameDayAs: date) }) {
+          sessions.append(WorkoutSession(date: date))
+      }
+      isChecked = true
+  }
+
+  /// Row label under the group name. With exercises: "3 ejercicios · Peso muerto 100 kg"
+  /// (count + the most recently logged exercise). Without exercises, falls back to the
+  /// group's own single-value label so nothing regresses.
+  var exercisesSummary: String? {
+      guard !exercises.isEmpty else { return formattedLastMetric }
+      let count = exercises.count
+      let unit = NSLocalizedString(count == 1 ? "exercise_count_one" : "exercise_count_other", comment: "")
+      let recent = exercises.max {
+          ($0.sessions.map(\.date).max() ?? .distantPast) < ($1.sessions.map(\.date).max() ?? .distantPast)
+      }
+      if let recent, let value = recent.summary {
+          return "\(count) \(unit) · \(recent.name) \(value)"
+      }
+      return "\(count) \(unit)"
   }
 }

@@ -60,17 +60,35 @@ private struct ActivityDetailRow: View {
     let activity: DayActivity
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: activity.entry.icon)
-                .foregroundColor(Color.brand)
-                .frame(width: 24)
-            Text(activity.entry.name)
-            if let label = metricLabel {
-                Text(label)
-                    .font(.appCaption)
-                    .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 12) {
+                Image(systemName: activity.entry.icon)
+                    .foregroundColor(Color.brand)
+                    .frame(width: 24)
+                Text(activity.entry.name)
+                // Only show the group's own value when there are no exercises to
+                // detail (the group session carries no value once exercises exist).
+                if activity.exercises.isEmpty, let label = metricLabel {
+                    Text(label)
+                        .font(.appCaption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
             }
-            Spacer()
+            // Exercises done that day, indented under the group.
+            ForEach(activity.exercises) { ex in
+                HStack(spacing: 8) {
+                    Text(ex.name)
+                        .font(.appCaption)
+                    if let s = ex.summary {
+                        Text(s)
+                            .font(.appCaption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.leading, 36)
+            }
         }
     }
 

@@ -22,7 +22,18 @@ struct DayActivity: Identifiable {
     let weightKg: Double?
     var durationSeconds: Int? = nil
     var distanceMeters: Double? = nil
+    /// Exercises logged on this day (Fase 2). When present, the detail row shows
+    /// these instead of the group's own (now value-less) session.
+    var exercises: [ExerciseOnDay] = []
     var id: UUID { entry.id }
+}
+
+/// One exercise done on a given day, with that day's label ("Peso muerto · 100 kg").
+struct ExerciseOnDay: Identifiable {
+    let id: UUID
+    let name: String
+    let icon: String
+    let summary: String?
 }
 
 /// The activities trained on a single day, used by the week detail breakdown.
@@ -147,11 +158,24 @@ struct MonthCalendarCalculator {
             let activities = entries
                 .compactMap { entry -> DayActivity? in
                     guard let session = entry.sessions.first(where: { calendar.isDate($0.date, inSameDayAs: dayStart) }) else { return nil }
+                    // Exercises logged that same day, with that day's values.
+                    let exercisesThatDay: [ExerciseOnDay] = entry.exercises.compactMap { ex in
+                        guard let s = ex.sessions.first(where: { calendar.isDate($0.date, inSameDayAs: dayStart) }) else { return nil }
+                        return ExerciseOnDay(
+                            id: ex.id,
+                            name: ex.name,
+                            icon: ex.icon,
+                            summary: SessionFormatting.label(
+                                metric: ex.metric, weightKg: s.weight,
+                                durationSeconds: s.durationSeconds, distanceMeters: s.distanceMeters)
+                        )
+                    }
                     return DayActivity(
                         entry: entry,
                         weightKg: session.weight,
                         durationSeconds: session.durationSeconds,
-                        distanceMeters: session.distanceMeters
+                        distanceMeters: session.distanceMeters,
+                        exercises: exercisesThatDay
                     )
                 }
                 .sorted { $0.entry.name < $1.entry.name }

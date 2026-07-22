@@ -10,9 +10,37 @@
 
 import SwiftUI
 
+/// What SessionLogView edits — decoupled from MuscleEntry so it can drive an
+/// exercise (Fase 2) or, if ever needed, a group. Prefill values are pre-resolved
+/// by the caller (for distanceDuration, distance + duration come from the SAME
+/// session — see `Exercise`/`MuscleEntry.lastDistanceDurationSession`).
+struct SessionLogTarget {
+    let title: String
+    let metric: MetricType
+    let lastWeightKg: Double?
+    let lastSets: Int?
+    let lastReps: Int?
+    let lastDurationSeconds: Int?
+    let lastDistanceMeters: Double?
+    let lastTrained: Date?
+
+    /// Build from an exercise (the Fase 2 caller).
+    init(exercise ex: Exercise) {
+        title = ex.name
+        metric = ex.metric
+        lastWeightKg = ex.lastWeight
+        lastSets = ex.lastSets
+        lastReps = ex.lastReps
+        let cardio = ex.lastDistanceDurationSession
+        lastDurationSeconds = ex.metric == .distanceDuration ? cardio?.durationSeconds : ex.lastDurationSeconds
+        lastDistanceMeters = cardio?.distanceMeters
+        lastTrained = ex.sessions.map(\.date).max()
+    }
+}
+
 struct SessionLogView: View {
 
-    let entry: MuscleEntry
+    let target: SessionLogTarget
     /// Callback receives canonical storage units (kg / seconds / meters).
     let onSave: (SessionInput) -> Void
 
@@ -40,7 +68,7 @@ struct SessionLogView: View {
     }
 
     private var isValid: Bool {
-        switch entry.metric {
+        switch target.metric {
         case .none:
             return false    // unreachable: the row doesn't open the log for .none
         case .strength:
@@ -54,7 +82,7 @@ struct SessionLogView: View {
     }
 
     /// Date of the most recent recorded session, for the "last trained" subtitle.
-    private var lastTrained: Date? { entry.sessions.map(\.date).max() }
+    private var lastTrained: Date? { target.lastTrained }
 
     var body: some View {
         NavigationStack {
@@ -62,7 +90,7 @@ struct SessionLogView: View {
                 Spacer(minLength: 0)
 
                 VStack(spacing: 6) {
-                    switch entry.metric {
+                    switch target.metric {
                     case .none, .strength:
                         heroField("0", text: $weight, keyboard: .numberPad,
                                   suffix: unit.displayLabel, id: "session.weight",
@@ -85,7 +113,7 @@ struct SessionLogView: View {
                     }
                 }
 
-                switch entry.metric {
+                switch target.metric {
                 case .none, .strength:
                     // Sets / Reps — steppers, no keyboard. Each column takes half the width
                     // so the −/+ controls stay inside the screen bounds.
@@ -122,7 +150,7 @@ struct SessionLogView: View {
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .navigationTitle(entry.name)
+            .navigationTitle(target.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -142,7 +170,7 @@ struct SessionLogView: View {
 
     /// 0/empty means "not recorded" → stored as nil to keep the data clean.
     private func sessionInput() -> SessionInput {
-        switch entry.metric {
+        switch target.metric {
         case .none, .strength:
             return SessionInput(
                 weightKg: parsedWeight.map { unit.toKg($0.rounded()) },
@@ -162,28 +190,24 @@ struct SessionLogView: View {
     /// Prefill so the user can consult/edit what they last did. No auto-focus:
     /// the screen should open as a calm readout, not slam up the keyboard.
     private func prefill() {
-        switch entry.metric {
+        switch target.metric {
         case .none, .strength:
-            if let lastKg = entry.lastWeight {
+            if let lastKg = target.lastWeightKg {
                 weight = String(format: "%.0f", unit.displayValue(fromKg: lastKg))
             }
-            sets = entry.lastSets ?? 0
-            reps = entry.lastReps ?? 0
+            sets = target.lastSets ?? 0
+            reps = target.lastReps ?? 0
         case .duration:
-            if let seconds = entry.lastDurationSeconds {
+            if let seconds = target.lastDurationSeconds {
                 minutes = "\(seconds / 60)"
             }
         case .distanceDuration:
-            // Both values from the SAME session — per-field lookbacks could pair a
-            // Monday distance with a Wednesday time and Save would persist that
-            // blend as today's session.
-            if let last = entry.lastDistanceDurationSession {
-                if let meters = last.distanceMeters {
-                    distanceKm = String(format: "%.1f", meters / 1000)
-                }
-                if let seconds = last.durationSeconds {
-                    minutes = "\(seconds / 60)"
-                }
+            // Distance + duration are pre-resolved from the same session by the target.
+            if let meters = target.lastDistanceMeters {
+                distanceKm = String(format: "%.1f", meters / 1000)
+            }
+            if let seconds = target.lastDurationSeconds {
+                minutes = "\(seconds / 60)"
             }
         }
     }
