@@ -98,8 +98,8 @@ struct MuscleCheckWidget: Widget {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
             MuscleCheckWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Muscle Suggestion")
-        .description("Shows the suggested muscle group for today.")
+        .configurationDisplayName(LocalizedStringResource("widget_display_name"))
+        .description(LocalizedStringResource("widget_description"))
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
