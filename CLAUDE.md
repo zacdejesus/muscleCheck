@@ -309,6 +309,26 @@ Implementado. Refactor de UX nacido del feedback de usuarios ("no encuentro cóm
 
 ---
 
+### ✅ Feature 19: Ejercicios dentro del grupo (branch: `feature/exercises-in-group`)
+Implementado (Fase 2). Los grupos musculares ahora contienen **ejercicios** (ej. "Piernas" → peso muerto / hip thrust / gemelos), cada uno con su propia métrica e historial de valores. Nace del feedback de usuarios ("mejor grupos por músculo y dentro los ejercicios"). Recorte deliberado de Feature 13: **detalle opcional, no planilla obligatoria**.
+
+**Jerarquía (el invariante que protege el posicionamiento):**
+- El **check semanal del grupo no cambia** — tildar el círculo desde la home = "entrené esto", 2 segundos, sin abrir nada.
+- Tocar el **nombre** del grupo (métrica ≠ none) abre `GroupDetailView`: lista de ejercicios + "Agregar ejercicio". Tocar un ejercicio abre el editor por métrica (`SessionLogView`, desacoplado vía `SessionLogTarget`).
+- Guardar un ejercicio marca el **grupo entrenado ese día** (`MuscleEntry.logExercise`), así streak/stats/notificaciones/HealthKit siguen leyendo las `sessions` del grupo **sin tocar nada** (blast radius mínimo).
+
+**Modelo (aditivo, upgrade-verificado):** `Exercise` es un Codable inline anidado en `MuscleEntry.exercises` (mismo patrón que `WorkoutSession`) — sin `@Model` nuevo, sin cambio de `AppSchema`. **Sin migración de datos** (cero usuarios): el peso viejo por-grupo de Feature 11 simplemente no se muestra en la UI nueva. La seguridad al actualizar se verificó end-to-end en simulador (store v1 → build v2 → datos intactos, sin wipe).
+
+**Borde con Maxine (lo que queda AFUERA):** un ejercicio = nombre + métrica + valores por sesión. Sin peso-por-set, sin superseries, sin timers de descanso.
+
+**Diferido:** stats de evolución de peso por ejercicio (Swift Charts), catálogo ExerciseDB al agregar ejercicio, AI Coach sobre los ejercicios reales del usuario.
+
+Archivos nuevos: `models/Exercise.swift`, `Views/GroupDetailView.swift`, tests `ExerciseTests`/`MuscleEntryExerciseTests`. Modificados: `MuscleEntry` (métodos de ejercicios + `exercisesSummary`), `SessionLogView` (→ `SessionLogTarget`), `MuscleEntryRowView`, `ContentViewModel`, `MonthCalendarCalculator`/`WeekDetailSection` (historial por ejercicio), `Localizable.xcstrings`.
+
+**Versión:** 2.2.0
+
+---
+
 ## Backlog de feedback de usuarios (EN EVALUACIÓN — no construir aún)
 
 > Recomendaciones que salieron del review de la tester (Ro) y no se aplicaron en el release 2.1.x. Quedan acá registradas con su trade-off para decidir más adelante. **No son features aprobados** — varios tensionan el posicionamiento core. Lo que sí se aplicó de ese review: fix de sensibilidad de tap ("se borra todo"), validación de add-group con error inline, y comparación Free vs Pro en el paywall.
@@ -321,6 +341,8 @@ La tester pidió poder loggear cada set/rep/peso, estilo planilla.
 **Si se hace, cómo:** solo como **modo avanzado opcional**, off por default, jamás en el camino feliz del check. Gatear detrás de una preferencia explícita ("modo detallado") para no contaminar la UX de quien solo quiere tildar. Construir **solo si varios usuarios lo piden** — una sola voz no justifica mover el posicionamiento.
 
 **Recomendación:** diferir hasta tener señal de demanda real. No es el diferenciador; es competir en el terreno de Maxine.
+
+> **Parcialmente atendido por Feature 19:** la señal de demanda llegó (varios usuarios pidieron ejercicios por grupo), y se construyó el recorte on-brand — ejercicios con nombre/métrica/valores por sesión, detalle **opcional**, jamás en el camino feliz del check. Lo que sigue EN EVALUACIÓN de Feature 13 es lo más "planilla": peso-por-set, superseries, descansos — eso sí es el terreno de Maxine y se mantiene afuera.
 
 ### 🤔 Feature 14: "Iniciar entrenamiento" — sesión en vivo (estilo Strava/Adidas/Garmin) — EN EVALUACIÓN
 Un botón "empezar entreno" que abre una sesión activa (timer, en curso, "finalizar").
