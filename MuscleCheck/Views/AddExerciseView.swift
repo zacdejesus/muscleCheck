@@ -31,6 +31,9 @@ struct AddExerciseView: View {
     /// Bumped on every successful add — drives the success haptic.
     @State private var addCount = 0
     @State private var errorMessage: String?
+    /// Smart-start runs once. Returning from a pushed form re-fires `.onAppear`,
+    /// and without this it would yank the user off the category they were on.
+    @State private var didPickStart = false
 
     /// `.custom` is the resolver's orphan bucket, not a discipline anyone picks.
     private var selectableBuiltIns: [ActivityCategory] {
@@ -324,13 +327,22 @@ struct AddExerciseView: View {
     /// first built-in that still has pending presets, so the first-timer's first
     /// open shows tappable rows instead of a wall of checkmarks.
     private func pickStartingCategory() {
+        // First appearance only — a pop-back from the create form must not
+        // re-run this and move the user off their category.
+        guard !didPickStart else { return }
+        didPickStart = true
+
         let stillExists = ActivityCategory(rawValue: lastAddCategory) != nil
             || customCategories.contains { $0.id == lastAddCategory }
         var candidate = stillExists && lastAddCategory != ActivityCategory.custom.rawValue
             ? lastAddCategory
             : ActivityCategory.gym.rawValue
 
-        if !hasPendingPresets(candidate),
+        // Only jump off a fully-seeded BUILT-IN. A custom category has no presets
+        // but is always actionable (you can create your own there), so it must not
+        // count as "nothing to do" — otherwise the smart-start bounces off it.
+        if ActivityCategory(rawValue: candidate) != nil,
+           !hasPendingPresets(candidate),
            let firstPending = selectableBuiltIns.first(where: { hasPendingPresets($0.rawValue) }) {
             candidate = firstPending.rawValue
         }
