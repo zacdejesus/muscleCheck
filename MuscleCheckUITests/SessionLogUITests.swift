@@ -26,30 +26,42 @@ final class SessionLogUITests: XCTestCase {
     }
 
     @MainActor
-    func testGymSessionLogPersistsAndPrefills() throws {
+    func testGroupExerciseLogPersistsAndPrefills() throws {
         let app = makeApp()
         app.launch()
 
-        // 1. Tap the "Chest" gym row by name. In a SwiftUI List the name is a child staticText
-        // (CONTAINS handles the case where it merges with the weight label after saving).
+        // 1. Tap the "Chest" gym row by name → opens the group's exercises (Fase 2:
+        //    tapping a group no longer opens a single-value editor).
         let chestRow = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Chest")).firstMatch
         XCTAssertTrue(chestRow.waitForExistence(timeout: 15), "Chest gym row not rendered")
         chestRow.tap()
 
-        // 2. The session log opens titled with the muscle name, with the weight field and
-        //    the sets/reps steppers. It must NOT auto-focus (no keyboard on entry).
-        XCTAssertTrue(app.navigationBars["Chest"].waitForExistence(timeout: 5),
-                      "Session log did not open on tapping a gym row")
+        // 2. Add an exercise to the group.
+        XCTAssertTrue(app.buttons["group.addExercise"].waitForExistence(timeout: 5),
+                      "Group detail did not open on tapping a gym row")
+        app.buttons["group.addExercise"].tap()
+        let name = app.textFields["group.exerciseName"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5), "Exercise name field missing")
+        name.tap(); name.typeText("Bench")
+        app.buttons["group.exerciseConfirm"].tap()
+
+        // 3. Open the exercise editor: weight field + sets/reps steppers, no auto-focus.
+        //    Target the row by a11y id — after saving it merges "Bench 80 kg", so a
+        //    staticText match would be ambiguous on the reopen.
+        let benchRow = app.buttons["group.exercise.Bench"]
+        XCTAssertTrue(benchRow.waitForExistence(timeout: 5), "Exercise row not created")
+        benchRow.tap()
+        XCTAssertTrue(app.navigationBars["Bench"].waitForExistence(timeout: 5),
+                      "Exercise editor did not open")
         let weight = app.textFields["session.weight"]
         XCTAssertTrue(weight.waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["session.sets.plus"].exists)
         XCTAssertTrue(app.buttons["session.reps.plus"].exists)
-        attachScreenshot(app, name: "01-modal-open")
+        attachScreenshot(app, name: "01-editor-open")
 
-        // 3. Bump sets and reps via steppers FIRST (no keyboard), then type the weight (its
-        //    keyboard would otherwise cover the steppers). We capture whatever values the
-        //    steppers land on and assert THOSE survive the round-trip — robust to XCUITest
-        //    occasionally registering a fast tap twice on an animated button.
+        // 4. Bump sets/reps via steppers FIRST (no keyboard), then type the weight (its
+        //    keyboard would otherwise cover the steppers). Capture whatever the steppers
+        //    land on and assert THOSE survive the round-trip.
         for _ in 0..<4 { app.buttons["session.sets.plus"].tap() }
         for _ in 0..<10 { app.buttons["session.reps.plus"].tap() }
         let setsValue = app.staticTexts["session.sets.value"].label
@@ -61,16 +73,16 @@ final class SessionLogUITests: XCTestCase {
         attachScreenshot(app, name: "02-filled")
         app.navigationBars.buttons["Save"].tap()
 
-        // 4. Back on the list: the cell shows the weight label "80 kg". SwiftUI may merge the
-        // row's Texts into one a11y element ("<name> 80 kg"), so match by CONTAINS.
+        // 5. Back on the group detail: the exercise row shows "80 kg" (SwiftUI may merge
+        //    the row's Texts into one element, so match by CONTAINS).
         let weightLabel = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "80 kg")).firstMatch
         XCTAssertTrue(weightLabel.waitForExistence(timeout: 5),
-                      "Weight label not shown in the list cell after saving")
-        attachScreenshot(app, name: "03-list-weight-label")
+                      "Exercise value not shown after saving")
+        attachScreenshot(app, name: "03-exercise-value")
 
-        // 5. Reopen the same row and confirm the three values were persisted (prefill).
-        chestRow.tap()
-        XCTAssertTrue(app.navigationBars["Chest"].waitForExistence(timeout: 5))
+        // 6. Reopen the exercise and confirm the three values persisted (prefill).
+        benchRow.tap()
+        XCTAssertTrue(app.navigationBars["Bench"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.textFields["session.weight"].value as? String, "80")
         XCTAssertEqual(app.staticTexts["session.sets.value"].label, setsValue)
         XCTAssertEqual(app.staticTexts["session.reps.value"].label, repsValue)

@@ -33,6 +33,7 @@ struct GroupDetailView: View {
                     ForEach(entry.exercises) { ex in
                         Button { editing = ex } label: { exerciseRow(ex) }
                             .buttonStyle(.plain)
+                            .accessibilityIdentifier("group.exercise.\(ex.name)")
                     }
                     .onDelete { offsets in
                         offsets.map { entry.exercises[$0] }.forEach(onDeleteExercise)
