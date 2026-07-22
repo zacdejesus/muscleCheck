@@ -1,5 +1,10 @@
 # MuscleCheck — Contexto del Proyecto
 
+> **Monorepo.** iOS (SwiftUI) en `ios/`, Android (Kotlin/Compose) en `android/`, docs
+> compartidas en `docs/`. Las rutas de archivos iOS en este doc (`models/…`, `Views/…`,
+> `managers/…`) son relativas a **`ios/MuscleCheck/`**. CI todavía sin armar (ver
+> `docs/PENDING.md`).
+
 ## Foco actual (hasta el próximo release al App Store)
 
 > **MODO CALIDAD DE CÓDIGO — SOLO MEJORAS DE CÓDIGO. Cero features nuevos.**
