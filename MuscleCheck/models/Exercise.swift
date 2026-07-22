@@ -64,6 +64,15 @@ struct Exercise: Codable, Identifiable, Hashable {
     var lastDurationSeconds: Int? { latestValue { $0.durationSeconds } }
     var lastDistanceMeters: Double? { latestValue { $0.distanceMeters } }
 
+    /// Most recent session recording distance OR duration — read BOTH values from
+    /// this one session so a distance from one day and a time from another aren't
+    /// paired as if done together.
+    var lastDistanceDurationSession: WorkoutSession? {
+        sessions
+            .filter { $0.distanceMeters != nil || $0.durationSeconds != nil }
+            .max { $0.date < $1.date }
+    }
+
     /// Row label for this exercise under the group ("100 kg · 3×8", "45 min", …).
     var summary: String? {
         SessionFormatting.label(

@@ -265,6 +265,34 @@ final class ContentViewModel: ObservableObject {
     updateCurrentEntries()
   }
 
+  // MARK: - Exercises (Fase 2)
+
+  /// Logs today's values for one exercise inside a group. `MuscleEntry.logExercise`
+  /// also marks the group trained today, so the check/streak/stats keep working.
+  func logExercise(_ exercise: Exercise, _ input: SessionInput, in group: MuscleEntry) {
+    group.logExercise(id: exercise.id, input: input)
+    persist("Failed to log exercise")
+  }
+
+  func addExercise(name: String, metric: MetricType, icon: String, to group: MuscleEntry) {
+    group.addExercise(name: name, metric: metric, icon: icon)
+    persist("Failed to add exercise")
+  }
+
+  func deleteExercise(_ exercise: Exercise, from group: MuscleEntry) {
+    group.deleteExercise(id: exercise.id)
+    persist("Failed to delete exercise")
+  }
+
+  private func persist(_ message: String) {
+    do {
+      try self.context?.save()
+    } catch {
+      assertionFailure("\(message): \(error)")
+    }
+    updateCurrentEntries()
+  }
+
   func toggleActivity(for entry: MuscleEntry) {
     let today = Date()
     if entry.isChecked {

@@ -236,7 +236,9 @@ struct ContentView: View {
       showsCheckTip: entry.persistentModelID == checkTipEntryID,
       showsWeightTip: entry.persistentModelID == weightTipEntryID,
       onTap: { _ in viewModel.toggleActivity(for: entry) },
-      onSaveSession: { target, input in viewModel.saveSession(input, for: target) }
+      onLogExercise: { group, ex, input in viewModel.logExercise(ex, input, in: group) },
+      onAddExercise: { group, name, metric, icon in viewModel.addExercise(name: name, metric: metric, icon: icon, to: group) },
+      onDeleteExercise: { group, ex in viewModel.deleteExercise(ex, from: group) }
     )
   }
 

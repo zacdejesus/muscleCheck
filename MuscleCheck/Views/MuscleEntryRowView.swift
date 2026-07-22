@@ -16,14 +16,20 @@ struct MuscleEntryRowView: View {
     var showsCheckTip: Bool = false
     var showsWeightTip: Bool = false
     var onTap: (MuscleEntry) -> Void
-    var onSaveSession: (MuscleEntry, SessionInput) -> Void = { _, _ in }
+    /// Log one of the group's exercises (kg/s/m). The VM persists it and marks the
+    /// group trained today.
+    var onLogExercise: (MuscleEntry, Exercise, SessionInput) -> Void = { _, _, _ in }
+    var onAddExercise: (MuscleEntry, String, MetricType, String) -> Void = { _, _, _, _ in }
+    var onDeleteExercise: (MuscleEntry, Exercise) -> Void = { _, _ in }
 
-    @State private var isShowingModal: Bool = false
+    @State private var isShowingGroup: Bool = false
 
     private let checkTip = CheckActivityTip()
     private let weightTip = LogWeightTip()
 
-    private var canOpenLog: Bool { entry.metric != .none }
+    /// Groups whose metric logs something open the exercises detail. Check-only
+    /// activities (yoga, stretching) have no detail — the row just toggles.
+    private var canOpenGroup: Bool { entry.metric != .none }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -39,15 +45,18 @@ struct MuscleEntryRowView: View {
                 checkButton
             }
         }
-        .sheet(isPresented: $isShowingModal) {
-            SessionLogView(entry: entry) { input in
-                onSaveSession(entry, input)
-            }
+        .sheet(isPresented: $isShowingGroup) {
+            GroupDetailView(
+                entry: entry,
+                onLog: { ex, input in onLogExercise(entry, ex, input) },
+                onAddExercise: { name, metric, icon in onAddExercise(entry, name, metric, icon) },
+                onDeleteExercise: { ex in onDeleteExercise(entry, ex) }
+            )
         }
     }
 
-    // One tap target for the whole row (except the checkmark): opens the session
-    // log for entries whose metric records something. Avoids dead/ambiguous zones.
+    // One tap target for the whole row (except the checkmark): opens the group's
+    // exercises for entries whose metric records something. Avoids dead/ambiguous zones.
     private var rowBody: some View {
         HStack {
             // Icon in a soft tinted tile (Settings/Things-style) — adds depth and reads
@@ -59,7 +68,7 @@ struct MuscleEntryRowView: View {
                 .background(Color.brand.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
                 .padding(.trailing, 4)
             Text(entry.name)
-            if let metricLabel = entry.formattedLastMetric {
+            if let metricLabel = entry.exercisesSummary {
                 Text(metricLabel)
                     .font(.appCaption)
                     .foregroundStyle(.secondary)
@@ -68,8 +77,8 @@ struct MuscleEntryRowView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            guard canOpenLog else { return }
-            isShowingModal = true
+            guard canOpenGroup else { return }
+            isShowingGroup = true
         }
     }
 
