@@ -116,4 +116,33 @@
     <string name="progress_empty">Aucune photo. Touche + pour ajouter ta première photo de progression.</string>
     <string name="progress_compare">Comparer</string>
     <string name="progress_delete">Supprimer la photo</string>
+
+    <!-- Pro / paywall -->
+    <string name="action_close">Fermer</string>
+    <string name="settings_section_subscription">Abonnement</string>
+    <string name="settings_upgrade_to_pro">Passer à Pro</string>
+    <string name="settings_restore_purchases">Restaurer les achats</string>
+    <string name="settings_pro_active">Pro actif</string>
+    <string name="pro_unlock_button">Débloquer Pro</string>
+    <string name="progress_locked_description">Suivez votre transformation avec des photos mensuelles et un curseur avant/après. Disponible avec Pro.</string>
+    <string name="paywall_title">MuscleCheck Pro</string>
+    <string name="paywall_subtitle">Débloquez les photos de progression et soutenez l\'app.</string>
+    <string name="paywall_compare_free">Gratuit</string>
+    <string name="paywall_compare_pro">Pro</string>
+    <string name="paywall_compare_checklist">Check-list hebdo</string>
+    <string name="paywall_compare_ai">Coach IA</string>
+    <string name="paywall_compare_history">Historique et calendrier</string>
+    <string name="paywall_compare_stats">Statistiques</string>
+    <string name="paywall_compare_notifications">Rappels</string>
+    <string name="paywall_compare_photos">Photos de progression</string>
+    <string name="paywall_yearly">Annuel</string>
+    <string name="paywall_monthly">Mensuel</string>
+    <string name="paywall_lifetime">À vie</string>
+    <string name="paywall_best_value">MEILLEUR PRIX</string>
+    <string name="paywall_one_time">PAIEMENT UNIQUE</string>
+    <string name="paywall_price_yearly">$14.99</string>
+    <string name="paywall_price_monthly">$1.99</string>
+    <string name="paywall_price_lifetime">$29.99</string>
+    <string name="paywall_subscribe">Continuer</string>
+    <string name="paywall_restore">Restaurer les achats</string>
 </resources>

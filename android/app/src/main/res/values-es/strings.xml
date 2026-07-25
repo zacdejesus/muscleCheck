@@ -144,4 +144,33 @@
     <string name="progress_empty">Todavía no hay fotos. Tocá + para agregar tu primera foto de progreso.</string>
     <string name="progress_compare">Comparar</string>
     <string name="progress_delete">Eliminar foto</string>
+
+    <!-- Pro / paywall -->
+    <string name="action_close">Cerrar</string>
+    <string name="settings_section_subscription">Suscripción</string>
+    <string name="settings_upgrade_to_pro">Pasar a Pro</string>
+    <string name="settings_restore_purchases">Restaurar compras</string>
+    <string name="settings_pro_active">Pro activo</string>
+    <string name="pro_unlock_button">Desbloquear Pro</string>
+    <string name="progress_locked_description">Seguí tu transformación con fotos mensuales y un slider antes/después. Disponible con Pro.</string>
+    <string name="paywall_title">MuscleCheck Pro</string>
+    <string name="paywall_subtitle">Desbloqueá las fotos de progreso y apoyá la app.</string>
+    <string name="paywall_compare_free">Gratis</string>
+    <string name="paywall_compare_pro">Pro</string>
+    <string name="paywall_compare_checklist">Checklist semanal</string>
+    <string name="paywall_compare_ai">Coach IA</string>
+    <string name="paywall_compare_history">Historial y calendario</string>
+    <string name="paywall_compare_stats">Estadísticas</string>
+    <string name="paywall_compare_notifications">Recordatorios</string>
+    <string name="paywall_compare_photos">Fotos de progreso</string>
+    <string name="paywall_yearly">Anual</string>
+    <string name="paywall_monthly">Mensual</string>
+    <string name="paywall_lifetime">De por vida</string>
+    <string name="paywall_best_value">MEJOR VALOR</string>
+    <string name="paywall_one_time">PAGO ÚNICO</string>
+    <string name="paywall_price_yearly">$14.99</string>
+    <string name="paywall_price_monthly">$1.99</string>
+    <string name="paywall_price_lifetime">$29.99</string>
+    <string name="paywall_subscribe">Continuar</string>
+    <string name="paywall_restore">Restaurar compras</string>
 </resources>

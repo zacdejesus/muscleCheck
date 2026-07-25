@@ -116,4 +116,33 @@
     <string name="progress_empty">Ancora nessuna foto. Tocca + per aggiungere la tua prima foto dei progressi.</string>
     <string name="progress_compare">Confronta</string>
     <string name="progress_delete">Elimina foto</string>
+
+    <!-- Pro / paywall -->
+    <string name="action_close">Chiudi</string>
+    <string name="settings_section_subscription">Abbonamento</string>
+    <string name="settings_upgrade_to_pro">Passa a Pro</string>
+    <string name="settings_restore_purchases">Ripristina acquisti</string>
+    <string name="settings_pro_active">Pro attivo</string>
+    <string name="pro_unlock_button">Sblocca Pro</string>
+    <string name="progress_locked_description">Segui la tua trasformazione con foto mensili e un cursore prima/dopo. Disponibile con Pro.</string>
+    <string name="paywall_title">MuscleCheck Pro</string>
+    <string name="paywall_subtitle">Sblocca le foto dei progressi e sostieni l\'app.</string>
+    <string name="paywall_compare_free">Gratis</string>
+    <string name="paywall_compare_pro">Pro</string>
+    <string name="paywall_compare_checklist">Check-list settimanale</string>
+    <string name="paywall_compare_ai">Coach IA</string>
+    <string name="paywall_compare_history">Cronologia e calendario</string>
+    <string name="paywall_compare_stats">Statistiche</string>
+    <string name="paywall_compare_notifications">Promemoria</string>
+    <string name="paywall_compare_photos">Foto dei progressi</string>
+    <string name="paywall_yearly">Annuale</string>
+    <string name="paywall_monthly">Mensile</string>
+    <string name="paywall_lifetime">A vita</string>
+    <string name="paywall_best_value">MIGLIOR VALORE</string>
+    <string name="paywall_one_time">UNA TANTUM</string>
+    <string name="paywall_price_yearly">$14.99</string>
+    <string name="paywall_price_monthly">$1.99</string>
+    <string name="paywall_price_lifetime">$29.99</string>
+    <string name="paywall_subscribe">Continua</string>
+    <string name="paywall_restore">Ripristina acquisti</string>
 </resources>

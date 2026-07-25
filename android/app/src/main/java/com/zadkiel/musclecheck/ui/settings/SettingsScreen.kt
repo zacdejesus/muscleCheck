@@ -25,10 +25,12 @@ import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CreateNewFolder
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zadkiel.musclecheck.BuildConfig
 import com.zadkiel.musclecheck.R
 import com.zadkiel.musclecheck.data.prefs.UserPreferencesRepository
+import com.zadkiel.musclecheck.data.pro.ProAccessManager
 import com.zadkiel.musclecheck.data.repository.MuscleRepository
 import com.zadkiel.musclecheck.domain.model.ActivityCategory
 import com.zadkiel.musclecheck.domain.model.WeightUnit
@@ -90,7 +93,15 @@ class SettingsViewModel @Inject constructor(
     private val prefs: UserPreferencesRepository,
     private val repository: MuscleRepository,
     private val reminderScheduler: ReminderScheduler,
+    private val proAccess: ProAccessManager,
 ) : ViewModel() {
+
+    val isPro: StateFlow<Boolean> = proAccess.isPro
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun restorePurchases() {
+        viewModelScope.launch { proAccess.restore() }
+    }
 
     val uiState: StateFlow<SettingsUiState> = combine(
         prefs.appTheme,
@@ -148,9 +159,11 @@ class SettingsViewModel @Inject constructor(
 fun SettingsScreen(
     onBack: () -> Unit,
     onOpenCategories: () -> Unit,
+    onOpenPaywall: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val isPro by viewModel.isPro.collectAsStateWithLifecycle()
     val accents = LocalAccents.current
 
     Scaffold(
@@ -173,6 +186,39 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
+            // Subscription
+            SettingsSection(title = stringResource(R.string.settings_section_subscription)) {
+                if (isPro) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Filled.WorkspacePremium,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            stringResource(R.string.settings_pro_active),
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    TextButton(onClick = viewModel::restorePurchases) {
+                        Text(stringResource(R.string.settings_restore_purchases))
+                    }
+                } else {
+                    Button(
+                        onClick = onOpenPaywall,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(Icons.Filled.WorkspacePremium, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.settings_upgrade_to_pro))
+                    }
+                    TextButton(onClick = viewModel::restorePurchases) {
+                        Text(stringResource(R.string.settings_restore_purchases))
+                    }
+                }
+            }
+
             // Appearance
             SettingsSection(title = stringResource(R.string.settings_section_appearance)) {
                 var themeMenuExpanded by remember { mutableStateOf(false) }

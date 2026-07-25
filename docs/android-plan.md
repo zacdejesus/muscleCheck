@@ -62,10 +62,16 @@ Repo separado: `~/Desktop/sideProjects/musclecheck-android`. Package `com.zadkie
 8. RevenueCat + paywall, localización FR/IT, build final
    - **Localización FR/IT ✅** — `values-fr` y `values-it` completos (116 keys c/u, verificado
      vs EN). Ahora ES/EN/FR/IT como iOS.
-   - **Pendiente (bloqueado por setup externo):** RevenueCat Android (purchases-android) +
-     paywall + gate Pro sobre progress photos/HealthKit. Blockers: cuenta Play Console
-     (USD 25 + closed test), productos en Play Billing, API key pública Android, app Android
-     en el proyecto RevenueCat. Sin eso, el SDK no puede fetchear ofertas → se difiere.
+   - **Arquitectura Pro ✅** — seam `ProAccessManager` (interface) + `LocalProAccessManager`
+     (stub DataStore-backed: `purchase()` prende el flag local; punto de swap a RevenueCat
+     documentado en el archivo), `PaywallScreen`/`PaywallViewModel` (tabla Free-vs-Pro, 3
+     packages, subscribe/restore), `ProLockedCard`, gate en progress photos, sección
+     Subscription en Settings, ruta `PAYWALL`, strings ES/EN/FR/IT (27 keys) y
+     `PaywallViewModelTest` (4 tests). Build + tests verdes.
+   - **Pendiente (bloqueado por setup externo):** swappear el stub por el SDK real de
+     RevenueCat (purchases-android) — con el seam ya armado es un cambio de una sola clase.
+     Blockers: cuenta Play Console (USD 25 + closed test), productos en Play Billing, API key
+     pública Android, app Android en el proyecto RevenueCat. Sin eso el SDK no fetchea ofertas.
 
 ## Blockers externos (requieren acción del developer)
 
