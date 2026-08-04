@@ -1,5 +1,9 @@
 # MuscleCheck
 
+[![iOS](https://github.com/zacdejesus/muscleCheck/actions/workflows/ios.yml/badge.svg)](https://github.com/zacdejesus/muscleCheck/actions/workflows/ios.yml)
+[![Android](https://github.com/zacdejesus/muscleCheck/actions/workflows/android.yml/badge.svg)](https://github.com/zacdejesus/muscleCheck/actions/workflows/android.yml)
+[![App Store](https://img.shields.io/badge/App_Store-live-0EA5E9)](https://apps.apple.com/app/id6748917084)
+
 **Track your training in 2 seconds. The AI does the rest.**
 
 MuscleCheck is a weekly training checklist that competes on the opposite end from

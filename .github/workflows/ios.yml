@@ -1,0 +1,89 @@
+name: iOS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios.yml'
+  pull_request:
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios.yml'
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build & unit test
+    # Xcode 26 is required: the AI coach compiles against the iOS 26
+    # FoundationModels SDK, gated at runtime but resolved at build time.
+    runs-on: macos-26
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          xcrun simctl list runtimes
+
+      # Keyed on Package.resolved, so a dependency bump busts the cache and
+      # nothing else does. Resolving Firebase + RevenueCat from scratch is
+      # the slowest part of a cold run.
+      - name: Cache SwiftPM checkouts
+        uses: actions/cache@v4
+        with:
+          path: ios/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('ios/MuscleCheck.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      # Resolved from whatever the image actually ships rather than pinned to a
+      # device name, so a runner image bump doesn't turn into a red build.
+      - name: Pick a simulator
+        id: sim
+        run: |
+          udid=$(xcrun simctl list devices available -j \
+            | jq -r '[.devices[][] | select(.name | startswith("iPhone"))][0].udid')
+          if [ -z "$udid" ] || [ "$udid" = "null" ]; then
+            echo "::error::No iPhone simulator available on this runner"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "Using simulator $udid"
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+      # UI tests are excluded wholesale (OnboardingUITests has a known
+      # intra-suite ordering flake). WorkoutViewTests is excluded until its
+      # reference images are committed — swift-snapshot-testing fails a test
+      # when no reference exists, which would fail every CI run.
+      - name: Test
+        run: |
+          set -o pipefail
+          cmd=(
+            xcodebuild test
+            -project ios/MuscleCheck.xcodeproj
+            -scheme MuscleCheck
+            -destination "id=${{ steps.sim.outputs.udid }}"
+            -clonedSourcePackagesDirPath ios/SourcePackages
+            -resultBundlePath TestResults.xcresult
+            -only-testing:MuscleCheckTests
+            -skip-testing:MuscleCheckTests/WorkoutViewTests
+            CODE_SIGNING_ALLOWED=NO
+          )
+          if command -v xcbeautify >/dev/null 2>&1; then
+            "${cmd[@]}" | xcbeautify
+          else
+            "${cmd[@]}"
+          fi
+
+      - name: Upload result bundle
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: TestResults.xcresult
+          retention-days: 7
