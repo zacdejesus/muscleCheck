@@ -8,6 +8,7 @@ DerivedData/
 *.hmap
 *.ipa
 *.app
+*.xcresult
 
 # Swift Package Manager
 .build/

@@ -1,0 +1,55 @@
+name: Android
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - '.github/workflows/android.yml'
+  pull_request:
+    paths:
+      - 'android/**'
+      - '.github/workflows/android.yml'
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build & unit test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: android
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Gradle runs on 21 (matching the local toolchain); the build still
+      # targets bytecode 17 per app/build.gradle.kts.
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Split from the assemble step so a red build says which one broke.
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      - name: Assemble debug
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          # Paths are workspace-relative, not working-directory-relative.
+          name: android-test-report
+          path: android/app/build/reports/tests/
+          retention-days: 7
