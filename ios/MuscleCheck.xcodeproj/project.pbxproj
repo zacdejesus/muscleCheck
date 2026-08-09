@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1954C6223028C405003F67DA /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 1954C6213028C405003F67DA /* SnapshotTesting */; };
 		19C99F812F942D22007BD023 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 19C99F802F942D22007BD023 /* RevenueCat */; };
 		CB1DFA832EA828AC00B2047E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA822EA828AC00B2047E /* WidgetKit.framework */; };
 		CB1DFA852EA828AC00B2047E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA842EA828AC00B2047E /* SwiftUI.framework */; };
@@ -162,6 +163,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1954C6223028C405003F67DA /* SnapshotTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,6 +284,7 @@
 			);
 			name = MuscleCheckTests;
 			packageProductDependencies = (
+				1954C6213028C405003F67DA /* SnapshotTesting */,
 			);
 			productName = MuscleCheckTests;
 			productReference = CBE9126C2DD93DE1001F511B /* MuscleCheckTests.xctest */;
@@ -351,6 +354,7 @@
 			packageReferences = (
 				CB6772D22DF48CDA00A683BC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				19C99F7F2F942D22007BD023 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				1954C6203028C405003F67DA /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CBE9125B2DD93DE0001F511B /* Products */;
@@ -896,6 +900,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		1954C6203028C405003F67DA /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.19.4;
+			};
+		};
 		19C99F7F2F942D22007BD023 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
@@ -915,6 +927,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		1954C6213028C405003F67DA /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1954C6203028C405003F67DA /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
 		19C99F802F942D22007BD023 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 19C99F7F2F942D22007BD023 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;

@@ -59,9 +59,18 @@ jobs:
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
 
       # UI tests are excluded wholesale (OnboardingUITests has a known
-      # intra-suite ordering flake). WorkoutViewTests is excluded until its
-      # reference images are committed — swift-snapshot-testing fails a test
-      # when no reference exists, which would fail every CI run.
+      # intra-suite ordering flake).
+      #
+      # Snapshot suites are excluded too, and that is a deliberate trade-off, not
+      # a TODO. Their reference PNGs are byte-compared against a render produced by
+      # one specific simulator — device size, screen scale and the OS's own font
+      # metrics all bake into the image. The step above picks whatever iPhone the
+      # runner image happens to ship, so a runner bump would fail these tests for
+      # environmental reasons with no regression behind it. Pinning a simulator
+      # instead would trade that for a red build every time the image drops the
+      # pinned device.
+      # They still run locally, where the recording environment is the asserting
+      # environment. Add new snapshot suites to the skip list below.
       - name: Test
         run: |
           set -o pipefail
@@ -72,7 +81,7 @@ jobs:
             -destination "id=${{ steps.sim.outputs.udid }}"
             -resultBundlePath TestResults.xcresult
             -only-testing:MuscleCheckTests
-            -skip-testing:MuscleCheckTests/WorkoutViewTests
+            -skip-testing:MuscleCheckTests/CalendarDayCellSnapshotTests
             CODE_SIGNING_ALLOWED=NO
           )
           if command -v xcbeautify >/dev/null 2>&1; then
