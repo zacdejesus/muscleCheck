@@ -36,9 +36,12 @@
 - **iOS:** stats de peso por ejercicio (Swift Charts), catálogo ExerciseDB, AI Coach
   sobre ejercicios reales, Apple Watch (Feature 10). Backlog en evaluación: Features 13
   (resto planilla) / 14 / 15 / 16.
-- **Android:** RevenueCat + paywall + gate Pro. **Bloqueado por setup externo:** cuenta
-  Play Console (USD 25 + closed test 14 días), productos en Play Billing, API key pública
-  Android, app Android en el proyecto RevenueCat. Todo lo demás del port ya está hecho.
+- **Android:** la **arquitectura Pro ya está construida** — seam `ProAccessManager`
+  (interface) + `LocalProAccessManager` (stub DataStore con el punto de swap documentado),
+  paywall, gate en progress photos, sección en Settings, strings ES/EN/FR/IT y tests.
+  Lo único que queda es **swappear el stub por el SDK real de RevenueCat** (una sola clase),
+  **bloqueado por setup externo:** cuenta Play Console (USD 25 + closed test 14 días),
+  productos en Play Billing, API key pública Android, app Android en el proyecto RevenueCat.
 
 ## ✅ Cerrado
 

@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.zadkiel.musclecheck.ui.history.HistoryScreen
 import com.zadkiel.musclecheck.ui.home.HomeScreen
 import com.zadkiel.musclecheck.ui.onboarding.OnboardingScreen
+import com.zadkiel.musclecheck.ui.pro.PaywallScreen
 import com.zadkiel.musclecheck.ui.progress.ProgressPhotosScreen
 import com.zadkiel.musclecheck.ui.settings.ManageCategoriesScreen
 import com.zadkiel.musclecheck.ui.settings.SettingsScreen
@@ -19,6 +20,7 @@ object Routes {
     const val SETTINGS = "settings"
     const val CATEGORIES = "categories"
     const val PROGRESS = "progress"
+    const val PAYWALL = "paywall"
 }
 
 @Composable
@@ -39,7 +41,13 @@ fun MuscleCheckApp(hasCompletedOnboarding: Boolean) {
             )
         }
         composable(Routes.PROGRESS) {
-            ProgressPhotosScreen(onBack = { navController.popBackStack() })
+            ProgressPhotosScreen(
+                onBack = { navController.popBackStack() },
+                onUpgrade = { navController.navigate(Routes.PAYWALL) },
+            )
+        }
+        composable(Routes.PAYWALL) {
+            PaywallScreen(onClose = { navController.popBackStack() })
         }
         composable(Routes.HISTORY) {
             HistoryScreen(onBack = { navController.popBackStack() })
@@ -51,6 +59,7 @@ fun MuscleCheckApp(hasCompletedOnboarding: Boolean) {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
                 onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
+                onOpenPaywall = { navController.navigate(Routes.PAYWALL) },
             )
         }
         composable(Routes.CATEGORIES) {

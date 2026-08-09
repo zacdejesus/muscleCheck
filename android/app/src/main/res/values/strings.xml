@@ -144,4 +144,33 @@
     <string name="progress_empty">No photos yet. Tap + to add your first progress photo.</string>
     <string name="progress_compare">Compare</string>
     <string name="progress_delete">Delete photo</string>
+
+    <!-- Pro / paywall -->
+    <string name="action_close">Close</string>
+    <string name="settings_section_subscription">Subscription</string>
+    <string name="settings_upgrade_to_pro">Upgrade to Pro</string>
+    <string name="settings_restore_purchases">Restore purchases</string>
+    <string name="settings_pro_active">Pro active</string>
+    <string name="pro_unlock_button">Unlock Pro</string>
+    <string name="progress_locked_description">Track your transformation with monthly photos and a before/after slider. Available with Pro.</string>
+    <string name="paywall_title">MuscleCheck Pro</string>
+    <string name="paywall_subtitle">Unlock progress photos and support the app.</string>
+    <string name="paywall_compare_free">Free</string>
+    <string name="paywall_compare_pro">Pro</string>
+    <string name="paywall_compare_checklist">Weekly checklist</string>
+    <string name="paywall_compare_ai">AI coach</string>
+    <string name="paywall_compare_history">History &amp; calendar</string>
+    <string name="paywall_compare_stats">Statistics</string>
+    <string name="paywall_compare_notifications">Reminders</string>
+    <string name="paywall_compare_photos">Progress photos</string>
+    <string name="paywall_yearly">Yearly</string>
+    <string name="paywall_monthly">Monthly</string>
+    <string name="paywall_lifetime">Lifetime</string>
+    <string name="paywall_best_value">BEST VALUE</string>
+    <string name="paywall_one_time">ONE-TIME</string>
+    <string name="paywall_price_yearly">$14.99</string>
+    <string name="paywall_price_monthly">$1.99</string>
+    <string name="paywall_price_lifetime">$29.99</string>
+    <string name="paywall_subscribe">Continue</string>
+    <string name="paywall_restore">Restore purchases</string>
 </resources>

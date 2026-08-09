@@ -37,7 +37,12 @@ class UserPreferencesRepository @Inject constructor(
         val notificationsEnabled = booleanPreferencesKey("notificationsEnabled")
         val reminderHour = intPreferencesKey("reminderHour")
         val reminderMinute = intPreferencesKey("reminderMinute")
+        val isPro = booleanPreferencesKey("isPro")
     }
+
+    /** Local Pro entitlement flag. Source of truth for [com.zadkiel.musclecheck.data.pro.LocalProAccessManager]. */
+    val isPro: Flow<Boolean> =
+        context.dataStore.data.map { it[Keys.isPro] ?: false }
 
     val hasCompletedOnboarding: Flow<Boolean> =
         context.dataStore.data.map { it[Keys.hasCompletedOnboarding] ?: false }
@@ -81,6 +86,10 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setNotificationsEnabled(value: Boolean) {
         context.dataStore.edit { it[Keys.notificationsEnabled] = value }
+    }
+
+    suspend fun setPro(value: Boolean) {
+        context.dataStore.edit { it[Keys.isPro] = value }
     }
 
     suspend fun setReminderTime(hour: Int, minute: Int) {

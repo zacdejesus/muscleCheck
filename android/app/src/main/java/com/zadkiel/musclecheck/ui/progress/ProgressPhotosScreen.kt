@@ -61,6 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.zadkiel.musclecheck.R
 import com.zadkiel.musclecheck.domain.model.ProgressPhoto
+import com.zadkiel.musclecheck.ui.pro.ProLockedCard
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -70,9 +71,11 @@ import kotlin.math.roundToInt
 @Composable
 fun ProgressPhotosScreen(
     onBack: () -> Unit,
+    onUpgrade: () -> Unit,
     viewModel: ProgressPhotosViewModel = hiltViewModel(),
 ) {
     val photos by viewModel.photos.collectAsStateWithLifecycle()
+    val isPro by viewModel.isPro.collectAsStateWithLifecycle()
     var viewing by remember { mutableStateOf<ProgressPhoto?>(null) }
     var comparing by remember { mutableStateOf(false) }
 
@@ -90,7 +93,7 @@ fun ProgressPhotosScreen(
                     }
                 },
                 actions = {
-                    if (photos.size >= 2) {
+                    if (isPro && photos.size >= 2) {
                         IconButton(onClick = { comparing = true }) {
                             Icon(Icons.Filled.Compare, contentDescription = stringResource(R.string.progress_compare))
                         }
@@ -99,14 +102,23 @@ fun ProgressPhotosScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-            }) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.progress_add_photo))
+            if (isPro) {
+                FloatingActionButton(onClick = {
+                    picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }) {
+                    Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.progress_add_photo))
+                }
             }
         },
     ) { padding ->
-        if (photos.isEmpty()) {
+        if (!isPro) {
+            ProLockedCard(
+                title = stringResource(R.string.progress_photos_title),
+                description = stringResource(R.string.progress_locked_description),
+                onUpgrade = onUpgrade,
+                modifier = Modifier.padding(padding),
+            )
+        } else if (photos.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text(
                     stringResource(R.string.progress_empty),

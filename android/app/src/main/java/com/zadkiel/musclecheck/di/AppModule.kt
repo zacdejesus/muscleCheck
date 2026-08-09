@@ -6,6 +6,8 @@ import com.zadkiel.musclecheck.data.local.AppDatabase
 import com.zadkiel.musclecheck.data.local.CategoryDao
 import com.zadkiel.musclecheck.data.local.MuscleDao
 import com.zadkiel.musclecheck.data.local.ProgressPhotoDao
+import com.zadkiel.musclecheck.data.pro.LocalProAccessManager
+import com.zadkiel.musclecheck.data.pro.ProAccessManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,4 +36,9 @@ object AppModule {
 
     @Provides
     fun provideProgressPhotoDao(db: AppDatabase): ProgressPhotoDao = db.progressPhotoDao()
+
+    // Swap LocalProAccessManager for a RevenueCat-backed impl once billing is set up.
+    @Provides
+    @Singleton
+    fun provideProAccessManager(impl: LocalProAccessManager): ProAccessManager = impl
 }
