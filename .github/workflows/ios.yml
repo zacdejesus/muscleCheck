@@ -31,15 +31,17 @@ jobs:
           xcodebuild -version
           xcrun simctl list runtimes
 
-      # Keyed on Package.resolved, so a dependency bump busts the cache and
-      # nothing else does. Resolving Firebase + RevenueCat from scratch is
-      # the slowest part of a cold run.
-      - name: Cache SwiftPM checkouts
-        uses: actions/cache@v4
-        with:
-          path: ios/SourcePackages
-          key: spm-${{ runner.os }}-${{ hashFiles('ios/MuscleCheck.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
-          restore-keys: spm-${{ runner.os }}-
+      # No SwiftPM cache on purpose. Caching needs the checkouts at a stable
+      # path, and both ways of getting one break the Firebase Crashlytics
+      # build phase:
+      #   -clonedSourcePackagesDirPath  moves them out of DerivedData, but the
+      #     phase resolves its upload script via "${BUILD_DIR%/Build/*}/SourcePackages"
+      #     and can no longer find it.
+      #   -derivedDataPath ios/...      keeps them where the phase looks, but
+      #     the script is then outside the sandbox's allowed reads and Xcode
+      #     denies it (the phase declares no inputs).
+      # Working around either one costs more than the cold resolve saves on a
+      # public repo, where runner minutes are free.
 
       # Resolved from whatever the image actually ships rather than pinned to a
       # device name, so a runner image bump doesn't turn into a red build.
@@ -68,7 +70,6 @@ jobs:
             -project ios/MuscleCheck.xcodeproj
             -scheme MuscleCheck
             -destination "id=${{ steps.sim.outputs.udid }}"
-            -clonedSourcePackagesDirPath ios/SourcePackages
             -resultBundlePath TestResults.xcresult
             -only-testing:MuscleCheckTests
             -skip-testing:MuscleCheckTests/WorkoutViewTests
