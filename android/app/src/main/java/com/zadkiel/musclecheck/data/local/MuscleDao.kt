@@ -18,7 +18,8 @@ interface MuscleDao {
     @Query("SELECT * FROM muscle_entries ORDER BY dateCreated")
     suspend fun getEntriesWithSessions(): List<EntryWithSessions>
 
-    @Query("SELECT COUNT(*) FROM muscle_entries WHERE name = :name")
+    /** Case-insensitive, matching the unified duplicate rule of iOS `normalizedName`. */
+    @Query("SELECT COUNT(*) FROM muscle_entries WHERE name = :name COLLATE NOCASE")
     suspend fun countByName(name: String): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -46,6 +47,33 @@ interface MuscleDao {
 
     @Query("SELECT * FROM workout_sessions WHERE entryId = :entryId ORDER BY epochDay DESC")
     suspend fun sessionsFor(entryId: String): List<WorkoutSessionEntity>
+
+    @Query("UPDATE muscle_entries SET metricRaw = :metricRaw WHERE id = :id")
+    suspend fun setMetric(id: String, metricRaw: String)
+
+    /** Entries created before per-exercise metrics existed (backfilled at startup). */
+    @Query("SELECT * FROM muscle_entries WHERE metricRaw = ''")
+    suspend fun entriesWithoutMetric(): List<MuscleEntryEntity>
+
+    // MARK: - Exercises
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertExercise(exercise: ExerciseEntity)
+
+    @Query("DELETE FROM exercises WHERE id = :id")
+    suspend fun deleteExercise(id: String)
+
+    @Query("SELECT COALESCE(MAX(sortOrder), -1) FROM exercises WHERE entryId = :entryId")
+    suspend fun maxExerciseOrder(entryId: String): Int
+
+    @Query("SELECT COUNT(*) FROM exercises WHERE entryId = :entryId AND name = :name COLLATE NOCASE")
+    suspend fun countExerciseByName(entryId: String, name: String): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertExerciseSession(session: ExerciseSessionEntity)
+
+    @Query("SELECT * FROM exercise_sessions WHERE exerciseId = :exerciseId AND epochDay = :epochDay LIMIT 1")
+    suspend fun exerciseSessionOn(exerciseId: String, epochDay: Long): ExerciseSessionEntity?
 }
 
 @Dao

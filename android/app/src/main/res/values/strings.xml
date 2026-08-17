@@ -51,7 +51,7 @@
     <!-- Home -->
     <string name="navigation_history_button">History</string>
     <string name="add_new_muscle_group">Add new muscle group</string>
-    <string name="empty_state_message">Add your muscle groups by tapping the [+] button in the top right corner.</string>
+    <string name="empty_state_message">Nothing this week yet. Add your first activity.</string>
     <string name="streak_current">weeks in a row</string>
     <string name="streak_max">Best</string>
     <string name="delete_entry_title">Delete activity?</string>
@@ -173,4 +173,42 @@
     <string name="paywall_price_lifetime">$29.99</string>
     <string name="paywall_subscribe">Continue</string>
     <string name="paywall_restore">Restore purchases</string>
+
+    <!-- Feature 18/19: per-exercise metrics, unified add, exercises in group -->
+    <string name="metric_type_none">Check only</string>
+    <string name="metric_type_strength">Weight &amp; reps</string>
+    <string name="metric_type_duration">Time</string>
+    <string name="metric_type_distance_duration">Distance &amp; time</string>
+    <string name="session_field_duration">Duration</string>
+    <string name="session_field_distance">Distance</string>
+    <string name="session_unit_min">min</string>
+    <string name="session_unit_km">km</string>
+    <string name="group_no_exercises">No exercises in %1$s yet.</string>
+    <string name="group_add_exercise">Add exercise</string>
+    <string name="group_exercise_name_placeholder">Deadlift</string>
+    <string name="add_metric_question">What do you want to log?</string>
+    <string name="add_new_category_option">New category…</string>
+    <string name="add_sheet_title">Add to your list</string>
+    <string name="add_done">Done</string>
+    <string name="add_in_your_list">In your list</string>
+    <string name="add_picker_all_added">Everything here is already in your list ✓ Try another category or create your own.</string>
+    <string name="add_picker_prompt_gym">Which muscle groups do you train?</string>
+    <string name="add_picker_prompt_generic">Which activities do you do?</string>
+    <string name="add_create_custom_title">New activity</string>
+    <string name="add_create_custom_title_gym">New group</string>
+    <string name="add_create_custom_gym">Create your own…</string>
+    <string name="add_create_custom_generic">Create your own…</string>
+    <string name="add_create_confirm">Add</string>
+    <string name="add_name_placeholder_gym">Glutes</string>
+    <string name="add_name_placeholder_generic">Climbing</string>
+    <string name="custom_category_default_metric">Default tracking</string>
+    <string name="empty_state_add_button">Add activity</string>
+    <plurals name="exercise_count">
+        <item quantity="one">%1$d exercise</item>
+        <item quantity="other">%1$d exercises</item>
+    </plurals>
+    <plurals name="history_month_summary_plural">
+        <item quantity="one">%1$d day trained in %2$s</item>
+        <item quantity="other">%1$d days trained in %2$s</item>
+    </plurals>
 </resources>

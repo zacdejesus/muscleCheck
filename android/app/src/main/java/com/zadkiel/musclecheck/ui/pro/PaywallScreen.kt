@@ -51,11 +51,12 @@ import com.zadkiel.musclecheck.data.pro.ProPackage
 /** A Free-vs-Pro feature row. */
 private data class CompareRow(val labelRes: Int, val free: Boolean)
 
-// Reflects what the app actually gates today: checklist, AI coach, history,
-// stats and notifications ship free; only progress photos are Pro.
+// Reflects what the app actually SHIPS on Android today: checklist, history, stats and
+// notifications are free; only progress photos are Pro. The AI coach row is deliberately
+// absent — that feature is iOS-only (Apple Intelligence), and listing it here would
+// advertise something this build cannot deliver.
 private val compareRows = listOf(
     CompareRow(R.string.paywall_compare_checklist, free = true),
-    CompareRow(R.string.paywall_compare_ai, free = true),
     CompareRow(R.string.paywall_compare_history, free = true),
     CompareRow(R.string.paywall_compare_stats, free = true),
     CompareRow(R.string.paywall_compare_notifications, free = true),

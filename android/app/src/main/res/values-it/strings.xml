@@ -43,7 +43,7 @@
     <string name="stretching_full">Stretching completo</string>
     <string name="navigation_history_button">Cronologia</string>
     <string name="add_new_muscle_group">Aggiungi gruppo muscolare</string>
-    <string name="empty_state_message">Aggiungi i tuoi gruppi muscolari toccando il pulsante [+] in alto a destra.</string>
+    <string name="empty_state_message">Ancora niente questa settimana. Aggiungi la tua prima attività.</string>
     <string name="streak_current">settimane di fila</string>
     <string name="streak_max">Migliore</string>
     <string name="delete_entry_title">Eliminare l\'attività?</string>
@@ -145,4 +145,42 @@
     <string name="paywall_price_lifetime">$29.99</string>
     <string name="paywall_subscribe">Continua</string>
     <string name="paywall_restore">Ripristina acquisti</string>
+
+    <!-- Feature 18/19: per-exercise metrics, unified add, exercises in group -->
+    <string name="metric_type_none">Solo spunta</string>
+    <string name="metric_type_strength">Peso e ripetizioni</string>
+    <string name="metric_type_duration">Tempo</string>
+    <string name="metric_type_distance_duration">Distanza e tempo</string>
+    <string name="session_field_duration">Durata</string>
+    <string name="session_field_distance">Distanza</string>
+    <string name="session_unit_min">min</string>
+    <string name="session_unit_km">km</string>
+    <string name="group_no_exercises">Ancora nessun esercizio in %1$s.</string>
+    <string name="group_add_exercise">Aggiungi esercizio</string>
+    <string name="group_exercise_name_placeholder">Stacco da terra</string>
+    <string name="add_metric_question">Cosa vuoi registrare?</string>
+    <string name="add_new_category_option">Nuova categoria…</string>
+    <string name="add_sheet_title">Aggiungi alla tua lista</string>
+    <string name="add_done">Fatto</string>
+    <string name="add_in_your_list">Nella tua lista</string>
+    <string name="add_picker_all_added">È già tutto nella tua lista ✓ Prova un\'altra categoria o crea qualcosa di tuo.</string>
+    <string name="add_picker_prompt_gym">Quali gruppi muscolari alleni?</string>
+    <string name="add_picker_prompt_generic">Quali attività pratichi?</string>
+    <string name="add_create_custom_title">Nuova attività</string>
+    <string name="add_create_custom_title_gym">Nuovo gruppo</string>
+    <string name="add_create_custom_gym">Crea il tuo…</string>
+    <string name="add_create_custom_generic">Crea la tua…</string>
+    <string name="add_create_confirm">Aggiungi</string>
+    <string name="add_name_placeholder_gym">Glutei</string>
+    <string name="add_name_placeholder_generic">Arrampicata</string>
+    <string name="custom_category_default_metric">Tracciamento predefinito</string>
+    <string name="empty_state_add_button">Aggiungi attività</string>
+    <plurals name="exercise_count">
+        <item quantity="one">%1$d esercizio</item>
+        <item quantity="other">%1$d esercizi</item>
+    </plurals>
+    <plurals name="history_month_summary_plural">
+        <item quantity="one">%1$d giorno di allenamento a %2$s</item>
+        <item quantity="other">%1$d giorni di allenamento a %2$s</item>
+    </plurals>
 </resources>

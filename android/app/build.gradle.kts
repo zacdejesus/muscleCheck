@@ -14,8 +14,10 @@ android {
         applicationId = "com.zadkiel.musclecheck"
         minSdk = 26
         targetSdk = 35
+        // Play's own counter (first upload = 1); the name tracks the shared
+        // product version with iOS.
         versionCode = 1
-        versionName = "1.0"
+        versionName = "2.2.0"
     }
 
     buildTypes {

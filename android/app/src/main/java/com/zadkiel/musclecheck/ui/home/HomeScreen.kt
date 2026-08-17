@@ -58,6 +58,13 @@ import com.zadkiel.musclecheck.domain.model.WeightUnit
 import com.zadkiel.musclecheck.ui.icons.AppIcons
 import com.zadkiel.musclecheck.ui.theme.LocalAccents
 import kotlin.math.roundToInt
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.text.style.TextAlign
+import com.zadkiel.musclecheck.domain.model.Exercise
+import com.zadkiel.musclecheck.domain.model.MetricType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,8 +78,12 @@ fun HomeScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val addError by viewModel.addError.collectAsStateWithLifecycle()
 
+    val lastAddCategory by viewModel.lastAddCategory.collectAsStateWithLifecycle()
+
     var showAddSheet by remember { mutableStateOf(false) }
     var sessionEntry by remember { mutableStateOf<MuscleEntry?>(null) }
+    var detailEntry by remember { mutableStateOf<MuscleEntry?>(null) }
+    var exerciseTarget by remember { mutableStateOf<Pair<MuscleEntry, Exercise>?>(null) }
     var entryToDelete by remember { mutableStateOf<MuscleEntry?>(null) }
 
     Scaffold(
@@ -84,10 +95,9 @@ fun HomeScreen(
                         Text(stringResource(R.string.navigation_history_button))
                     }
                 },
+                // No "+" here: adding lives in the FAB (bottom-right), which keeps the
+                // action reachable one-handed AND leaves room for the title.
                 actions = {
-                    IconButton(onClick = { showAddSheet = true }) {
-                        Icon(Icons.Filled.AddCircleOutline, contentDescription = stringResource(R.string.add_new_muscle_group))
-                    }
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_title))
                     }
@@ -99,6 +109,14 @@ fun HomeScreen(
                     }
                 },
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showAddSheet = true }) {
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.add_new_muscle_group),
+                )
+            }
         },
     ) { padding ->
         Column(
@@ -114,7 +132,7 @@ fun HomeScreen(
             Spacer(Modifier.height(16.dp))
 
             if (state.loaded && state.isEmpty) {
-                EmptyState()
+                EmptyState(onAdd = { showAddSheet = true })
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     val showHeaders = state.groups.size > 1
@@ -126,12 +144,16 @@ fun HomeScreen(
                         }
                         items(count = group.entries.size, key = { group.entries[it].id }) { index ->
                             val entry = group.entries[index]
+                            val metric = entry.metricResolving(state.customCategories)
                             MuscleEntryRow(
                                 entry = entry,
-                                customCategories = state.customCategories,
+                                metric = metric,
                                 weightUnit = state.weightUnit,
                                 onToggle = { viewModel.toggleActivity(entry) },
-                                onOpenSession = { sessionEntry = entry },
+                                // Tapping the NAME opens the group's exercise list (the
+                                // detail layer). The check on the right is untouched —
+                                // marking the group trained never requires coming here.
+                                onOpenDetail = { if (metric.logsSomething) detailEntry = entry },
                                 onLongPress = { entryToDelete = entry },
                             )
                             if (index < group.entries.lastIndex) {
@@ -146,11 +168,15 @@ fun HomeScreen(
 
     if (showAddSheet) {
         AddEntrySheet(
+            entries = state.allEntries,
             customCategories = state.customCategories,
             errorMessage = addError,
-            onSave = { name, category, icon ->
-                viewModel.addEntry(name, category, icon) { showAddSheet = false }
-            },
+            initialCategoryId = lastAddCategory,
+            onCategorySelected = viewModel::rememberAddCategory,
+            onAddPreset = { category, nameRes, icon -> viewModel.addPresetEntry(category, nameRes, icon) },
+            onAddCustom = { name, category, icon, metric -> viewModel.addEntry(name, category, icon, metric) },
+            onRemoveEntry = { viewModel.deleteEntry(it) },
+            onCreateCategory = { name, icon, metric -> viewModel.createCategory(name, icon, metric) },
             onDismiss = {
                 viewModel.clearAddError()
                 showAddSheet = false
@@ -158,12 +184,38 @@ fun HomeScreen(
         )
     }
 
+    detailEntry?.let { entry ->
+        // Re-read from state so the sheet reflects edits made while it is open.
+        val fresh = state.allEntries.firstOrNull { it.id == entry.id } ?: entry
+        GroupDetailSheet(
+            entry = fresh,
+            groupMetric = fresh.metricResolving(state.customCategories),
+            weightUnit = state.weightUnit,
+            onExerciseClick = { exerciseTarget = fresh to it },
+            onAddExercise = { name, metric, icon -> viewModel.addExercise(fresh, name, metric, icon) },
+            onDeleteExercise = { viewModel.deleteExercise(it) },
+            onDismiss = { detailEntry = null },
+        )
+    }
+
+    exerciseTarget?.let { (entry, exercise) ->
+        SessionLogSheet(
+            target = SessionLogTarget.of(exercise),
+            weightUnit = state.weightUnit,
+            onSave = { input ->
+                viewModel.logExercise(entry, exercise, input)
+                exerciseTarget = null
+            },
+            onDismiss = { exerciseTarget = null },
+        )
+    }
+
     sessionEntry?.let { entry ->
         SessionLogSheet(
-            entry = entry,
+            target = SessionLogTarget.of(entry, entry.metricResolving(state.customCategories)),
             weightUnit = state.weightUnit,
-            onSave = { weightKg, sets, reps ->
-                viewModel.saveSession(entry, weightKg, sets, reps)
+            onSave = { input ->
+                viewModel.saveSession(entry, input)
                 sessionEntry = null
             },
             onDismiss = { sessionEntry = null },
@@ -295,23 +347,20 @@ private fun CategoryHeader(categoryRaw: String, customCategories: List<CustomCat
 @Composable
 private fun MuscleEntryRow(
     entry: MuscleEntry,
-    customCategories: List<CustomCategory>,
+    metric: MetricType,
     weightUnit: WeightUnit,
     onToggle: () -> Unit,
-    onOpenSession: () -> Unit,
+    onOpenDetail: () -> Unit,
     onLongPress: () -> Unit,
 ) {
-    val context = LocalContext.current
     val accents = LocalAccents.current
-    val tracksWeight = remember(entry.category, customCategories) {
-        CategoryResolver.resolve(entry.category, customCategories, context).tracksWeight
-    }
+    val summary = remember(entry, weightUnit) { entry.summary(weightUnit) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(
-                onClick = { if (tracksWeight) onOpenSession() },
+                onClick = onOpenDetail,
                 onLongClick = onLongPress,
             )
             .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -334,11 +383,21 @@ private fun MuscleEntryRow(
         Spacer(Modifier.width(12.dp))
         Text(entry.name, style = MaterialTheme.typography.bodyLarge)
 
-        if (tracksWeight) {
-            entry.lastWeightKg?.let { kg ->
+        // "80 kg" for a bare group, "3 ejercicios · Peso muerto 100 kg" once it has
+        // exercises — assembled here because the count needs a plural resource.
+        summary?.let { s ->
+            val label = when {
+                s.exerciseCount > 0 && s.recentName != null && s.recentValue != null ->
+                    "${pluralStringResource(R.plurals.exercise_count, s.exerciseCount, s.exerciseCount)} · " +
+                        "${s.recentName} ${s.recentValue}"
+                s.exerciseCount > 0 ->
+                    pluralStringResource(R.plurals.exercise_count, s.exerciseCount, s.exerciseCount)
+                else -> s.ownLabel
+            }
+            if (label != null) {
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "${weightUnit.displayValue(kg).roundToInt()} ${weightUnit.displayLabel}",
+                    text = label,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -360,17 +419,26 @@ private fun MuscleEntryRow(
 // MARK: - Empty state
 
 @Composable
-private fun EmptyState() {
-    Box(
+private fun EmptyState(onAdd: () -> Unit) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(32.dp),
-        contentAlignment = Alignment.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = stringResource(R.string.empty_state_message),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
         )
+        Spacer(Modifier.height(16.dp))
+        // A real CTA, not just a pointer at the FAB: this is the screen a first-timer
+        // lands on, and "where do I add things" was the top confusion report.
+        Button(onClick = onAdd) {
+            Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.size(8.dp))
+            Text(stringResource(R.string.empty_state_add_button))
+        }
     }
 }

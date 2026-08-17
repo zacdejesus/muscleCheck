@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,6 +50,7 @@ import com.zadkiel.musclecheck.domain.DayActivities
 import com.zadkiel.musclecheck.domain.MonthCalendarCalculator
 import com.zadkiel.musclecheck.domain.AppWeek
 import com.zadkiel.musclecheck.domain.model.CategoryResolver
+import com.zadkiel.musclecheck.domain.model.SessionFormatting
 import com.zadkiel.musclecheck.domain.model.CustomCategory
 import com.zadkiel.musclecheck.domain.model.WeightUnit
 import com.zadkiel.musclecheck.ui.icons.AppIcons
@@ -87,7 +89,12 @@ fun HistoryScreen(
         ) {
             // Month summary caption
             Text(
-                text = stringResource(R.string.history_month_summary, state.monthTrainedCount, state.monthName),
+                text = pluralStringResource(
+                    R.plurals.history_month_summary_plural,
+                    state.monthTrainedCount,
+                    state.monthTrainedCount,
+                    state.monthName,
+                ),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -369,9 +376,7 @@ private fun WeekDetailSection(
                     color = MaterialTheme.colorScheme.primary,
                 )
                 day.activities.forEach { activity ->
-                    val tracksWeight = remember(activity.entry.category, customCategories) {
-                        CategoryResolver.resolve(activity.entry.category, customCategories, context).tracksWeight
-                    }
+                    val metric = activity.entry.metricResolving(customCategories)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -383,13 +388,39 @@ private fun WeekDetailSection(
                             modifier = Modifier.size(20.dp),
                         )
                         Text(activity.entry.name, style = MaterialTheme.typography.bodyLarge)
-                        if (tracksWeight && activity.weightKg != null) {
-                            Text(
-                                text = "${weightUnit.displayValue(activity.weightKg).roundToInt()} ${weightUnit.displayLabel}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                        // With no exercises logged that day, fall back to the group's
+                        // own value so pre-exercise history still reads the same.
+                        if (activity.exercises.isEmpty()) {
+                            SessionFormatting.label(
+                                metric = metric,
+                                weightKg = activity.session?.weightKg,
+                                durationSeconds = activity.session?.durationSeconds,
+                                distanceMeters = activity.session?.distanceMeters,
+                                unit = weightUnit,
+                            )?.let { label ->
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
+                    }
+                    // Per-exercise lines, indented under the group.
+                    activity.exercises.forEach { logged ->
+                        val label = SessionFormatting.label(
+                            metric = logged.exercise.metric,
+                            weightKg = logged.session.weightKg,
+                            durationSeconds = logged.session.durationSeconds,
+                            distanceMeters = logged.session.distanceMeters,
+                            unit = weightUnit,
+                        )
+                        Text(
+                            text = listOfNotNull(logged.exercise.name, label).joinToString(" "),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 32.dp),
+                        )
                     }
                 }
             }

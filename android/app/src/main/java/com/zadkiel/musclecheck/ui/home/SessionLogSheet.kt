@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
@@ -19,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -40,87 +44,147 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zadkiel.musclecheck.R
+import com.zadkiel.musclecheck.domain.model.Exercise
+import com.zadkiel.musclecheck.domain.model.MetricType
 import com.zadkiel.musclecheck.domain.model.MuscleEntry
+import com.zadkiel.musclecheck.domain.model.SessionInput
 import com.zadkiel.musclecheck.domain.model.WeightUnit
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
 
 /**
- * "Registro" — session editor. Opens calm (no keyboard): the weight is a big tappable
- * number and sets/reps are steppers. Weight is converted to kg at this boundary.
+ * What [SessionLogSheet] edits — decoupled from MuscleEntry so it can drive an exercise
+ * (the detail layer) or a group. Prefill values are pre-resolved by the caller; for
+ * distanceDuration, distance + duration come from the SAME session so a distance from
+ * one day and a time from another are never paired as if done together.
+ */
+data class SessionLogTarget(
+    val title: String,
+    val metric: MetricType,
+    val lastWeightKg: Double? = null,
+    val lastSets: Int? = null,
+    val lastReps: Int? = null,
+    val lastDurationSeconds: Int? = null,
+    val lastDistanceMeters: Double? = null,
+    val lastTrained: LocalDate? = null,
+) {
+    companion object {
+        fun of(exercise: Exercise): SessionLogTarget {
+            val cardio = exercise.lastDistanceDurationSession
+            return SessionLogTarget(
+                title = exercise.name,
+                metric = exercise.metric,
+                lastWeightKg = exercise.lastWeightKg,
+                lastSets = exercise.lastSets,
+                lastReps = exercise.lastReps,
+                lastDurationSeconds = if (exercise.metric == MetricType.DISTANCE_DURATION) {
+                    cardio?.durationSeconds
+                } else {
+                    exercise.lastDurationSeconds
+                },
+                lastDistanceMeters = cardio?.distanceMeters,
+                lastTrained = exercise.lastTrainedDate,
+            )
+        }
+
+        fun of(entry: MuscleEntry, metric: MetricType): SessionLogTarget {
+            val cardio = entry.sessions
+                .filter { it.distanceMeters != null || it.durationSeconds != null }
+                .maxByOrNull { it.date }
+            return SessionLogTarget(
+                title = entry.name,
+                metric = metric,
+                lastWeightKg = entry.lastWeightKg,
+                lastSets = entry.lastSets,
+                lastReps = entry.lastReps,
+                lastDurationSeconds = cardio?.durationSeconds,
+                lastDistanceMeters = cardio?.distanceMeters,
+                lastTrained = entry.lastTrainedDate,
+            )
+        }
+    }
+}
+
+/**
+ * "Registro" — session editor driven by the target's [MetricType]. Opens calm (no
+ * keyboard): the main value is a big tappable number. Strength shows weight + sets/reps
+ * steppers; duration shows minutes; distanceDuration shows km with minutes below.
+ * Weight is converted to kg at this boundary.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionLogSheet(
-    entry: MuscleEntry,
+    target: SessionLogTarget,
     weightUnit: WeightUnit,
-    onSave: (weightKg: Double?, sets: Int?, reps: Int?) -> Unit,
+    onSave: (SessionInput) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    // Prefill so the user can consult/edit what they last did.
-    var weightText by remember(entry.id) {
-        mutableStateOf(entry.lastWeightKg?.let { weightUnit.displayValue(it).roundToInt().toString() } ?: "")
+    var weightText by remember(target.title) {
+        mutableStateOf(target.lastWeightKg?.let { weightUnit.displayValue(it).roundToInt().toString() } ?: "")
     }
-    var sets by remember(entry.id) { mutableIntStateOf(entry.lastSets ?: 0) }
-    var reps by remember(entry.id) { mutableIntStateOf(entry.lastReps ?: 0) }
+    var sets by remember(target.title) { mutableIntStateOf(target.lastSets ?: 0) }
+    var reps by remember(target.title) { mutableIntStateOf(target.lastReps ?: 0) }
+    var minutesText by remember(target.title) {
+        mutableStateOf(target.lastDurationSeconds?.let { (it / 60).toString() } ?: "")
+    }
+    var kmText by remember(target.title) {
+        mutableStateOf(target.lastDistanceMeters?.let { String.format("%.1f", it / 1000) } ?: "")
+    }
 
     val parsedWeight = weightText.replace(',', '.').toDoubleOrNull()
-    val isValid = (parsedWeight ?: 0.0) > 0.0
+    val parsedMinutes = minutesText.toIntOrNull()
+    val parsedKm = kmText.replace(',', '.').toDoubleOrNull()
+
+    val isValid = when (target.metric) {
+        MetricType.NONE -> false // unreachable: rows with no metric don't open the log
+        MetricType.STRENGTH -> (parsedWeight ?: 0.0) > 0.0
+        MetricType.DURATION -> (parsedMinutes ?: 0) > 0
+        // A runner may log only one of the two.
+        MetricType.DISTANCE_DURATION -> (parsedKm ?: 0.0) > 0.0 || (parsedMinutes ?: 0) > 0
+    }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                // imePadding + scroll: without them the keyboard covers Save and the
+                // sheet becomes a dead end once you type a value.
+                .imePadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = entry.name,
+                text = target.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.height(24.dp))
 
-            // Weight hero — the value IS the display; tap it to type.
-            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                TextField(
+            when (target.metric) {
+                MetricType.STRENGTH -> HeroValueField(
                     value = weightText,
-                    onValueChange = { new -> weightText = new.filter { it.isDigit() || it == '.' || it == ',' } },
-                    placeholder = {
-                        Text(
-                            "0",
-                            fontSize = 56.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    },
-                    textStyle = TextStyle(
-                        fontSize = 56.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Center,
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
-                    modifier = Modifier.width(180.dp),
+                    onValueChange = { weightText = it },
+                    unitLabel = weightUnit.displayLabel,
                 )
-                Text(
-                    text = weightUnit.displayLabel,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 16.dp),
+                MetricType.DURATION -> HeroValueField(
+                    value = minutesText,
+                    onValueChange = { minutesText = it },
+                    unitLabel = stringResource(R.string.session_unit_min),
+                    decimals = false,
                 )
+                MetricType.DISTANCE_DURATION -> HeroValueField(
+                    value = kmText,
+                    onValueChange = { kmText = it },
+                    unitLabel = stringResource(R.string.session_unit_km),
+                )
+                MetricType.NONE -> Unit
             }
 
-            entry.lastTrainedDate?.let { last ->
+            target.lastTrained?.let { last ->
                 val formatted = remember(last) {
                     last.format(DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault()))
                 }
@@ -133,31 +197,60 @@ fun SessionLogSheet(
 
             Spacer(Modifier.height(28.dp))
 
-            // Sets / Reps — steppers, no keyboard.
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StepperColumn(
-                    title = stringResource(R.string.session_field_sets),
-                    value = sets,
-                    onDecrement = { if (sets > 0) sets-- },
-                    onIncrement = { sets++ },
-                    modifier = Modifier.weight(1f),
+            when (target.metric) {
+                MetricType.STRENGTH -> Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    StepperColumn(
+                        title = stringResource(R.string.session_field_sets),
+                        value = sets,
+                        onDecrement = { if (sets > 0) sets-- },
+                        onIncrement = { sets++ },
+                        modifier = Modifier.weight(1f),
+                    )
+                    StepperColumn(
+                        title = stringResource(R.string.session_field_reps),
+                        value = reps,
+                        onDecrement = { if (reps > 0) reps-- },
+                        onIncrement = { reps++ },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                MetricType.DISTANCE_DURATION -> OutlinedTextField(
+                    value = minutesText,
+                    onValueChange = { new -> minutesText = new.filter { it.isDigit() } },
+                    label = { Text(stringResource(R.string.session_field_duration)) },
+                    suffix = { Text(stringResource(R.string.session_unit_min)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
                 )
-                StepperColumn(
-                    title = stringResource(R.string.session_field_reps),
-                    value = reps,
-                    onDecrement = { if (reps > 0) reps-- },
-                    onIncrement = { reps++ },
-                    modifier = Modifier.weight(1f),
-                )
+                else -> Unit
             }
 
             Spacer(Modifier.height(32.dp))
 
             Button(
                 onClick = {
-                    val kg = parsedWeight?.let { weightUnit.toKg(it.roundToInt().toDouble()) }
-                    // 0 means "not recorded" → store as null to keep the data clean.
-                    onSave(kg, sets.takeIf { it > 0 }, reps.takeIf { it > 0 })
+                    onSave(
+                        when (target.metric) {
+                            MetricType.STRENGTH -> SessionInput(
+                                // 0 means "not recorded" → store null to keep the data clean.
+                                weightKg = parsedWeight?.let { weightUnit.toKg(it.roundToInt().toDouble()) },
+                                sets = sets.takeIf { it > 0 },
+                                reps = reps.takeIf { it > 0 },
+                            )
+                            MetricType.DURATION -> SessionInput(
+                                durationSeconds = parsedMinutes?.takeIf { it > 0 }?.times(60),
+                            )
+                            MetricType.DISTANCE_DURATION -> SessionInput(
+                                durationSeconds = parsedMinutes?.takeIf { it > 0 }?.times(60),
+                                distanceMeters = parsedKm?.takeIf { it > 0.0 }?.times(1000),
+                            )
+                            MetricType.NONE -> SessionInput()
+                        }
+                    )
                 },
                 enabled = isValid,
                 modifier = Modifier.fillMaxWidth(),
@@ -168,6 +261,53 @@ fun SessionLogSheet(
                 Text(stringResource(R.string.cancel))
             }
         }
+    }
+}
+
+/** The big tappable number that is both the display and the input. */
+@Composable
+private fun HeroValueField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    unitLabel: String,
+    decimals: Boolean = true,
+) {
+    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        TextField(
+            value = value,
+            onValueChange = { new ->
+                onValueChange(new.filter { it.isDigit() || (decimals && (it == '.' || it == ',')) })
+            },
+            placeholder = {
+                Text(
+                    "0",
+                    fontSize = 56.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            textStyle = TextStyle(
+                fontSize = 56.sp,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+            ),
+            modifier = Modifier.width(180.dp),
+        )
+        Text(
+            text = unitLabel,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 16.dp),
+        )
     }
 }
 

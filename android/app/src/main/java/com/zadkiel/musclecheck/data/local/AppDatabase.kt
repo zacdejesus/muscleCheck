@@ -7,10 +7,13 @@ import androidx.room.RoomDatabase
     entities = [
         MuscleEntryEntity::class,
         WorkoutSessionEntity::class,
+        ExerciseEntity::class,
+        ExerciseSessionEntity::class,
         CustomCategoryEntity::class,
         ProgressPhotoEntity::class,
     ],
-    version = 2,
+    // v3: per-exercise metrics + exercises inside a group.
+    version = 3,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {

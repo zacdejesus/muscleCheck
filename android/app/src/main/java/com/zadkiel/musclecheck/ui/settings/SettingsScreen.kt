@@ -313,6 +313,14 @@ fun SettingsScreen(
                                 selected = state.weightUnit == unit,
                                 onClick = { viewModel.setWeightUnit(unit) },
                                 shape = SegmentedButtonDefaults.itemShape(index = index, count = WeightUnit.entries.size),
+                                // Default M3 colors paint the active segment with the
+                                // secondary container (purple) — the only off-palette
+                                // element in an otherwise blue app.
+                                colors = SegmentedButtonDefaults.colors(
+                                    activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    activeBorderColor = MaterialTheme.colorScheme.primary,
+                                ),
                             ) {
                                 Text(unit.displayLabel)
                             }

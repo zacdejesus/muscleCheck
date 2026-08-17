@@ -3,6 +3,8 @@ package com.zadkiel.musclecheck.data.repository
 import android.content.Context
 import com.zadkiel.musclecheck.data.local.CategoryDao
 import com.zadkiel.musclecheck.data.local.CustomCategoryEntity
+import com.zadkiel.musclecheck.data.local.ExerciseEntity
+import com.zadkiel.musclecheck.data.local.ExerciseSessionEntity
 import com.zadkiel.musclecheck.data.local.MuscleDao
 import com.zadkiel.musclecheck.data.local.MuscleEntryEntity
 import com.zadkiel.musclecheck.data.local.WorkoutSessionEntity
@@ -11,7 +13,9 @@ import com.zadkiel.musclecheck.data.prefs.UserPreferencesRepository
 import com.zadkiel.musclecheck.domain.AppWeek
 import com.zadkiel.musclecheck.domain.model.ActivityCategory
 import com.zadkiel.musclecheck.domain.model.CustomCategory
+import com.zadkiel.musclecheck.domain.model.MetricType
 import com.zadkiel.musclecheck.domain.model.MuscleEntry
+import com.zadkiel.musclecheck.domain.model.SessionInput
 import com.zadkiel.musclecheck.R
 import com.zadkiel.musclecheck.widget.MuscleCheckWidget
 import androidx.glance.appwidget.updateAll
@@ -44,12 +48,15 @@ class MuscleRepository @Inject constructor(
 
     // MARK: - Entries
 
-    /** Adds a new entry, trimming the name and rejecting duplicates. */
-    suspend fun addEntry(name: String, category: String, icon: String) {
+    /**
+     * Adds a new entry, trimming the name and rejecting duplicates. [metric] defaults to
+     * the category's default when not overridden at creation.
+     */
+    suspend fun addEntry(name: String, category: String, icon: String, metric: MetricType? = null) {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) throw InvalidNameException()
         if (muscleDao.countByName(trimmed) > 0) throw DuplicateEntryException(trimmed)
-        muscleDao.insertEntry(newEntryEntity(trimmed, category, icon))
+        muscleDao.insertEntry(newEntryEntity(trimmed, category, icon, metric ?: defaultMetricFor(category)))
         refreshWidget()
     }
 
@@ -58,10 +65,35 @@ class MuscleRepository @Inject constructor(
         for (preset in category.presetEntries) {
             val name = context.getString(preset.nameRes).trim()
             if (name.isEmpty() || muscleDao.countByName(name) > 0) continue
-            muscleDao.insertEntry(newEntryEntity(name, category.id, preset.icon))
+            muscleDao.insertEntry(newEntryEntity(name, category.id, preset.icon, category.defaultMetric))
         }
         prefs.markPresetAdded(category.id)
         refreshWidget()
+    }
+
+    /** Adds a single preset entry (one-tap add from the unified add screen). */
+    suspend fun addPresetEntry(category: ActivityCategory, nameRes: Int, icon: String) {
+        val name = context.getString(nameRes).trim()
+        if (name.isEmpty() || muscleDao.countByName(name) > 0) return
+        muscleDao.insertEntry(newEntryEntity(name, category.id, icon, category.defaultMetric))
+        refreshWidget()
+    }
+
+    /**
+     * Resolves the metric of entries created before metrics existed and persists it, so
+     * the lazy category fallback runs exactly once per entry. Idempotent (the query only
+     * matches empty metrics), mirroring the iOS `backfillMetricTypes` at startup.
+     */
+    suspend fun backfillMetricTypes() {
+        val pending = muscleDao.entriesWithoutMetric()
+        if (pending.isEmpty()) return
+        val customs = categoryDao.getAll().map { it.toDomain() }
+        for (entry in pending) {
+            val metric = ActivityCategory.fromId(entry.category)?.defaultMetric
+                ?: customs.firstOrNull { it.id == entry.category }?.defaultMetric
+                ?: MetricType.NONE
+            muscleDao.setMetric(entry.id, metric.id)
+        }
     }
 
     suspend fun deleteEntry(id: String) {
@@ -102,9 +134,7 @@ class MuscleRepository @Inject constructor(
      */
     suspend fun saveTodaySession(
         entryId: String,
-        weightKg: Double?,
-        sets: Int?,
-        reps: Int?,
+        input: SessionInput,
         today: LocalDate = LocalDate.now(),
     ) {
         val existing = muscleDao.sessionOn(entryId, today.toEpochDay())
@@ -113,11 +143,80 @@ class MuscleRepository @Inject constructor(
                 id = existing?.id ?: UUID.randomUUID().toString(),
                 entryId = entryId,
                 epochDay = today.toEpochDay(),
-                weightKg = weightKg,
-                sets = sets,
-                reps = reps,
+                weightKg = input.weightKg,
+                sets = input.sets,
+                reps = input.reps,
+                durationSeconds = input.durationSeconds,
+                distanceMeters = input.distanceMeters,
             )
         )
+        muscleDao.setChecked(entryId, true)
+        refreshWidget()
+    }
+
+    // MARK: - Exercises (detail layer inside a group)
+
+    /** Appends an exercise to a group. Duplicate names within the group are rejected. */
+    suspend fun addExercise(entryId: String, name: String, metric: MetricType, icon: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) throw InvalidNameException()
+        if (muscleDao.countExerciseByName(entryId, trimmed) > 0) throw DuplicateEntryException(trimmed)
+        muscleDao.insertExercise(
+            ExerciseEntity(
+                id = UUID.randomUUID().toString(),
+                entryId = entryId,
+                name = trimmed,
+                icon = icon,
+                metricRaw = metric.id,
+                sortOrder = muscleDao.maxExerciseOrder(entryId) + 1,
+            )
+        )
+        refreshWidget()
+    }
+
+    suspend fun deleteExercise(id: String) {
+        muscleDao.deleteExercise(id)
+        refreshWidget()
+    }
+
+    /**
+     * Logs today's values for one exercise AND marks the GROUP trained today, so the
+     * weekly check / streak / stats / widget (which read the group's sessions) keep
+     * working untouched. Upserts today's session (no duplicate per day).
+     */
+    suspend fun logExercise(
+        entryId: String,
+        exerciseId: String,
+        input: SessionInput,
+        today: LocalDate = LocalDate.now(),
+    ) {
+        val epochDay = today.toEpochDay()
+        val existing = muscleDao.exerciseSessionOn(exerciseId, epochDay)
+        muscleDao.insertExerciseSession(
+            ExerciseSessionEntity(
+                id = existing?.id ?: UUID.randomUUID().toString(),
+                exerciseId = exerciseId,
+                epochDay = epochDay,
+                weightKg = input.weightKg,
+                sets = input.sets,
+                reps = input.reps,
+                durationSeconds = input.durationSeconds,
+                distanceMeters = input.distanceMeters,
+            )
+        )
+        // The group counts as trained today (drives check / streak / stats / history).
+        if (muscleDao.sessionOn(entryId, epochDay) == null) {
+            muscleDao.insertSession(
+                WorkoutSessionEntity(
+                    id = UUID.randomUUID().toString(),
+                    entryId = entryId,
+                    epochDay = epochDay,
+                    weightKg = null,
+                    sets = null,
+                    reps = null,
+                )
+            )
+        }
         muscleDao.setChecked(entryId, true)
         refreshWidget()
     }
@@ -135,7 +234,7 @@ class MuscleRepository @Inject constructor(
 
     // MARK: - Custom categories
 
-    suspend fun addCustomCategory(name: String, icon: String, tracksWeight: Boolean) {
+    suspend fun addCustomCategory(name: String, icon: String, defaultMetric: MetricType) {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) throw InvalidNameException()
         val existing = categoryDao.getAll()
@@ -148,8 +247,9 @@ class MuscleRepository @Inject constructor(
                 id = UUID.randomUUID().toString(),
                 name = trimmed,
                 icon = icon,
+                tracksWeight = defaultMetric == MetricType.STRENGTH,
                 sortOrder = nextOrder,
-                tracksWeight = tracksWeight,
+                defaultMetricRaw = defaultMetric.id,
             )
         )
     }
@@ -175,7 +275,12 @@ class MuscleRepository @Inject constructor(
         MuscleCheckWidget().updateAll(context)
     }
 
-    private fun newEntryEntity(name: String, category: String, icon: String): MuscleEntryEntity {
+    private fun newEntryEntity(
+        name: String,
+        category: String,
+        icon: String,
+        metric: MetricType,
+    ): MuscleEntryEntity {
         val today = LocalDate.now()
         return MuscleEntryEntity(
             id = UUID.randomUUID().toString(),
@@ -186,8 +291,15 @@ class MuscleRepository @Inject constructor(
             dateCreated = Instant.now().toEpochMilli(),
             category = category,
             icon = icon,
+            metricRaw = metric.id,
         )
     }
+
+    /** Category default for a category id that may be built-in or custom. */
+    private suspend fun defaultMetricFor(categoryId: String): MetricType =
+        ActivityCategory.fromId(categoryId)?.defaultMetric
+            ?: categoryDao.getAll().firstOrNull { it.id == categoryId }?.toDomain()?.defaultMetric
+            ?: MetricType.NONE
 
     /** Localized error message matching the iOS copy. */
     fun errorMessage(e: Exception): String = when (e) {
