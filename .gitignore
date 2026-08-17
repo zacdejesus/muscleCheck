@@ -66,3 +66,8 @@ MuscleCheck/GoogleService-Info.plist
 /GoogleService-Info.plist
 */GoogleService-Info.plist
 .build-dd/
+
+# Android release signing — never commit the upload key or its passwords
+android/keystore.properties
+*.jks
+*.keystore
