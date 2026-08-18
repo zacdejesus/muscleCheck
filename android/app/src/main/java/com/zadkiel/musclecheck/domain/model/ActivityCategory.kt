@@ -23,7 +23,21 @@ enum class ActivityCategory(
     CUSTOM("custom", R.string.category_custom, "star.fill");
 
     /** Whether activities in this category prompt for/show weight. Only gym among built-ins. */
+    @Deprecated("Superseded by defaultMetric (per-exercise metrics)", ReplaceWith("defaultMetric"))
     val tracksWeight: Boolean get() = this == GYM
+
+    /**
+     * Default metric for NEW entries in this category. The metric lives on each entry
+     * ([MuscleEntry.metric]) and can be overridden at creation — this is only the
+     * starting point, and the lazy fallback for pre-metric entries.
+     */
+    val defaultMetric: MetricType
+        get() = when (this) {
+            GYM -> MetricType.STRENGTH
+            RUNNING -> MetricType.DISTANCE_DURATION
+            CARDIO, YOGA, PILATES -> MetricType.DURATION
+            CALISTHENICS, STRETCHING, CUSTOM -> MetricType.NONE
+        }
 
     val sortOrder: Int get() = ordinal
 

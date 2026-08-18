@@ -6,9 +6,13 @@ import com.zadkiel.musclecheck.data.prefs.UserPreferencesRepository
 import com.zadkiel.musclecheck.data.repository.MuscleRepository
 import com.zadkiel.musclecheck.domain.AppWeek
 import com.zadkiel.musclecheck.domain.StreakCalculator
+import com.zadkiel.musclecheck.domain.model.ActivityCategory
 import com.zadkiel.musclecheck.domain.model.CategoryResolver
 import com.zadkiel.musclecheck.domain.model.CustomCategory
+import com.zadkiel.musclecheck.domain.model.Exercise
+import com.zadkiel.musclecheck.domain.model.MetricType
 import com.zadkiel.musclecheck.domain.model.MuscleEntry
+import com.zadkiel.musclecheck.domain.model.SessionInput
 import com.zadkiel.musclecheck.domain.model.WeightUnit
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +28,7 @@ data class CategoryGroup(val category: String, val entries: List<MuscleEntry>)
 
 data class HomeUiState(
     val groups: List<CategoryGroup> = emptyList(),
+    val allEntries: List<MuscleEntry> = emptyList(),
     val customCategories: List<CustomCategory> = emptyList(),
     val weightUnit: WeightUnit = WeightUnit.KG,
     val currentStreak: Int = 0,
@@ -37,14 +42,21 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: MuscleRepository,
-    prefs: UserPreferencesRepository,
+    private val prefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     /** Error shown inside the add sheet (duplicate/empty name). */
     val addError = MutableStateFlow<String?>(null)
 
+    /** Category the add sheet opens on — the last one used. */
+    val lastAddCategory = MutableStateFlow(ActivityCategory.GYM.id)
+
     init {
-        viewModelScope.launch { repository.resetChecksIfNewWeek() }
+        viewModelScope.launch {
+            repository.resetChecksIfNewWeek()
+            // Resolve + persist the metric of entries created before metrics existed.
+            repository.backfillMetricTypes()
+        }
     }
 
     val uiState: StateFlow<HomeUiState> = combine(
@@ -65,6 +77,7 @@ class HomeViewModel @Inject constructor(
 
         HomeUiState(
             groups = groups,
+            allEntries = currentWeekEntries,
             customCategories = custom,
             weightUnit = unit,
             currentStreak = StreakCalculator.currentStreak(entries),
@@ -77,21 +90,63 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { repository.toggleActivity(entry) }
     }
 
-    fun saveSession(entry: MuscleEntry, weightKg: Double?, sets: Int?, reps: Int?) {
-        viewModelScope.launch { repository.saveTodaySession(entry.id, weightKg, sets, reps) }
+    /** Group-level session (groups with no exercises yet). */
+    fun saveSession(entry: MuscleEntry, input: SessionInput) {
+        viewModelScope.launch { repository.saveTodaySession(entry.id, input) }
     }
 
     fun deleteEntry(entry: MuscleEntry) {
         viewModelScope.launch { repository.deleteEntry(entry.id) }
     }
 
-    /** Returns via callback so the sheet can close only on success. */
-    fun addEntry(name: String, category: String, icon: String, onSuccess: () -> Unit) {
+    // MARK: - Exercises
+
+    fun addExercise(entry: MuscleEntry, name: String, metric: MetricType, icon: String) {
         viewModelScope.launch {
             try {
-                repository.addEntry(name, category, icon)
+                repository.addExercise(entry.id, name, metric, icon)
                 addError.value = null
-                onSuccess()
+            } catch (e: Exception) {
+                addError.value = repository.errorMessage(e)
+            }
+        }
+    }
+
+    fun deleteExercise(exercise: Exercise) {
+        viewModelScope.launch { repository.deleteExercise(exercise.id) }
+    }
+
+    /** Saves an exercise's values; the repository also marks the group trained today. */
+    fun logExercise(entry: MuscleEntry, exercise: Exercise, input: SessionInput) {
+        viewModelScope.launch { repository.logExercise(entry.id, exercise.id, input) }
+    }
+
+    // MARK: - Add flow
+
+    fun rememberAddCategory(categoryId: String) {
+        lastAddCategory.value = categoryId
+    }
+
+    fun addPresetEntry(category: ActivityCategory, nameRes: Int, icon: String) {
+        viewModelScope.launch { repository.addPresetEntry(category, nameRes, icon) }
+    }
+
+    fun addEntry(name: String, category: String, icon: String, metric: MetricType) {
+        viewModelScope.launch {
+            try {
+                repository.addEntry(name, category, icon, metric)
+                addError.value = null
+            } catch (e: Exception) {
+                addError.value = repository.errorMessage(e)
+            }
+        }
+    }
+
+    fun createCategory(name: String, icon: String, metric: MetricType) {
+        viewModelScope.launch {
+            try {
+                repository.addCustomCategory(name, icon, metric)
+                addError.value = null
             } catch (e: Exception) {
                 addError.value = repository.errorMessage(e)
             }

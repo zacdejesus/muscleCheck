@@ -28,7 +28,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -48,6 +47,8 @@ import com.zadkiel.musclecheck.R
 import com.zadkiel.musclecheck.data.repository.MuscleRepository
 import com.zadkiel.musclecheck.domain.model.ActivityCategory
 import com.zadkiel.musclecheck.domain.model.CustomCategory
+import com.zadkiel.musclecheck.domain.model.MetricType
+import com.zadkiel.musclecheck.ui.home.MetricDropdown
 import com.zadkiel.musclecheck.ui.icons.AppIcons
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,10 +68,10 @@ class ManageCategoriesViewModel @Inject constructor(
 
     val error = MutableStateFlow<String?>(null)
 
-    fun add(name: String, icon: String, tracksWeight: Boolean, onSuccess: () -> Unit) {
+    fun add(name: String, icon: String, defaultMetric: MetricType, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
-                repository.addCustomCategory(name, icon, tracksWeight)
+                repository.addCustomCategory(name, icon, defaultMetric)
                 error.value = null
                 onSuccess()
             } catch (e: Exception) {
@@ -95,7 +96,9 @@ fun ManageCategoriesScreen(
 
     var name by remember { mutableStateOf("") }
     var selectedIcon by remember { mutableStateOf("star.fill") }
-    var tracksWeight by remember { mutableStateOf(false) }
+    // What entries in this category log by default — supersedes the old
+    // "tracks weight" boolean now that each exercise carries its own metric.
+    var defaultMetric by remember { mutableStateOf(MetricType.NONE) }
 
     Scaffold(
         topBar = {
@@ -158,10 +161,12 @@ fun ManageCategoriesScreen(
                         }
                     }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.custom_category_tracks_weight), modifier = Modifier.weight(1f))
-                        Switch(checked = tracksWeight, onCheckedChange = { tracksWeight = it })
-                    }
+                    Text(
+                        text = stringResource(R.string.custom_category_default_metric),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    MetricDropdown(metric = defaultMetric, onMetricChange = { defaultMetric = it })
 
                     error?.let { message ->
                         Text(
@@ -173,9 +178,9 @@ fun ManageCategoriesScreen(
 
                     Button(
                         onClick = {
-                            viewModel.add(name, selectedIcon, tracksWeight) {
+                            viewModel.add(name, selectedIcon, defaultMetric) {
                                 name = ""
-                                tracksWeight = false
+                                defaultMetric = MetricType.NONE
                                 selectedIcon = "star.fill"
                             }
                         },

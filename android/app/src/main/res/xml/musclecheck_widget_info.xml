@@ -9,4 +9,5 @@
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="3600000"
     android:widgetCategory="home_screen"
+    android:previewLayout="@layout/widget_preview"
     android:description="@string/widget_description" />

@@ -1,6 +1,8 @@
 package com.zadkiel.musclecheck.domain
 
+import com.zadkiel.musclecheck.domain.model.Exercise
 import com.zadkiel.musclecheck.domain.model.MuscleEntry
+import com.zadkiel.musclecheck.domain.model.WorkoutSession
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -9,8 +11,21 @@ import java.util.Locale
 /** One cell in the month grid; `isInDisplayedMonth` is false for adjacent-month spill days. */
 data class CalendarDay(val date: LocalDate, val isInDisplayedMonth: Boolean)
 
-/** One trained muscle on a given day, carrying THAT day's logged weight (kg, may be null). */
-data class DayActivity(val entry: MuscleEntry, val weightKg: Double?)
+/**
+ * One trained group on a given day. Carries that day's group-level session plus any
+ * exercises logged the same day, so the week detail can show per-exercise values
+ * ("Peso muerto 100 kg") instead of a single number per group.
+ */
+data class DayActivity(
+    val entry: MuscleEntry,
+    val session: WorkoutSession?,
+    val exercises: List<ExerciseOnDay> = emptyList(),
+) {
+    val weightKg: Double? get() = session?.weightKg
+}
+
+/** An exercise logged on a given day, with that day's values. */
+data class ExerciseOnDay(val exercise: Exercise, val session: WorkoutSession)
 
 /** The activities trained on a single day, used by the week detail breakdown. */
 data class DayActivities(val date: LocalDate, val activities: List<DayActivity>)
@@ -82,8 +97,12 @@ object MonthCalendarCalculator {
             val day = monday.plusDays(offset.toLong())
             val activities = entries
                 .mapNotNull { entry ->
-                    entry.sessions.firstOrNull { it.date == day }
-                        ?.let { session -> DayActivity(entry, session.weightKg) }
+                    val session = entry.sessions.firstOrNull { it.date == day } ?: return@mapNotNull null
+                    val exercises = entry.exercises.mapNotNull { exercise ->
+                        exercise.sessions.firstOrNull { it.date == day }
+                            ?.let { ExerciseOnDay(exercise, it) }
+                    }
+                    DayActivity(entry, session, exercises)
                 }
                 .sortedBy { it.entry.name }
             if (activities.isEmpty()) null else DayActivities(day, activities)
