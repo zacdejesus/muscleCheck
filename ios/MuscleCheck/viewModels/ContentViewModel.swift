@@ -19,93 +19,7 @@ final class ContentViewModel: ObservableObject {
   @Published private(set) var currentWeekEntries: [MuscleEntry] = []
   @Published private(set) var groupedCurrentWeekEntries: [(category: String, entries: [MuscleEntry])] = []
 
-  // MARK: - AI Coach (Feature 12)
-
-  /// Current suggested day, shown (and filled progressively while streaming) in the
-  /// coach modal. Version-agnostic so this iOS 18 view model can hold it.
-  @Published var routineSuggestion: RoutineSuggestion?
-  @Published var isGeneratingRoutine = false
-  @Published var routineError: String?
-  /// True when Apple Intelligence can't answer in the app's UI language (Siri
-  /// language mismatch) — the modal shows a hint instead of silently answering
-  /// in English on a Spanish phone.
-  @Published private(set) var aiLanguageMismatch = false
-  /// Groups from the last suggestion, excluded on "dame otra" to force a different day.
-  private var lastSuggestedGroups: Set<String> = []
-
-  /// Backing storage for the on-device AI. Held as `Any?` because `MuscleCheckAI`
-  /// (FoundationModels) is only available on iOS 26+, while this view model targets iOS 18.
-  private var aiStorage: Any?
-
-  @available(iOS 26, *)
-  private var muscleCheckAI: MuscleCheckAI {
-    if let existing = aiStorage as? MuscleCheckAI { return existing }
-    let new = MuscleCheckAI()
-    aiStorage = new
-    return new
-  }
-
-  /// Generates (or regenerates) a suggested training day from the eligible gym groups.
-  /// Rotation/variety is resolved in code (`WorkoutEligibility`); the model only picks
-  /// a coherent pair + example exercises. Free, on-device — no Pro gate.
-  func generateRoutine(regenerate: Bool = false) async {
-    guard #available(iOS 26, *) else { return }
-
-    let previous = routineSuggestion
-    isGeneratingRoutine = true
-    routineError = nil
-    aiLanguageMismatch = !MuscleCheckAI.modelSupportsAppLanguage()
-
-    let excluded = regenerate ? lastSuggestedGroups : []
-    let eligible = WorkoutEligibility.eligibleGymGroups(from: entries, excluding: excluded)
-
-    // Nothing to suggest from (no gym groups at all).
-    guard eligible.count >= 2 else {
-      isGeneratingRoutine = false
-      routineError = String(localized: "ERROR_GENERATING_ROUTINE")
-      return
-    }
-
-    do {
-      let suggestion = try await muscleCheckAI.suggestWorkout(eligible: eligible) { [weak self] partial in
-        self?.routineSuggestion = partial
-      }
-      routineSuggestion = suggestion
-      lastSuggestedGroups = Set(suggestion.blocks.map(\.groupName))
-      cacheRoutine(suggestion)
-    } catch {
-      routineError = String(localized: "ERROR_GENERATING_ROUTINE")
-      routineSuggestion = previous // restore prior suggestion (nil on first run)
-    }
-
-    isGeneratingRoutine = false
-  }
-
-  private func cacheRoutine(_ suggestion: RoutineSuggestion) {
-    guard let data = try? JSONEncoder().encode(suggestion) else { return }
-    UserDefaultsManager.shared.cachedRoutineData = data
-    UserDefaultsManager.shared.cachedRoutineDate = Date()
-    UserDefaultsManager.shared.cachedRoutineLanguage = LocalizedStrings.appLanguage
-  }
-
-  private func loadCachedRoutineIfToday() {
-    guard let date = UserDefaultsManager.shared.cachedRoutineDate,
-          Date.appCalendar.isDate(date, inSameDayAs: Date()),
-          // A cache from another language must not stick for the rest of the day
-          // (e.g. generated in English before switching the phone to Spanish).
-          UserDefaultsManager.shared.cachedRoutineLanguage == LocalizedStrings.appLanguage,
-          let data = UserDefaultsManager.shared.cachedRoutineData,
-          let cached = try? JSONDecoder().decode(RoutineSuggestion.self, from: data)
-    else { return }
-    routineSuggestion = cached
-    lastSuggestedGroups = Set(cached.blocks.map(\.groupName))
-  }
-
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
-    if #available(iOS 26, *) {
-      muscleCheckAI.prewarmModel()
-    }
-
     self.context = context
     self.entries = entries
 
@@ -127,8 +41,6 @@ final class ContentViewModel: ObservableObject {
     resetCheckedEntriesIfnewWeek()
 
     updateCurrentEntries()
-
-    loadCachedRoutineIfToday()
   }
   
   func resetCheckedEntriesIfnewWeek() {
@@ -194,15 +106,7 @@ final class ContentViewModel: ObservableObject {
           let currentStreak = StreakCalculator.currentStreak(from: entries)
           let maxStreak = StreakCalculator.maxStreak(from: entries)
           Task.detached {
-              do {
-                  let data = try JSONEncoder().encode(sharedEntries)
-                  let defaults = UserDefaults(suiteName: "group.zadkiel.musclecheck")
-                  defaults?.set(data, forKey: "widgetEntries")
-                  defaults?.set(currentStreak, forKey: "widgetCurrentStreak")
-                  defaults?.set(maxStreak, forKey: "widgetMaxStreak")
-              } catch {
-                  assertionFailure("Failed to encode sharedEntries: \(error)")
-              }
+              WidgetBridge.publish(entries: sharedEntries, currentStreak: currentStreak, maxStreak: maxStreak)
           }
       } catch {
           assertionFailure("Failed to fetch entries: \(error)")
@@ -332,11 +236,6 @@ final class ContentViewModel: ObservableObject {
     updateCurrentEntries()
   }
   
-  func isAppleIntelligenceAvailable() -> Bool {
-    guard #available(iOS 26, *) else { return false }
-    return muscleCheckAI.isAppleIntelligenceAvailable()
-  }
-
   /// Logs a HealthKit workout against the user-chosen entries. HealthKit only knows the
   /// activity type (e.g. "strength training"), not which muscles — so the caller picks the
   /// targets. If `targets` is empty (the category has no entries yet) a generic entry is

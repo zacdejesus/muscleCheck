@@ -2,10 +2,6 @@ import WidgetKit
 import SwiftUI
 
 struct Provider: TimelineProvider {
-    private static let appGroup = "group.zadkiel.musclecheck"
-    private static let entriesKey = "widgetEntries"
-    private static let currentStreakKey = "widgetCurrentStreak"
-    private static let maxStreakKey = "widgetMaxStreak"
     
     func placeholder(in context: Context) -> WidgetMuscleListEntry {
         WidgetMuscleListEntry(date: Date(), entries: Self.placeholderEntries(), currentStreak: 3, maxStreak: 7)
@@ -25,16 +21,13 @@ struct Provider: TimelineProvider {
     }
     
     private func fetchEntry() -> WidgetMuscleListEntry {
-        let defaults = UserDefaults(suiteName: Self.appGroup)
-        var entries: [SharedMuscleEntry] = []
-      
-        if let data = defaults?.data(forKey: Self.entriesKey),
-           let decoded = try? JSONDecoder().decode([SharedMuscleEntry].self, from: data) {
-                entries = decoded
-        }
-        let currentStreak = defaults?.integer(forKey: Self.currentStreakKey) ?? 0
-        let maxStreak = defaults?.integer(forKey: Self.maxStreakKey) ?? 0
-        return WidgetMuscleListEntry(date: Date(), entries: entries, currentStreak: currentStreak, maxStreak: maxStreak)
+        let snapshot = WidgetBridge.read()
+        return WidgetMuscleListEntry(
+            date: Date(),
+            entries: snapshot.entries,
+            currentStreak: snapshot.currentStreak,
+            maxStreak: snapshot.maxStreak
+        )
     }
     
     private static func placeholderEntries() -> [SharedMuscleEntry] {

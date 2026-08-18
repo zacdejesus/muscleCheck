@@ -13,6 +13,7 @@ struct ContentView: View {
   
   @StateObject private var viewModel = ContentViewModel()
   @StateObject private var streakViewModel = StreakViewModel()
+  @StateObject private var coach = RoutineCoachViewModel()
   @ObservedObject private var healthKitManager = HealthKitManager.shared
   @EnvironmentObject var storeManager: StoreManager
   @EnvironmentObject var settingsViewModel: SettingsViewModel
@@ -97,11 +98,11 @@ struct ContentView: View {
             AddFAB { showingAddSheet = true }
               .frame(maxWidth: .infinity, alignment: .trailing)
               .padding(.trailing, 20)
-            if viewModel.isAppleIntelligenceAvailable() {
+            if coach.isAppleIntelligenceAvailable() {
               Button {
                 showingRoutineModal = true
-                if viewModel.routineSuggestion == nil {
-                  Task { await viewModel.generateRoutine() }
+                if coach.routineSuggestion == nil {
+                  Task { await coach.generateRoutine(from: entries) }
                 }
               } label: {
                 HStack {
@@ -166,6 +167,7 @@ struct ContentView: View {
       .onAppear {
         Task {
           await viewModel.setup(context: context, entries: entries)
+          coach.start()
           streakViewModel.update(with: entries)
           await NotificationManager.shared.checkAuthorizationStatus()
           if UserDefaultsManager.shared.healthKitEnabled {
@@ -206,7 +208,7 @@ struct ContentView: View {
         }
       }
       .sheet(isPresented: $showingRoutineModal) {
-        RoutineSuggestionView(viewModel: viewModel)
+        RoutineSuggestionView(viewModel: coach, entries: entries)
       }
       .sheet(item: $workoutToLog) { item in
         HealthKitLogSheet(

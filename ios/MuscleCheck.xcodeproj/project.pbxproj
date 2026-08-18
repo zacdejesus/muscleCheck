@@ -86,6 +86,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Localizable.xcstrings,
+				managers/WidgetBridge.swift,
+				models/SharedMuscleEntry.swift,
 			);
 			target = CB1DFA7F2EA828AC00B2047E /* MuscleCheckWidgetExtension */;
 		};

@@ -10,7 +10,10 @@ import SwiftUI
 
 struct RoutineSuggestionView: View {
 
-    @ObservedObject var viewModel: ContentViewModel
+    @ObservedObject var viewModel: RoutineCoachViewModel
+    /// Passed in rather than held by the view model: the coach reads the list to pick
+    /// eligible groups, but never owns a second copy of it.
+    let entries: [MuscleEntry]
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -115,7 +118,7 @@ struct RoutineSuggestionView: View {
 
     private var anotherButton: some View {
         Button {
-            Task { await viewModel.generateRoutine(regenerate: true) }
+            Task { await viewModel.generateRoutine(from: entries, regenerate: true) }
         } label: {
             HStack {
                 if viewModel.isGeneratingRoutine {
