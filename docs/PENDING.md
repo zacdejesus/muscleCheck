@@ -12,6 +12,15 @@
   - **Android** → runner `ubuntu`, JDK 21, `cd android && ./gradlew testDebugUnitTest assembleDebug`.
   - Dos archivos separados (`ios.yml`, `android.yml`) con `paths:` filtrando por carpeta.
 
+## 📊 Analítica (pedido explícito — excepción al "cero features")
+
+- Plan completo en **`docs/analytics-plan.md`**: qué medir para saber dónde se pierden
+  los usuarios, taxonomía de 14 eventos, arquitectura del seam y compliance.
+- Estado: iOS tiene Firebase configurado **sin un solo evento propio**; Android no tiene
+  Firebase en absoluto. RevenueCat ya cubre el funnel de monetización.
+- Arrancar por la Fase 1 (activación, solo iOS). Registrar las custom dimensions en la
+  consola **antes** de shipear, si no los params no aparecen en los reportes.
+
 ## 📤 Operacional (cuando el dev quiera)
 
 - **Pushear el monorepo** — hay commits en `main` local sin subir (incluye el reorg
