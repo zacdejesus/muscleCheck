@@ -12,7 +12,6 @@ import SwiftData
 enum MuscleEntryError: LocalizedError {
     case duplicateEntry(String)
     case invalidName
-    case invalidWeekOrYear
     case entryNotFound
     
     var errorDescription: String? {
@@ -21,8 +20,6 @@ enum MuscleEntryError: LocalizedError {
             return String(format: NSLocalizedString("error_duplicate_entry %@", comment: ""), name)
         case .invalidName:
             return NSLocalizedString("error_invalid_name", comment: "")
-        case .invalidWeekOrYear:
-            return "Week must be between 1-53 and year must be positive"
         case .entryNotFound:
             return "The specified entry was not found"
         }
@@ -120,23 +117,6 @@ final class MuscleEntryManager {
         try context.fetch(FetchDescriptor<MuscleEntry>())
     }
 
-    /// Fetches muscle entries for a specific week and year
-    /// - Parameters:
-    ///   - week: Week number (1-53)
-    ///   - year: Year number
-    /// - Returns: Array of muscle entries for the specified week/year
-    /// - Throws: MuscleEntryError.invalidWeekOrYear if parameters are invalid, database fetch errors
-    func fetchEntries(forWeek week: Int, year: Int) throws -> [MuscleEntry] {
-        guard week >= 1 && week <= 53 && year > 0 else {
-            throw MuscleEntryError.invalidWeekOrYear
-        }
-        
-        let predicate = #Predicate<MuscleEntry> {
-            $0.weekOfYear == week && $0.year == year
-        }
-        return try context.fetch(FetchDescriptor(predicate: predicate))
-    }
-
     /// Updates an existing muscle entry
     /// - Parameter entry: The muscle entry to update
     /// - Throws: Database save errors
@@ -154,25 +134,6 @@ final class MuscleEntryManager {
         try context.save()
     }
 
-    /// Toggles the activity status for a muscle entry on a specific date
-    /// - Parameters:
-    ///   - entry: The muscle entry to toggle
-    ///   - date: The date to toggle activity for (defaults to current date)
-    /// - Throws: Database save errors
-    func toggleActivity(for entry: MuscleEntry, on date: Date = Date()) throws {
-        // Fix: Check the current state before toggling
-        let wasChecked = entry.isChecked
-        
-        if wasChecked {
-            entry.removeSession(matching: date)
-        } else {
-            entry.addSession(date)
-        }
-        
-        entry.isChecked.toggle()
-        try context.save()
-    }
-    
     /// Adds multiple default muscle entries in a batch operation
     /// - Parameter names: Array of muscle group names
     /// - Throws: Database save errors

@@ -12,9 +12,9 @@ import SwiftData
 class MuscleEntry: Identifiable, Hashable, Equatable {
   @Attribute(.unique) var id: UUID
   var name: String
-  var isChecked: Bool
-  var weekOfYear: Int
-  var year: Int
+    var isChecked: Bool {
+        isTrained(inWeekOf: Date())
+    }
   var dateCreated: Date
   var category: String = ActivityCategory.gym.rawValue
   var icon: String = ActivityCategory.gym.defaultIcon
@@ -90,17 +90,16 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
 
   /// `metric` nil = follow the category default (a default parameter can't reference
   /// `category`; custom-category defaults are resolved by the caller/manager).
-  init(name: String, category: String = ActivityCategory.gym.rawValue, icon: String = ActivityCategory.gym.defaultIcon, metric: MetricType? = nil) {
+  init(name: String,
+       category: String = ActivityCategory.gym.rawValue,
+       icon: String = ActivityCategory.gym.defaultIcon,
+       metric: MetricType? = nil) {
     self.id = UUID()
 
     let now = Date()
-    let startOfWeek = now.startOfWeek() ?? now
 
     self.dateCreated = now
     self.name = name
-    self.isChecked = false
-    self.weekOfYear = Date.appCalendar.component(.weekOfYear, from: startOfWeek)
-    self.year = Date.appCalendar.component(.yearForWeekOfYear, from: startOfWeek)
     self.category = category
     self.icon = icon
     self.metricRaw = (metric ?? ActivityCategory(rawValue: category)?.defaultMetric ?? .none).rawValue
@@ -128,8 +127,33 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
       sessions.removeAll(where: { Date.appCalendar.isDate($0.date, inSameDayAs: date) })
   }
 
+  /// The ONE definition of "these two dates fall in the same week". Asks the app
+  /// calendar (Monday-first) instead of comparing `weekOfYear` + `year` components:
+  /// a week that crosses New Year keeps one week number across two calendar years,
+  /// so comparing the components reports a false negative for ~7 days a year.
+  private func isSameWeek(_ date: Date, as reference: Date) -> Bool {
+      Date.appCalendar.isDate(date, equalTo: reference, toGranularity: .weekOfYear)
+  }
+
+  /// True when this group has at least one session inside the week that contains
+  /// `reference`. The reference is a parameter (not `Date()`) so the week edges —
+  /// the year boundary, the Monday/Sunday cut — are reachable from tests.
+  func isTrained(inWeekOf reference: Date) -> Bool {
+      sessions.contains { isSameWeek($0.date, as: reference) }
+  }
+
+  /// Drops every session of the week containing `reference`, leaving other weeks
+  /// untouched (they are history, not this week's state). This is what un-checking
+  /// means: "I did not train this this week". Removing only the reference DAY would
+  /// leave the check on whenever an earlier session of the same week survives, so
+  /// the tap would look like it did nothing.
+  func removeSessions(inWeekOf reference: Date) {
+      sessions.removeAll { isSameWeek($0.date, as: reference) }
+  }
+
   /// Sets (or updates) today's session for this muscle: weight, sets ("series") and reps.
-  /// Premise: "if I log something today, I trained today" — so this also marks `isChecked = true`.
+  /// Premise: "if I log something today, I trained today" — the session itself is what
+  /// makes the entry read as checked this week; there is no flag to set.
   /// If a session already exists for today, it is updated in place (no duplicate session).
   func setTodaySession(weight: Double?, sets: Int? = nil, reps: Int? = nil, durationSeconds: Int? = nil, distanceMeters: Double? = nil) {
       let today = Date()
@@ -142,13 +166,13 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
       } else {
           sessions.append(WorkoutSession(weight: weight, sets: sets, reps: reps, durationSeconds: durationSeconds, distanceMeters: distanceMeters, date: today))
       }
-      isChecked = true
   }
 
   /// Sets (or updates) today's weight for this muscle, preserving everything else already
   /// recorded for today (sets/reps/duration/distance — `setTodaySession` overwrites all
   /// fields, so anything not carried over here would be silently blanked).
-  /// Premise: "if I set the weight, I trained today" — marks `isChecked = true`.
+  /// Premise: "if I set the weight, I trained today" — recorded as a session, which is
+  /// what the weekly check derives from.
   func setTodaysWeight(_ weight: Double?) {
       let today = Date()
       let existing = sessions.first { Date.appCalendar.isDate($0.date, inSameDayAs: today) }
@@ -196,7 +220,6 @@ class MuscleEntry: Identifiable, Hashable, Equatable {
       if !sessions.contains(where: { cal.isDate($0.date, inSameDayAs: date) }) {
           sessions.append(WorkoutSession(date: date))
       }
-      isChecked = true
   }
 
   /// Row label under the group name. With exercises: "3 ejercicios · Peso muerto 100 kg"

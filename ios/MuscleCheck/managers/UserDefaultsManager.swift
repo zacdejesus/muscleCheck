@@ -12,14 +12,13 @@ final class UserDefaultsManager {
     static let shared = UserDefaultsManager()
     private let defaults = UserDefaults.standard
 
-    var lastResetWeek: Int {
-        get { defaults.integer(forKey: "lastResetWeek") }
-        set { defaults.set(newValue, forKey: "lastResetWeek") }
-    }
-
-    var lastResetYear: Int {
-        get { defaults.integer(forKey: "lastResetYear") }
-        set { defaults.set(newValue, forKey: "lastResetYear") }
+    /// Monday of the last week the home was opened in. Replaces the old
+    /// `lastResetWeek`/`lastResetYear` int pair: one value instead of two that had to
+    /// be kept consistent, and no week numbering to get wrong at New Year.
+    /// Nil until the first launch — nobody has "seen" a week yet.
+    var lastSeenWeekStart: Date? {
+        get { defaults.object(forKey: "lastSeenWeekStart") as? Date }
+        set { defaults.set(newValue, forKey: "lastSeenWeekStart") }
     }
 
     var defaultEntriesCreated: Bool {

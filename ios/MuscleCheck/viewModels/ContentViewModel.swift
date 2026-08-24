@@ -16,7 +16,7 @@ final class ContentViewModel: ObservableObject {
   private var context: ModelContextProtocol?
   private(set) var entries: [MuscleEntry] = []
   private var muscleEntryManager: MuscleEntryManager?
-  @Published private(set) var currentWeekEntries: [MuscleEntry] = []
+  @Published private(set) var weekEntries: [MuscleEntry] = []
   @Published private(set) var groupedCurrentWeekEntries: [(category: String, entries: [MuscleEntry])] = []
 
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
@@ -37,59 +37,51 @@ final class ContentViewModel: ObservableObject {
     }
 
     insertDefaultMuscleEntries()
-
-    resetCheckedEntriesIfnewWeek()
+    donateWeeklyResetTipIfWeekChanged()
 
     updateCurrentEntries()
   }
-  
-  func resetCheckedEntriesIfnewWeek() {
-    let calendar = Date.appCalendar
-    let currentWeek = calendar.component(.weekOfYear, from: Date())
-    let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
-    
-    if currentWeek != UserDefaultsManager.shared.lastResetWeek ||
-        currentYear != UserDefaultsManager.shared.lastResetYear {
 
-      // Teach the weekly-reset model only when checks are actually being cleared —
-      // this also keeps the very first launch (lastResetWeek == 0, nothing checked)
-      // from counting as a "reset".
-      if entries.contains(where: { $0.isChecked }) {
-        Task { await WeeklyResetTip.didResetWeek.donate() }
-      }
+  /// The weekly list clears itself now (the check derives from the week's sessions),
+  /// so there is no reset step left to hook the tip onto. What the tip teaches is the
+  /// MOMENT the user first sees their checkmarks gone — the first launch of a new week
+  /// after a week in which they actually trained.
+  ///
+  /// The week is remembered as a `Date` (its Monday), not as a week/year int pair: one
+  /// value that can't disagree with itself, and no week numbering to get wrong when a
+  /// week straddles New Year.
+  private func donateWeeklyResetTipIfWeekChanged() {
+    guard let thisWeek = Date().startOfWeek() else { return }
 
-      entries.forEach {
-        $0.isChecked = false
-        $0.weekOfYear = currentWeek
-        $0.year = currentYear
-      }
-      do {
-        try context?.save()
-      } catch {
-        assertionFailure("Failed to save context after resetting entries: \(error)")
-      }
-      
-      UserDefaultsManager.shared.lastResetWeek = currentWeek
-      UserDefaultsManager.shared.lastResetYear = currentYear
-    }
+    let lastSeen = UserDefaultsManager.shared.lastSeenWeekStart
+    UserDefaultsManager.shared.lastSeenWeekStart = thisWeek
+
+    // First launch ever, or same week: nothing was cleared. `<` rather than `!=` so a
+    // clock moved backwards can't fake a reset.
+    guard let lastSeen, lastSeen < thisWeek else { return }
+
+    // Only teach it when there were checks to lose: someone who trained nothing last
+    // week sees no change, and the tip would explain something that didn't happen.
+    guard entries.contains(where: { $0.isTrained(inWeekOf: lastSeen) }) else { return }
+
+    Task { await WeeklyResetTip.didResetWeek.donate() }
   }
-  
+
   func updateCurrentEntries() {
       do {
           guard let fetchEntries = try muscleEntryManager?.fetchAllEntries() else { return }
           entries = fetchEntries
 
-          let calendar = Date.appCalendar
-          let currentWeek = calendar.component(.weekOfYear, from: Date())
-          let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
-
-          let filtered = entries.filter { $0.weekOfYear == currentWeek && $0.year == currentYear }
-          if currentWeekEntries != filtered {
-              currentWeekEntries = filtered
+          // No filtering: the old `weekOfYear == currentWeek` test only ever passed
+          // because the weekly reset re-stamped every entry. "Current week" is not a
+          // property of the row — it's a question about its sessions, answered by
+          // `MuscleEntry.isChecked`.
+          if weekEntries != entries {
+              weekEntries = entries
           }
 
           // Group entries by category in stable order
-          let grouped = Dictionary(grouping: currentWeekEntries) { $0.category }
+          let grouped = Dictionary(grouping: weekEntries) { $0.category }
           groupedCurrentWeekEntries = grouped
               .sorted { lhs, rhs in
                   // Built-ins keep their declared order; custom categories (no enum match)
@@ -102,7 +94,7 @@ final class ContentViewModel: ObservableObject {
               }
               .map { (category: $0.key, entries: $0.value) }
 
-          let sharedEntries = currentWeekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked, icon: $0.icon) }
+          let sharedEntries = weekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked, icon: $0.icon) }
           let currentStreak = StreakCalculator.currentStreak(from: entries)
           let maxStreak = StreakCalculator.maxStreak(from: entries)
           Task.detached {
@@ -111,11 +103,6 @@ final class ContentViewModel: ObservableObject {
       } catch {
           assertionFailure("Failed to fetch entries: \(error)")
       }
-  }
-  
-  func toggleCheck(for entry: MuscleEntry) {
-    entry.isChecked.toggle()
-    updateCurrentEntries()
   }
   
   func insertDefaultMuscleEntries() {
@@ -138,7 +125,6 @@ final class ContentViewModel: ObservableObject {
     
     for group in defaultGroups {
       let entry = MuscleEntry(name: group)
-      entry.isChecked = false
       context?.insert(entry)
     }
     
@@ -199,8 +185,12 @@ final class ContentViewModel: ObservableObject {
 
   func toggleActivity(for entry: MuscleEntry) {
     let today = Date()
-    if entry.isChecked {
-      entry.removeSession(matching: today)
+    // Read the derived state BEFORE mutating: the answer changes with the sessions.
+    if entry.isTrained(inWeekOf: today) {
+      // Un-checking means "I did not train this this week", so the whole week goes.
+      // Dropping only today's session would leave the check ON whenever an earlier
+      // day of the same week still had one — the tap would look like a no-op.
+      entry.removeSessions(inWeekOf: today)
     } else {
         entry.addSession(today)
         // First-ever check completes the "how to check" lesson; checking a strength
@@ -210,7 +200,6 @@ final class ContentViewModel: ObservableObject {
           Task { await LogWeightTip.didCheckGymActivity.donate() }
         }
     }
-    entry.isChecked.toggle()
     do {
       try context?.save()
     } catch  {
@@ -258,10 +247,9 @@ final class ContentViewModel: ObservableObject {
       }
 
       for target in entriesToLog {
+        // The session is the check: if the workout falls in the current week, the
+        // entry reads as checked on its own (that `if` WAS the derivation, by hand).
         target.addSession(workoutDate)
-        if Date.appCalendar.isDate(workoutDate, equalTo: Date(), toGranularity: .weekOfYear) {
-          target.isChecked = true
-        }
         try manager.update(target)
       }
     } catch {

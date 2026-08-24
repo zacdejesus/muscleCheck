@@ -33,20 +33,9 @@ actor MuscleDataActor {
             return String(localized: "intent_muscle_not_found \(name)")
         }
 
-        let calendar = Date.appCalendar
-        let currentWeek = calendar.component(.weekOfYear, from: Date())
-        let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
-
-        // Reset if a new week started since the app was last opened
-        if entry.weekOfYear != currentWeek || entry.year != currentYear {
-            entry.isChecked = false
-            entry.weekOfYear = currentWeek
-            entry.year = currentYear
-        }
-
-        let today = Date()
-        entry.addSession(today)
-        entry.isChecked = true
+        // Logging from Siri is just a session: the weekly check derives from it, so
+        // the week-reset bookkeeping that used to live here is gone.
+        entry.addSession(Date())
         try modelContext.save()
 
         return String(localized: "intent_muscle_logged \(name)")

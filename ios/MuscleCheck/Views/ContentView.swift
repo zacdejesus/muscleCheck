@@ -55,7 +55,7 @@ struct ContentView: View {
           .padding(.horizontal)
 
         List {
-          if viewModel.currentWeekEntries.isEmpty {
+          if viewModel.weekEntries.isEmpty {
             EmptyStateView { showingAddSheet = true }
           } else if viewModel.groupedCurrentWeekEntries.count == 1 {
             // Single category — no section headers for clean look
@@ -294,7 +294,7 @@ struct IdentifiableWorkout: Identifiable {
 extension MuscleEntry {
   static func sample(name: String = "Pecho") -> MuscleEntry {
     let entry = MuscleEntry(name: name)
-    entry.isChecked = true
+    // The session IS the check now — no flag to set.
     entry.addSession(Date())
     return entry
   }

@@ -44,39 +44,6 @@ struct ContentViewModelTests {
     }
 
     @MainActor @Test
-    func testResetCheckedEntriesIfNewWeek() async {
-        let calendar = Date.appCalendar
-        let now = Date()
-        let currentWeek = calendar.component(.weekOfYear, from: now)
-        let currentYear = calendar.component(.yearForWeekOfYear, from: now)
-
-        UserDefaultsManager.shared.lastResetWeek = currentWeek - 1
-        UserDefaultsManager.shared.lastResetYear = currentYear
-
-        let entry = MuscleEntry(name: "Pecho")
-        entry.isChecked = true
-
-        let context = MockContext()
-        let viewModel = ContentViewModel()
-        await viewModel.setup(context: context, entries: [entry])
-
-        #expect(entry.isChecked == false)
-        #expect(UserDefaultsManager.shared.lastResetWeek == currentWeek)
-    }
-
-    @MainActor @Test
-    func testToggleCheckChangesState() async {
-        let entry = MuscleEntry(name: "Espalda")
-        entry.isChecked = false
-
-        let viewModel = ContentViewModel()
-        await viewModel.setup(context: MockContext(), entries: [entry])
-        viewModel.toggleCheck(for: entry)
-
-        #expect(entry.isChecked == true)
-    }
-
-    @MainActor @Test
     func testToggleActivityAddsAndRemovesSession() async {
         let entry = MuscleEntry(name: "Piernas")
         let viewModel = ContentViewModel()
@@ -118,5 +85,28 @@ struct ContentViewModelTests {
         #expect(entry.lastDurationSeconds == 1800)
         #expect(entry.lastDistanceMeters == 5000)
         #expect(entry.sessions.count == 1)
+    }
+
+    /// Regression (tech debt item 4): trained Monday, un-checking on Wednesday.
+    /// Before the refactor this left the Monday session alive while the flag went
+    /// false — the home said "not trained" while streak, stats and history still
+    /// counted it. Un-checking now clears the whole week, so every reader agrees.
+    @MainActor @Test
+    func testToggleActivityUnchecksEvenWhenTheSessionIsFromAnotherDay() async {
+        let cal = Date.appCalendar
+        let monday = Date().startOfWeek()!
+        let earlierThisWeek = cal.isDateInToday(monday) ? cal.date(byAdding: .day, value: 1, to: monday)! : monday
+
+        let entry = MuscleEntry(name: "Piernas")
+        entry.addSession(earlierThisWeek)
+
+        let viewModel = ContentViewModel()
+        await viewModel.setup(context: MockContext(), entries: [entry])
+        #expect(entry.isChecked == true)
+
+        viewModel.toggleActivity(for: entry)
+
+        #expect(entry.isChecked == false)
+        #expect(entry.sessions.isEmpty)
     }
 }

@@ -117,7 +117,7 @@ struct MuscleEntryTests {
     @Test
     func testSetTodaysWeightMarksIsChecked() {
         let entry = MuscleEntry(name: "Pecho")
-        entry.isChecked = false
+        #expect(entry.isChecked == false)   // no sessions yet
         entry.setTodaysWeight(80.0)
         #expect(entry.isChecked == true)
     }
