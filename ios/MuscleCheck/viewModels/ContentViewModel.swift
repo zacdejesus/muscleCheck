@@ -16,96 +16,10 @@ final class ContentViewModel: ObservableObject {
   private var context: ModelContextProtocol?
   private(set) var entries: [MuscleEntry] = []
   private var muscleEntryManager: MuscleEntryManager?
-  @Published private(set) var currentWeekEntries: [MuscleEntry] = []
+  @Published private(set) var weekEntries: [MuscleEntry] = []
   @Published private(set) var groupedCurrentWeekEntries: [(category: String, entries: [MuscleEntry])] = []
 
-  // MARK: - AI Coach (Feature 12)
-
-  /// Current suggested day, shown (and filled progressively while streaming) in the
-  /// coach modal. Version-agnostic so this iOS 18 view model can hold it.
-  @Published var routineSuggestion: RoutineSuggestion?
-  @Published var isGeneratingRoutine = false
-  @Published var routineError: String?
-  /// True when Apple Intelligence can't answer in the app's UI language (Siri
-  /// language mismatch) — the modal shows a hint instead of silently answering
-  /// in English on a Spanish phone.
-  @Published private(set) var aiLanguageMismatch = false
-  /// Groups from the last suggestion, excluded on "dame otra" to force a different day.
-  private var lastSuggestedGroups: Set<String> = []
-
-  /// Backing storage for the on-device AI. Held as `Any?` because `MuscleCheckAI`
-  /// (FoundationModels) is only available on iOS 26+, while this view model targets iOS 18.
-  private var aiStorage: Any?
-
-  @available(iOS 26, *)
-  private var muscleCheckAI: MuscleCheckAI {
-    if let existing = aiStorage as? MuscleCheckAI { return existing }
-    let new = MuscleCheckAI()
-    aiStorage = new
-    return new
-  }
-
-  /// Generates (or regenerates) a suggested training day from the eligible gym groups.
-  /// Rotation/variety is resolved in code (`WorkoutEligibility`); the model only picks
-  /// a coherent pair + example exercises. Free, on-device — no Pro gate.
-  func generateRoutine(regenerate: Bool = false) async {
-    guard #available(iOS 26, *) else { return }
-
-    let previous = routineSuggestion
-    isGeneratingRoutine = true
-    routineError = nil
-    aiLanguageMismatch = !MuscleCheckAI.modelSupportsAppLanguage()
-
-    let excluded = regenerate ? lastSuggestedGroups : []
-    let eligible = WorkoutEligibility.eligibleGymGroups(from: entries, excluding: excluded)
-
-    // Nothing to suggest from (no gym groups at all).
-    guard eligible.count >= 2 else {
-      isGeneratingRoutine = false
-      routineError = String(localized: "ERROR_GENERATING_ROUTINE")
-      return
-    }
-
-    do {
-      let suggestion = try await muscleCheckAI.suggestWorkout(eligible: eligible) { [weak self] partial in
-        self?.routineSuggestion = partial
-      }
-      routineSuggestion = suggestion
-      lastSuggestedGroups = Set(suggestion.blocks.map(\.groupName))
-      cacheRoutine(suggestion)
-    } catch {
-      routineError = String(localized: "ERROR_GENERATING_ROUTINE")
-      routineSuggestion = previous // restore prior suggestion (nil on first run)
-    }
-
-    isGeneratingRoutine = false
-  }
-
-  private func cacheRoutine(_ suggestion: RoutineSuggestion) {
-    guard let data = try? JSONEncoder().encode(suggestion) else { return }
-    UserDefaultsManager.shared.cachedRoutineData = data
-    UserDefaultsManager.shared.cachedRoutineDate = Date()
-    UserDefaultsManager.shared.cachedRoutineLanguage = LocalizedStrings.appLanguage
-  }
-
-  private func loadCachedRoutineIfToday() {
-    guard let date = UserDefaultsManager.shared.cachedRoutineDate,
-          Date.appCalendar.isDate(date, inSameDayAs: Date()),
-          // A cache from another language must not stick for the rest of the day
-          // (e.g. generated in English before switching the phone to Spanish).
-          UserDefaultsManager.shared.cachedRoutineLanguage == LocalizedStrings.appLanguage,
-          let data = UserDefaultsManager.shared.cachedRoutineData,
-          let cached = try? JSONDecoder().decode(RoutineSuggestion.self, from: data)
-    else { return }
-    routineSuggestion = cached
-    lastSuggestedGroups = Set(cached.blocks.map(\.groupName))
-  }
-
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
-    if #available(iOS 26, *) {
-      muscleCheckAI.prewarmModel()
-    }
-
     self.context = context
     self.entries = entries
 
@@ -123,61 +37,51 @@ final class ContentViewModel: ObservableObject {
     }
 
     insertDefaultMuscleEntries()
-
-    resetCheckedEntriesIfnewWeek()
+    donateWeeklyResetTipIfWeekChanged()
 
     updateCurrentEntries()
-
-    loadCachedRoutineIfToday()
   }
-  
-  func resetCheckedEntriesIfnewWeek() {
-    let calendar = Date.appCalendar
-    let currentWeek = calendar.component(.weekOfYear, from: Date())
-    let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
-    
-    if currentWeek != UserDefaultsManager.shared.lastResetWeek ||
-        currentYear != UserDefaultsManager.shared.lastResetYear {
 
-      // Teach the weekly-reset model only when checks are actually being cleared —
-      // this also keeps the very first launch (lastResetWeek == 0, nothing checked)
-      // from counting as a "reset".
-      if entries.contains(where: { $0.isChecked }) {
-        Task { await WeeklyResetTip.didResetWeek.donate() }
-      }
+  /// The weekly list clears itself now (the check derives from the week's sessions),
+  /// so there is no reset step left to hook the tip onto. What the tip teaches is the
+  /// MOMENT the user first sees their checkmarks gone — the first launch of a new week
+  /// after a week in which they actually trained.
+  ///
+  /// The week is remembered as a `Date` (its Monday), not as a week/year int pair: one
+  /// value that can't disagree with itself, and no week numbering to get wrong when a
+  /// week straddles New Year.
+  private func donateWeeklyResetTipIfWeekChanged() {
+    guard let thisWeek = Date().startOfWeek() else { return }
 
-      entries.forEach {
-        $0.isChecked = false
-        $0.weekOfYear = currentWeek
-        $0.year = currentYear
-      }
-      do {
-        try context?.save()
-      } catch {
-        assertionFailure("Failed to save context after resetting entries: \(error)")
-      }
-      
-      UserDefaultsManager.shared.lastResetWeek = currentWeek
-      UserDefaultsManager.shared.lastResetYear = currentYear
-    }
+    let lastSeen = UserDefaultsManager.shared.lastSeenWeekStart
+    UserDefaultsManager.shared.lastSeenWeekStart = thisWeek
+
+    // First launch ever, or same week: nothing was cleared. `<` rather than `!=` so a
+    // clock moved backwards can't fake a reset.
+    guard let lastSeen, lastSeen < thisWeek else { return }
+
+    // Only teach it when there were checks to lose: someone who trained nothing last
+    // week sees no change, and the tip would explain something that didn't happen.
+    guard entries.contains(where: { $0.isTrained(inWeekOf: lastSeen) }) else { return }
+
+    Task { await WeeklyResetTip.didResetWeek.donate() }
   }
-  
+
   func updateCurrentEntries() {
       do {
           guard let fetchEntries = try muscleEntryManager?.fetchAllEntries() else { return }
           entries = fetchEntries
 
-          let calendar = Date.appCalendar
-          let currentWeek = calendar.component(.weekOfYear, from: Date())
-          let currentYear = calendar.component(.yearForWeekOfYear, from: Date())
-
-          let filtered = entries.filter { $0.weekOfYear == currentWeek && $0.year == currentYear }
-          if currentWeekEntries != filtered {
-              currentWeekEntries = filtered
+          // No filtering: the old `weekOfYear == currentWeek` test only ever passed
+          // because the weekly reset re-stamped every entry. "Current week" is not a
+          // property of the row — it's a question about its sessions, answered by
+          // `MuscleEntry.isChecked`.
+          if weekEntries != entries {
+              weekEntries = entries
           }
 
           // Group entries by category in stable order
-          let grouped = Dictionary(grouping: currentWeekEntries) { $0.category }
+          let grouped = Dictionary(grouping: weekEntries) { $0.category }
           groupedCurrentWeekEntries = grouped
               .sorted { lhs, rhs in
                   // Built-ins keep their declared order; custom categories (no enum match)
@@ -190,28 +94,15 @@ final class ContentViewModel: ObservableObject {
               }
               .map { (category: $0.key, entries: $0.value) }
 
-          let sharedEntries = currentWeekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked, icon: $0.icon) }
+          let sharedEntries = weekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked, icon: $0.icon) }
           let currentStreak = StreakCalculator.currentStreak(from: entries)
           let maxStreak = StreakCalculator.maxStreak(from: entries)
           Task.detached {
-              do {
-                  let data = try JSONEncoder().encode(sharedEntries)
-                  let defaults = UserDefaults(suiteName: "group.zadkiel.musclecheck")
-                  defaults?.set(data, forKey: "widgetEntries")
-                  defaults?.set(currentStreak, forKey: "widgetCurrentStreak")
-                  defaults?.set(maxStreak, forKey: "widgetMaxStreak")
-              } catch {
-                  assertionFailure("Failed to encode sharedEntries: \(error)")
-              }
+              WidgetBridge.publish(entries: sharedEntries, currentStreak: currentStreak, maxStreak: maxStreak)
           }
       } catch {
           assertionFailure("Failed to fetch entries: \(error)")
       }
-  }
-  
-  func toggleCheck(for entry: MuscleEntry) {
-    entry.isChecked.toggle()
-    updateCurrentEntries()
   }
   
   func insertDefaultMuscleEntries() {
@@ -234,7 +125,6 @@ final class ContentViewModel: ObservableObject {
     
     for group in defaultGroups {
       let entry = MuscleEntry(name: group)
-      entry.isChecked = false
       context?.insert(entry)
     }
     
@@ -295,8 +185,12 @@ final class ContentViewModel: ObservableObject {
 
   func toggleActivity(for entry: MuscleEntry) {
     let today = Date()
-    if entry.isChecked {
-      entry.removeSession(matching: today)
+    // Read the derived state BEFORE mutating: the answer changes with the sessions.
+    if entry.isTrained(inWeekOf: today) {
+      // Un-checking means "I did not train this this week", so the whole week goes.
+      // Dropping only today's session would leave the check ON whenever an earlier
+      // day of the same week still had one — the tap would look like a no-op.
+      entry.removeSessions(inWeekOf: today)
     } else {
         entry.addSession(today)
         // First-ever check completes the "how to check" lesson; checking a strength
@@ -306,7 +200,6 @@ final class ContentViewModel: ObservableObject {
           Task { await LogWeightTip.didCheckGymActivity.donate() }
         }
     }
-    entry.isChecked.toggle()
     do {
       try context?.save()
     } catch  {
@@ -332,11 +225,6 @@ final class ContentViewModel: ObservableObject {
     updateCurrentEntries()
   }
   
-  func isAppleIntelligenceAvailable() -> Bool {
-    guard #available(iOS 26, *) else { return false }
-    return muscleCheckAI.isAppleIntelligenceAvailable()
-  }
-
   /// Logs a HealthKit workout against the user-chosen entries. HealthKit only knows the
   /// activity type (e.g. "strength training"), not which muscles — so the caller picks the
   /// targets. If `targets` is empty (the category has no entries yet) a generic entry is
@@ -359,10 +247,9 @@ final class ContentViewModel: ObservableObject {
       }
 
       for target in entriesToLog {
+        // The session is the check: if the workout falls in the current week, the
+        // entry reads as checked on its own (that `if` WAS the derivation, by hand).
         target.addSession(workoutDate)
-        if Date.appCalendar.isDate(workoutDate, equalTo: Date(), toGranularity: .weekOfYear) {
-          target.isChecked = true
-        }
         try manager.update(target)
       }
     } catch {
