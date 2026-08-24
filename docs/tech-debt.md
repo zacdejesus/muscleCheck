@@ -57,8 +57,10 @@ Primero, para reducir superficie antes de refactorizar.
 - [ ] `MuscleEntryManager.addDefaultEntries(names:)` (`:179`) — sin llamadores, y usa
       predicado de nombre **exacto** mientras `addEntry` usa `normalizedName` case-insensitive
       (`:63-67`). Dos definiciones de "ya existe" en la misma clase.
-- [ ] `MuscleEntryManager.toggleActivity(for:on:)` (`:162`) — duplica
+- [x] `MuscleEntryManager.toggleActivity(for:on:)` (`:162`) — duplica
       `ContentViewModel.toggleActivity` con semántica distinta (sin tips, sin refresh).
+      Borrado con el ítem 4 (escribía el flag). Ídem `fetchEntries(forWeek:year:)` y el
+      caso `MuscleEntryError.invalidWeekOrYear` que solo él tiraba.
 - [ ] `MuscleEntryManager.update(_:)` (`:143`) — ignora el parámetro, solo llama `save()`.
 - [ ] `ContentViewModel.saveSession(_:for:)` (`:252`) — sin llamadores desde Fase 2; solo lo
       sostienen dos tests (`ContentViewModelTests:100`, `:115`). Borrar método + tests.
@@ -83,19 +85,37 @@ así que la opcionalidad no compra nada.
 - [ ] Elegir dueño único: `@Query` como fuente + VM derivando (menos código con SwiftData),
       o VM dueño y se va el `@Query` de `ContentView.swift:32`.
 - [ ] Eliminar el refetch de `updateCurrentEntries()` (`fetchAllEntries()` completo).
+      (El filtro semanal ya se fue con el ítem 4; queda el refetch y el `@Query`.)
 
 **Por qué:** hoy cada tap en un check dispara **dos** pipelines sobre los mismos datos:
 mutar → `updateCurrentEntries()` (refetch + refiltrado + reagrupado + streak O(n²) + JSON del
 widget), y en paralelo `@Query` se invalida sola → `onChange(of: entries)` (`:183`) →
 `updateCurrentEntries()` **otra vez**.
 
-## 4. `isChecked` como computed (denormalización)
+## 4. ✅ `isChecked` como computed (denormalización) — hecho
 
-- [ ] `isChecked` → `sessions.contains { está en la semana actual }`.
-- [ ] Borrar `resetCheckedEntriesIfnewWeek()` (`ContentViewModel.swift:134-163`) y los flags
-      `lastResetWeek`/`lastResetYear` de `UserDefaultsManager`.
-- [ ] Decidir sobre `weekOfYear`/`year`: se quedan **solo** si los querés como índice para
-      predicados por semana. Como estado duplicado, se van.
+- [x] `isChecked` → `isTrained(inWeekOf: Date())`, sobre `sessions`. La comparación se le
+      pide al calendario (`isDate(_:equalTo:toGranularity:.weekOfYear)`), no a los
+      componentes: una semana a caballo del año nuevo tiene un número de semana y **dos**
+      años calendario, así que comparar ints da falso negativo ~7 días al año.
+- [x] Borrado `resetCheckedEntriesIfnewWeek()` y los flags `lastResetWeek`/`lastResetYear`.
+- [x] `weekOfYear`/`year` fuera del modelo. Se fueron con ellos el filtro semanal de
+      `updateCurrentEntries` (que solo pasaba porque el reset re-estampaba todas las
+      entries) y `MuscleEntryManager.fetchEntries(forWeek:year:)`, sin llamadores.
+- [x] **Decisión de producto:** destildar = "no entrené esto esta semana" → borra todas las
+      sesiones de la semana en curso (`removeSessions(inWeekOf:)`). Borrar solo la del día
+      dejaba el check prendido si sobrevivía otra sesión de la misma semana.
+- [x] `WeeklyResetTip` conservado con donante nuevo: la home compara el lunes de esta semana
+      contra `UserDefaultsManager.lastSeenWeekStart` (**un `Date`**, no el par de ints).
+- [x] 18 tests nuevos en `MuscleEntryWeekCheckTests` + regresión del bug lunes/miércoles en
+      `ContentViewModelTests`. Suite completa: 229 tests en verde.
+
+**Pendiente antes de mergear:** sacar 3 atributos de un `@Model` es cambio de schema — falta
+el ensayo store viejo → build nuevo para saber si SwiftData migra solo o si cae en el borrado
+de `MuscleCheckApp.swift:75-88`.
+
+**Decisión abierta:** al destildar la semana del grupo, las sesiones de esa semana **dentro de
+`Exercise.sessions`** siguen ahí. Hoy es comportamiento accidental, no decidido.
 
 **Por qué:** hoy hay 4 caminos que mantienen las dos representaciones a mano y pueden
 desincronizarse: `toggleActivity` (`:296-316`), `setTodaySession`, `logExercise`,
