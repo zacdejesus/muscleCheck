@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launcher icon: the same flexed-arm mark as the Play listing and the iOS App Store
+  icon. Play flagged the previous placeholder (blue square + Material dumbbell) under
+  the Misleading Claims policy — "installed icon differs from its store listing".
+
+  The foreground art is sized to ~52% of the 108dp canvas so it stays inside the 66dp
+  safe circle every launcher mask is guaranteed to show. White background matches the
+  listing icon, so the artwork reads identically in both places.
+-->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+    <monochrome android:drawable="@mipmap/ic_launcher_monochrome" />
 </adaptive-icon>
