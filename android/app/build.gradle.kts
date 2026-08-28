@@ -29,7 +29,7 @@ android {
         targetSdk = 35
         // Play's own counter (first upload = 1); the name tracks the shared
         // product version with iOS.
-        versionCode = 1
+        versionCode = 2
         versionName = "2.2.0"
     }
 
