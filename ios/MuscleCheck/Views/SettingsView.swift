@@ -14,6 +14,12 @@ struct SettingsView: View {
     @EnvironmentObject var storeManager: StoreManager
     @Environment(\.modelContext) private var context
     @State private var showingPaywall = false
+    // Crash-test tools: hidden behind 7 taps on the version row, and only reachable
+    // in Debug/TestFlight builds (see CrashDiagnostics.isTestBuild).
+    @State private var showingCrashTools = CrashDiagnostics.isRevealedByLaunchArgument
+    @State private var confirmingTestCrash = false
+    @State private var versionTapCount = 0
+    @State private var lastVersionTapAt = Date.distantPast
 
     var body: some View {
         List {
@@ -145,6 +151,47 @@ struct SettingsView: View {
                     Text(viewModel.appVersion)
                         .foregroundColor(.secondary)
                 }
+                // Deliberately undiscoverable: 7 taps, same idea as Android's
+                // developer mode. Strings are hardcoded on purpose — this is a
+                // diagnostic tool, not product surface, and it must not land in
+                // the localization catalog.
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    // Counting taps by hand instead of `.onTapGesture(count:)`: that
+                    // modifier needs all taps inside one tight gesture sequence, and
+                    // inside a List row it drops taps constantly. This just needs five
+                    // taps with less than two seconds between them.
+                    guard CrashDiagnostics.isTestBuild else { return }
+                    let now = Date()
+                    versionTapCount = now.timeIntervalSince(lastVersionTapAt) > 2 ? 1 : versionTapCount + 1
+                    lastVersionTapAt = now
+                    if versionTapCount >= 5 { showingCrashTools = true }
+                }
+
+                if showingCrashTools {
+                    // Text(verbatim:) en todos: un literal suelto en Text/Button es
+                    // LocalizedStringKey y Xcode lo extrae al catálogo. La primera
+                    // versión de esto metió 6 claves en Localizable.xcstrings.
+                    Button {
+                        CrashDiagnostics.sendTestNonFatal()
+                    } label: {
+                        Label {
+                            Text(verbatim: "Enviar non-fatal de prueba")
+                        } icon: {
+                            Image(systemName: "paperplane")
+                        }
+                    }
+
+                    Button(role: .destructive) {
+                        confirmingTestCrash = true
+                    } label: {
+                        Label {
+                            Text(verbatim: "Forzar crash de prueba")
+                        } icon: {
+                            Image(systemName: "exclamationmark.triangle")
+                        }
+                    }
+                }
 
                 Button {
                     viewModel.openPrivacyPolicy()
@@ -163,6 +210,19 @@ struct SettingsView: View {
         .sheet(isPresented: $showingPaywall) {
             PaywallView()
                 .environmentObject(storeManager)
+        }
+        .confirmationDialog(Text(verbatim: "¿Forzar un crash de prueba?"),
+                            isPresented: $confirmingTestCrash, titleVisibility: .visible) {
+            Button(role: .destructive) {
+                CrashDiagnostics.forceTestCrash()
+            } label: {
+                Text(verbatim: "Crashear ahora")
+            }
+            Button(role: .cancel) {} label: {
+                Text(verbatim: "Cancelar")
+            }
+        } message: {
+            Text(verbatim: "La app se va a cerrar. El reporte se envía al VOLVER a abrirla, y solo si Xcode no está adjunto.")
         }
     }
 }

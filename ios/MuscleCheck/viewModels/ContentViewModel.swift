@@ -95,6 +95,11 @@ final class ContentViewModel: ObservableObject {
               }
               .map { (category: $0.key, entries: $0.value) }
 
+          // Attached to any crash report from here on: a stack trace on the home list
+          // is much easier to read knowing how many rows and sections were on screen.
+          CrashDiagnostics.setHomeState(entries: entries.count,
+                                        sections: groupedCurrentWeekEntries.count)
+
           let sharedEntries = weekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked, icon: $0.icon) }
           let currentStreak = StreakCalculator.currentStreak(from: entries)
           let maxStreak = StreakCalculator.maxStreak(from: entries)
@@ -218,6 +223,7 @@ final class ContentViewModel: ObservableObject {
   }
   
   func deleteEntries(from sectionEntries: [MuscleEntry], at offsets: IndexSet) {
+    CrashDiagnostics.log("deleteEntries: \(offsets.count) of \(sectionEntries.count) in section")
     for index in offsets {
       guard let entry = sectionEntries[safe: index] else { return }
       context.delete(entry)
