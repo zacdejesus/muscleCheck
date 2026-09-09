@@ -15,6 +15,7 @@
 //
 
 import Foundation
+import FirebaseCore
 import FirebaseCrashlytics
 
 enum CrashDiagnostics {
@@ -40,11 +41,17 @@ enum CrashDiagnostics {
         isTestBuild && UserDefaults.standard.bool(forKey: "crashTools")
     }
 
+    /// Los App Intents pueden correr en un lanzamiento en background donde este código
+    /// se ejecuta antes de `FirebaseApp.configure()`. Pedirle Crashlytics a un Firebase
+    /// sin configurar revienta, así que todo pasa por acá.
+    private static var isConfigured: Bool { FirebaseApp.app() != nil }
+
     // MARK: - Context
 
     /// State of the home list, refreshed whenever it changes. These are the numbers
     /// worth having when the list is the thing that crashed.
     static func setHomeState(entries: Int, sections: Int) {
+        guard isConfigured else { return }
         let c = Crashlytics.crashlytics()
         c.setCustomValue(entries, forKey: "entries_count")
         c.setCustomValue(sections, forKey: "sections_count")
@@ -53,6 +60,7 @@ enum CrashDiagnostics {
     /// Breadcrumb. Shows up in the report as a timestamped log, in order, so you can
     /// see what the user did in the seconds before the crash.
     static func log(_ message: String) {
+        guard isConfigured else { return }
         Crashlytics.crashlytics().log(message)
     }
 
@@ -60,11 +68,15 @@ enum CrashDiagnostics {
     /// silently, which means a failure on someone else's device is invisible. This
     /// makes them visible without changing the app's behaviour.
     static func record(_ error: Error, operation: String) {
+        guard isConfigured else { return }
         Crashlytics.crashlytics().setCustomValue(operation, forKey: "last_failed_operation")
         Crashlytics.crashlytics().record(error: error)
     }
 
     // MARK: - Pipeline verification
+    //
+    // Bajo #if DEBUG: ni el fatalError ni los textos existen en un binario de Release.
+    #if DEBUG
 
     /// Forces a crash, on purpose, with keys and breadcrumbs attached — so the report
     /// that shows up in the console proves the whole chain works, not just the upload.
@@ -89,4 +101,5 @@ enum CrashDiagnostics {
                        userInfo: [NSLocalizedDescriptionKey: "Test non-fatal from Settings"]),
                operation: "test_non_fatal")
     }
+    #endif
 }

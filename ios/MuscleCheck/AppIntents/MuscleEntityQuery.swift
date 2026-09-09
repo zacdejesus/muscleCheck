@@ -9,7 +9,7 @@ import SwiftData
 struct MuscleEntityQuery: EnumerableEntityQuery, EntityStringQuery {
 
     func allEntities() async throws -> [MuscleAppEntity] {
-        let actor = MuscleDataActor(modelContainer: MuscleDataActor.sharedContainer)
+        let actor = try MuscleDataActor.makeActor()
         let names = try await actor.fetchAllMuscleNames()
         return names.map { MuscleAppEntity(id: $0, name: $0) }
     }

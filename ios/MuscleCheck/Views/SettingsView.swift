@@ -14,12 +14,16 @@ struct SettingsView: View {
     @EnvironmentObject var storeManager: StoreManager
     @Environment(\.modelContext) private var context
     @State private var showingPaywall = false
-    // Crash-test tools: hidden behind 7 taps on the version row, and only reachable
-    // in Debug/TestFlight builds (see CrashDiagnostics.isTestBuild).
+    #if DEBUG
+    // Herramientas de crash-test. Todo el bloque está bajo #if DEBUG: en un build de
+    // Release estas propiedades, los botones y el diálogo NO SE COMPILAN — no hay forma
+    // de que aparezcan, ni por un flag mal seteado ni por un bug de estado. Verificable:
+    // los literales no existen en el binario de Release.
     @State private var showingCrashTools = CrashDiagnostics.isRevealedByLaunchArgument
     @State private var confirmingTestCrash = false
     @State private var versionTapCount = 0
     @State private var lastVersionTapAt = Date.distantPast
+    #endif
 
     var body: some View {
         List {
@@ -151,10 +155,9 @@ struct SettingsView: View {
                     Text(viewModel.appVersion)
                         .foregroundColor(.secondary)
                 }
-                // Deliberately undiscoverable: 7 taps, same idea as Android's
-                // developer mode. Strings are hardcoded on purpose — this is a
-                // diagnostic tool, not product surface, and it must not land in
-                // the localization catalog.
+                #if DEBUG
+                // Deliberadamente indescubrible: 5 taps, la misma idea que el modo
+                // desarrollador de Android.
                 .contentShape(Rectangle())
                 .onTapGesture {
                     // Counting taps by hand instead of `.onTapGesture(count:)`: that
@@ -167,7 +170,9 @@ struct SettingsView: View {
                     lastVersionTapAt = now
                     if versionTapCount >= 5 { showingCrashTools = true }
                 }
+                #endif
 
+                #if DEBUG
                 if showingCrashTools {
                     // Text(verbatim:) en todos: un literal suelto en Text/Button es
                     // LocalizedStringKey y Xcode lo extrae al catálogo. La primera
@@ -192,6 +197,7 @@ struct SettingsView: View {
                         }
                     }
                 }
+                #endif
 
                 Button {
                     viewModel.openPrivacyPolicy()
@@ -211,6 +217,7 @@ struct SettingsView: View {
             PaywallView()
                 .environmentObject(storeManager)
         }
+        #if DEBUG
         .confirmationDialog(Text(verbatim: "¿Forzar un crash de prueba?"),
                             isPresented: $confirmingTestCrash, titleVisibility: .visible) {
             Button(role: .destructive) {
@@ -224,6 +231,7 @@ struct SettingsView: View {
         } message: {
             Text(verbatim: "La app se va a cerrar. El reporte se envía al VOLVER a abrirla, y solo si Xcode no está adjunto.")
         }
+        #endif
     }
 }
 
