@@ -13,17 +13,14 @@ import TipKit
 @MainActor
 final class ContentViewModel: ObservableObject {
   
-  private var context: ModelContextProtocol?
+  let context: ModelContextProtocol
   private(set) var entries: [MuscleEntry] = []
-  private var muscleEntryManager: MuscleEntryManager?
+  let muscleEntryManager: MuscleEntryManager
   @Published private(set) var weekEntries: [MuscleEntry] = []
   @Published private(set) var groupedCurrentWeekEntries: [(category: String, entries: [MuscleEntry])] = []
 
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
-    self.context = context
     self.entries = entries
-
-    self.muscleEntryManager = .init(context: context)
 
     // One-time persist of the lazily-derived metric for pre-metric entries. A
     // failure is NOT fatal (entries keep metricRaw == "" and the backfill retries
@@ -31,18 +28,23 @@ final class ContentViewModel: ObservableObject {
     // can't self-heal through the getter fallback (built-in-only), so a swallowed
     // error here would leave them rendered as check-only.
     do {
-      try muscleEntryManager?.backfillMetricTypes()
+      try muscleEntryManager.backfillMetricTypes()
     } catch {
       assertionFailure("Metric backfill failed (will retry next launch): \(error)")
     }
-
-    insertDefaultMuscleEntries()
-    donateWeeklyResetTipIfWeekChanged()
-
-    updateCurrentEntries()
+      
+      insertDefaultMuscleEntries()
+      donateWeeklyResetTipIfWeekChanged()
+      
+      updateCurrentEntries()
   }
-
-  /// The weekly list clears itself now (the check derives from the week's sessions),
+    
+    init(context: ModelContextProtocol) {
+        self.context = context
+        self.muscleEntryManager = .init(context: context)
+    }
+    
+    /// The weekly list clears itself now (the check derives from the week's sessions),
   /// so there is no reset step left to hook the tip onto. What the tip teaches is the
   /// MOMENT the user first sees their checkmarks gone — the first launch of a new week
   /// after a week in which they actually trained.
@@ -69,8 +71,7 @@ final class ContentViewModel: ObservableObject {
 
   func updateCurrentEntries() {
       do {
-          guard let fetchEntries = try muscleEntryManager?.fetchAllEntries() else { return }
-          entries = fetchEntries
+          entries = try muscleEntryManager.fetchAllEntries()
 
           // No filtering: the old `weekOfYear == currentWeek` test only ever passed
           // because the weekly reset re-stamped every entry. "Current week" is not a
@@ -125,12 +126,12 @@ final class ContentViewModel: ObservableObject {
     
     for group in defaultGroups {
       let entry = MuscleEntry(name: group)
-      context?.insert(entry)
+      context.insert(entry)
     }
     
     UserDefaultsManager.shared.defaultEntriesCreated = true
     do {
-      try context?.save()
+      try context.save()
     } catch  {
       assertionFailure("Failed to save context after resetting entries: \(error)")
     }
@@ -148,7 +149,7 @@ final class ContentViewModel: ObservableObject {
       distanceMeters: input.distanceMeters
     )
     do {
-      try context?.save()
+      try context.save()
     } catch {
       assertionFailure("Failed to save session: \(error)")
     }
@@ -176,7 +177,7 @@ final class ContentViewModel: ObservableObject {
 
   private func persist(_ message: String) {
     do {
-      try self.context?.save()
+      try self.context.save()
     } catch {
       assertionFailure("\(message): \(error)")
     }
@@ -201,7 +202,7 @@ final class ContentViewModel: ObservableObject {
         }
     }
     do {
-      try context?.save()
+      try context.save()
     } catch  {
       assertionFailure("Failed to save context after resetting entries: \(error)")
     }
@@ -211,17 +212,17 @@ final class ContentViewModel: ObservableObject {
   func deleteEntries(at offsets: IndexSet) {
     for index in offsets {
       guard let entry = entries[safe: index] else { return  }
-      context?.delete(entry)
+      context.delete(entry)
     }
-    try? context?.save()
+    try? context.save()
   }
   
   func deleteEntries(from sectionEntries: [MuscleEntry], at offsets: IndexSet) {
     for index in offsets {
       guard let entry = sectionEntries[safe: index] else { return }
-      context?.delete(entry)
+      context.delete(entry)
     }
-    try? context?.save()
+    try? context.save()
     updateCurrentEntries()
   }
   
@@ -230,7 +231,7 @@ final class ContentViewModel: ObservableObject {
   /// targets. If `targets` is empty (the category has no entries yet) a generic entry is
   /// created from the workout as a fallback.
   func logHealthKitWorkout(_ workout: HKWorkout, to targets: [MuscleEntry]) {
-    guard let manager = muscleEntryManager else { return }
+    let manager = muscleEntryManager
 
     let workoutDate = workout.startDate
 

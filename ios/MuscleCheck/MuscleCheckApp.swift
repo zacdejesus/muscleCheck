@@ -90,7 +90,7 @@ struct MuscleCheckApp: App {
   
   var body: some Scene {
     WindowGroup {
-      ContentView()
+        ContentView(context: sharedModelContainer.mainContext)
         .environmentObject(storeManager)
         .environmentObject(settingsViewModel)
         .preferredColorScheme(settingsViewModel.colorScheme)

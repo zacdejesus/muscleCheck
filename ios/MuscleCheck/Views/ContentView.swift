@@ -11,13 +11,13 @@ import TipKit
 
 struct ContentView: View {
   
-  @StateObject private var viewModel = ContentViewModel()
+    @StateObject private var viewModel: ContentViewModel
   @StateObject private var streakViewModel = StreakViewModel()
   @StateObject private var coach = RoutineCoachViewModel()
   @ObservedObject private var healthKitManager = HealthKitManager.shared
   @EnvironmentObject var storeManager: StoreManager
   @EnvironmentObject var settingsViewModel: SettingsViewModel
-  @Environment(\.modelContext) private var context
+  private let context: ModelContextProtocol
   @Environment(\.scenePhase) private var scenePhase
   // Same key UserDefaultsManager owns; @AppStorage so the cover dismisses reactively
   // when OnboardingViewModel flips the flag.
@@ -33,6 +33,11 @@ struct ContentView: View {
   @Query private var entries: [MuscleEntry]
   @Query private var customCategories: [CustomCategory]
 
+    init(context: ModelContextProtocol) {
+        self.context = context
+        _viewModel = StateObject(wrappedValue: ContentViewModel(context: context))
+    }
+    
   var body: some View {
     NavigationStack {
       VStack(spacing: 0) {
@@ -304,7 +309,7 @@ extension MuscleEntry {
 #Preview {
   let container = try! ModelContainer(for: MuscleEntry.self, configurations: ModelConfiguration())
   
-  ContentView()
+  ContentView(context: container.mainContext)
     .modelContainer(container)
     .environmentObject(StoreManager.shared)
     .environmentObject(SettingsViewModel())
