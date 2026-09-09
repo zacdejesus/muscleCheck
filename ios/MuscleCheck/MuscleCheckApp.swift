@@ -32,6 +32,11 @@ struct MuscleCheckApp: App {
     UserDefaultsManager.shared.migrateOnboardingFlagIfNeeded()
 
     FirebaseApp.configure()
+
+    // Ahora sí hay SDK: si el arranque anterior tuvo que borrar el store por un schema
+    // que no abría, se reporta como non-fatal. Es la única señal de que alguien perdió
+    // sus datos por una migración.
+    reportStoreWipeIfNeeded()
     StoreManager.shared.configure()
     MuscleCheckShortcuts.updateAppShortcutParameters()
 
@@ -42,6 +47,21 @@ struct MuscleCheckApp: App {
     }
   }
   
+  /// Key donde el inicializador del contenedor deja constancia del wipe.
+  fileprivate static let storeWipeReasonKey = "lastStoreWipeReason"
+
+  private func reportStoreWipeIfNeeded() {
+    let defaults = UserDefaults.standard
+    guard let reason = defaults.string(forKey: Self.storeWipeReasonKey) else { return }
+    defaults.removeObject(forKey: Self.storeWipeReasonKey)
+
+    CrashDiagnostics.record(
+      NSError(domain: "MuscleCheckStore", code: 1,
+              userInfo: [NSLocalizedDescriptionKey: "Store wiped on schema mismatch: \(reason)"]),
+      operation: "store_wipe"
+    )
+  }
+
   private func setNavalBarAppearance() {
     let appearance = UINavigationBarAppearance()
     // iOS 26's Liquid Glass nav bar suppresses the large title on pushed screens
@@ -76,6 +96,13 @@ struct MuscleCheckApp: App {
       // auto-migrate this shape, so on schema mismatch we wipe the local store
       // and start fresh rather than crash. ProgressPhoto files on disk are
       // unaffected (only the DB rows are dropped — the orphaned images stay).
+      // Se anota en UserDefaults en vez de reportarse acá: este closure es el
+      // inicializador de una propiedad almacenada, y esos corren ANTES del cuerpo de
+      // `init()`, o sea antes de `FirebaseApp.configure()`. Reportar en este punto sería
+      // hablarle a un SDK que todavía no existe, que es como esta pérdida de datos venía
+      // siendo invisible: el usuario se quedaba sin historial y no llegaba ni un evento.
+      UserDefaults.standard.set("\(error)", forKey: Self.storeWipeReasonKey)
+
       let support = URL.applicationSupportDirectory
       for suffix in ["default.store", "default.store-wal", "default.store-shm"] {
         try? FileManager.default.removeItem(at: support.appending(path: suffix))
@@ -83,6 +110,7 @@ struct MuscleCheckApp: App {
       do {
         return try ModelContainer(for: schema, configurations: [modelConfiguration])
       } catch {
+        UserDefaults.standard.set("second attempt failed: \(error)", forKey: Self.storeWipeReasonKey)
         fatalError("Could not create ModelContainer after wipe: \(error)")
       }
     }
