@@ -16,8 +16,6 @@ final class ContentViewModel: ObservableObject {
   let context: ModelContextProtocol
   private(set) var entries: [MuscleEntry] = []
   let muscleEntryManager: MuscleEntryManager
-  @Published private(set) var weekEntries: [MuscleEntry] = []
-  @Published private(set) var groupedCurrentWeekEntries: [(category: String, entries: [MuscleEntry])] = []
 
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
     self.entries = entries
@@ -69,38 +67,41 @@ final class ContentViewModel: ObservableObject {
     Task { await WeeklyResetTip.didResetWeek.donate() }
   }
 
+  /// Category grouping as a PURE function of the entries handed in.
+  ///
+  /// This used to be state: the view model kept the grouped array and the view rendered
+  /// from it, in parallel with ContentView's own `@Query`. That copy is what crashed the
+  /// app — a row deleted through another path (`AddExerciseView.unadd`) stayed in the
+  /// published array, the home re-rendered before anything refreshed it, and reading a
+  /// persisted property on that dead reference trapped inside SwiftData. Derived in the
+  /// body from `@Query`, the list can't be older than the store.
+  static func group(_ entries: [MuscleEntry]) -> [(category: String, entries: [MuscleEntry])] {
+      Dictionary(grouping: entries) { $0.category }
+          .sorted { lhs, rhs in
+              // Built-ins keep their declared order; custom categories (no enum match)
+              // share the trailing bucket, so break ties on the key for a STABLE order
+              // — Swift's sort isn't stable, and without this several customs jittered.
+              let lOrder = ActivityCategory(rawValue: lhs.key)?.sortOrder ?? 99
+              let rOrder = ActivityCategory(rawValue: rhs.key)?.sortOrder ?? 99
+              if lOrder != rOrder { return lOrder < rOrder }
+              return lhs.key < rhs.key
+          }
+          .map { (category: $0.key, entries: $0.value) }
+  }
+
+  /// Everything the home DERIVES from the entries but doesn't render: the widget
+  /// snapshot, the streak inputs and the crash-report context. The list itself is not
+  /// here any more — the view reads it from `@Query`.
   func updateCurrentEntries() {
       do {
           entries = try muscleEntryManager.fetchAllEntries()
 
-          // No filtering: the old `weekOfYear == currentWeek` test only ever passed
-          // because the weekly reset re-stamped every entry. "Current week" is not a
-          // property of the row — it's a question about its sessions, answered by
-          // `MuscleEntry.isChecked`.
-          if weekEntries != entries {
-              weekEntries = entries
-          }
-
-          // Group entries by category in stable order
-          let grouped = Dictionary(grouping: weekEntries) { $0.category }
-          groupedCurrentWeekEntries = grouped
-              .sorted { lhs, rhs in
-                  // Built-ins keep their declared order; custom categories (no enum match)
-                  // share the trailing bucket, so break ties on the key for a STABLE order
-                  // — Swift's sort isn't stable, and without this several customs jittered.
-                  let lOrder = ActivityCategory(rawValue: lhs.key)?.sortOrder ?? 99
-                  let rOrder = ActivityCategory(rawValue: rhs.key)?.sortOrder ?? 99
-                  if lOrder != rOrder { return lOrder < rOrder }
-                  return lhs.key < rhs.key
-              }
-              .map { (category: $0.key, entries: $0.value) }
-
           // Attached to any crash report from here on: a stack trace on the home list
           // is much easier to read knowing how many rows and sections were on screen.
           CrashDiagnostics.setHomeState(entries: entries.count,
-                                        sections: groupedCurrentWeekEntries.count)
+                                        sections: Self.group(entries).count)
 
-          let sharedEntries = weekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked, icon: $0.icon) }
+          let sharedEntries = entries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked, icon: $0.icon) }
           let currentStreak = StreakCalculator.currentStreak(from: entries)
           let maxStreak = StreakCalculator.maxStreak(from: entries)
           Task.detached {

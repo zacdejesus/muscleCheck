@@ -33,7 +33,13 @@ struct ContentView: View {
   @Query private var entries: [MuscleEntry]
   @Query private var customCategories: [CustomCategory]
 
-    init(context: ModelContextProtocol) {
+    /// Derived in the body from `@Query`, never stored: eso es lo que impide que la home
+  /// pinte una fila que el store ya borró (crash de `exercisesSummary`).
+  private var groups: [(category: String, entries: [MuscleEntry])] {
+    ContentViewModel.group(entries)
+  }
+
+  init(context: ModelContextProtocol) {
         self.context = context
         _viewModel = StateObject(wrappedValue: ContentViewModel(context: context))
     }
@@ -60,11 +66,11 @@ struct ContentView: View {
           .padding(.horizontal)
 
         List {
-          if viewModel.weekEntries.isEmpty {
+          if entries.isEmpty {
             EmptyStateView { showingAddSheet = true }
-          } else if viewModel.groupedCurrentWeekEntries.count == 1 {
+          } else if groups.count == 1 {
             // Single category — no section headers for clean look
-            let group = viewModel.groupedCurrentWeekEntries[0]
+            let group = groups[0]
             ForEach(group.entries) { entry in
               entryRow(entry)
             }
@@ -73,7 +79,7 @@ struct ContentView: View {
             }
           } else {
             // Multiple categories — show section headers
-            ForEach(viewModel.groupedCurrentWeekEntries, id: \.category) { group in
+            ForEach(groups, id: \.category) { group in
               Section {
                 ForEach(group.entries) { entry in
                   entryRow(entry)
@@ -251,12 +257,12 @@ struct ContentView: View {
 
   /// First visible row — anchor for the "tap the circle when you train" tip.
   private var checkTipEntryID: PersistentIdentifier? {
-    viewModel.groupedCurrentWeekEntries.first?.entries.first?.persistentModelID
+    groups.first?.entries.first?.persistentModelID
   }
 
   /// First strength-metric row — anchor for the "tap the name to log weight" tip.
   private var weightTipEntryID: PersistentIdentifier? {
-    viewModel.groupedCurrentWeekEntries
+    groups
       .compactMap { $0.entries.first { $0.metric == .strength } }
       .first?.persistentModelID
   }

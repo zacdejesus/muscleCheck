@@ -59,24 +59,44 @@ struct HomeStaleEntryTests {
     /// Reproduces `AddExerciseView.unadd()`: the entry is deleted through a manager the
     /// view model knows nothing about. If the view model still publishes it, the home
     /// can render a row whose backing data is gone — which is the crash.
+    /// REGRESIÓN del crash. Antes: el view model publicaba la lista y seguía conteniendo
+    /// la entry borrada por `AddExerciseView.unadd()` (probado — ver el commit anterior).
+    /// Ahora la home la deriva del `@Query` en cada body, así que lo que desaparece del
+    /// store desaparece de la lista sin que nadie tenga que acordarse de refrescar.
+    ///
+    /// Si alguien vuelve a cachear la lista en el view model, esto se pone rojo.
     @Test
-    func viewModelStillPublishesAnEntryDeletedElsewhere() async throws {
+    func theDerivedListDropsAnEntryDeletedElsewhere() async throws {
         let context = try makeContext()
         let entries = try seed(context, names: ["Pecho", "Espalda", "Piernas"])
-        let vm = await makeViewModel(context, entries: entries)
-        #expect(vm.weekEntries.count == 3)
+        _ = await makeViewModel(context, entries: entries)
+        #expect(ContentViewModel.group(entries).flatMap { $0.entries }.count == 3)
 
-        // Exactly what the add sheet's undo does: its own manager, its own save.
+        // Exactamente lo que hace el undo del sheet de alta: su propio manager, su save.
         let victim = try #require(entries.first { $0.name == "Espalda" })
         try MuscleEntryManager(context: context).delete(victim)
 
-        let published = vm.weekEntries.map(\.name)
-        let grouped = vm.groupedCurrentWeekEntries.flatMap { $0.entries }.map(\.name)
+        // Lo que hace la vista en el body: leer del store y derivar.
+        let fresh = try MuscleEntryManager(context: context).fetchAllEntries()
+        let names = ContentViewModel.group(fresh).flatMap { $0.entries }.map(\.name)
 
-        #expect(published.contains("Espalda"),
-                "Si esto falla, el array del view model NO queda stale y la hipótesis se cae")
-        #expect(grouped.contains("Espalda"))
-        #expect(published.count == 3)
+        #expect(!names.contains("Espalda"))
+        #expect(names.count == 2)
+    }
+
+    /// El agrupado es una función pura de lo que se le pasa: no hay estado que se
+    /// desincronice, y el orden de categorías es estable.
+    @Test
+    func groupingIsPureAndStable() throws {
+        let context = try makeContext()
+        let entries = try seed(context, names: ["Pecho", "Espalda"])
+
+        let once = ContentViewModel.group(entries)
+        let twice = ContentViewModel.group(entries)
+
+        #expect(once.map(\.category) == twice.map(\.category))
+        #expect(once.flatMap { $0.entries }.count == 2)
+        #expect(ContentViewModel.group([]).isEmpty)
     }
 
     /// The store itself is consistent — it's only the view model's copy that lags.
@@ -97,8 +117,11 @@ struct HomeStaleEntryTests {
 
     /// The swipe path calls this synchronously after deleting, which is why it is the
     /// narrow case. If this clears the array, the fix is about WHO refreshes and when.
+    /// `updateCurrentEntries()` ya no publica la lista, pero sí mantiene lo que la home
+    /// deriva y no renderiza (widget, racha, keys de Crashlytics). Eso tiene que seguir
+    /// viendo el store fresco.
     @Test
-    func updateCurrentEntriesClearsTheStaleReference() async throws {
+    func updateCurrentEntriesRefreshesTheDerivedState() async throws {
         let context = try makeContext()
         let entries = try seed(context, names: ["Pecho", "Espalda"])
         let vm = await makeViewModel(context, entries: entries)
@@ -107,7 +130,7 @@ struct HomeStaleEntryTests {
         try MuscleEntryManager(context: context).delete(victim)
         vm.updateCurrentEntries()
 
-        #expect(vm.weekEntries.map(\.name) == ["Pecho"])
+        #expect(vm.entries.map(\.name) == ["Pecho"])
     }
 
     // MARK: - C. Is `isDeleted` a usable guard?  (run alone)
@@ -139,12 +162,12 @@ struct HomeStaleEntryTests {
     func readingExercisesOnTheStaleReferenceTraps() async throws {
         let context = try makeContext()
         let entries = try seed(context, names: ["Pecho", "Espalda"])
-        let vm = await makeViewModel(context, entries: entries)
+        _ = await makeViewModel(context, entries: entries)
 
         let victim = try #require(entries.first { $0.name == "Espalda" })
         try MuscleEntryManager(context: context).delete(victim)
 
-        let stale = try #require(vm.weekEntries.first { $0.name == "Espalda" })
+        let stale = try #require(entries.first { $0.name == "Espalda" })
         let summary = stale.exercisesSummary            // ← el frame del crash
         Issue.record("NO trapeó. exercisesSummary = \(String(describing: summary))")
     }
