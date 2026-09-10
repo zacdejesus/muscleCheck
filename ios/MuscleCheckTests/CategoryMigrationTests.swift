@@ -55,12 +55,15 @@ struct CategoryMigrationTests {
     }
 
     @Test
-    func appIntentsContainerSharesTheFullSchema() {
+    func appIntentsContainerSharesTheFullSchema() throws {
         // Regression: MuscleDataActor (App Intents / Siri) opened the SAME default.store
         // with a stale 2-entity schema (missing CustomCategory). Two containers with
         // different entity sets on one store → "could not open default.store" on upgraded
         // devices. Both must declare AppSchema's entities.
-        let actorEntities = Set(MuscleDataActor.sharedContainer.schema.entities.map(\.name))
+        // El container dejó de ser una propiedad pública (abrirlo ya no hace fatalError,
+        // ver MuscleDataActor): se llega por el actor, que es la API real de los intents.
+        let actor = try MuscleDataActor.makeActor()
+        let actorEntities = Set(actor.modelContainer.schema.entities.map(\.name))
         let appEntities = Set(AppSchema.schema.entities.map(\.name))
         #expect(actorEntities == appEntities)
         #expect(actorEntities.contains("CustomCategory"))

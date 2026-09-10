@@ -13,17 +13,12 @@ import TipKit
 @MainActor
 final class ContentViewModel: ObservableObject {
   
-  private var context: ModelContextProtocol?
+  let context: ModelContextProtocol
   private(set) var entries: [MuscleEntry] = []
-  private var muscleEntryManager: MuscleEntryManager?
-  @Published private(set) var weekEntries: [MuscleEntry] = []
-  @Published private(set) var groupedCurrentWeekEntries: [(category: String, entries: [MuscleEntry])] = []
+  let muscleEntryManager: MuscleEntryManager
 
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
-    self.context = context
     self.entries = entries
-
-    self.muscleEntryManager = .init(context: context)
 
     // One-time persist of the lazily-derived metric for pre-metric entries. A
     // failure is NOT fatal (entries keep metricRaw == "" and the backfill retries
@@ -31,18 +26,23 @@ final class ContentViewModel: ObservableObject {
     // can't self-heal through the getter fallback (built-in-only), so a swallowed
     // error here would leave them rendered as check-only.
     do {
-      try muscleEntryManager?.backfillMetricTypes()
+      try muscleEntryManager.backfillMetricTypes()
     } catch {
       assertionFailure("Metric backfill failed (will retry next launch): \(error)")
     }
-
-    insertDefaultMuscleEntries()
-    donateWeeklyResetTipIfWeekChanged()
-
-    updateCurrentEntries()
+      
+      insertDefaultMuscleEntries()
+      donateWeeklyResetTipIfWeekChanged()
+      
+      updateCurrentEntries()
   }
-
-  /// The weekly list clears itself now (the check derives from the week's sessions),
+    
+    init(context: ModelContextProtocol) {
+        self.context = context
+        self.muscleEntryManager = .init(context: context)
+    }
+    
+    /// The weekly list clears itself now (the check derives from the week's sessions),
   /// so there is no reset step left to hook the tip onto. What the tip teaches is the
   /// MOMENT the user first sees their checkmarks gone — the first launch of a new week
   /// after a week in which they actually trained.
@@ -67,34 +67,41 @@ final class ContentViewModel: ObservableObject {
     Task { await WeeklyResetTip.didResetWeek.donate() }
   }
 
+  /// Category grouping as a PURE function of the entries handed in.
+  ///
+  /// This used to be state: the view model kept the grouped array and the view rendered
+  /// from it, in parallel with ContentView's own `@Query`. That copy is what crashed the
+  /// app — a row deleted through another path (`AddExerciseView.unadd`) stayed in the
+  /// published array, the home re-rendered before anything refreshed it, and reading a
+  /// persisted property on that dead reference trapped inside SwiftData. Derived in the
+  /// body from `@Query`, the list can't be older than the store.
+  static func group(_ entries: [MuscleEntry]) -> [(category: String, entries: [MuscleEntry])] {
+      Dictionary(grouping: entries) { $0.category }
+          .sorted { lhs, rhs in
+              // Built-ins keep their declared order; custom categories (no enum match)
+              // share the trailing bucket, so break ties on the key for a STABLE order
+              // — Swift's sort isn't stable, and without this several customs jittered.
+              let lOrder = ActivityCategory(rawValue: lhs.key)?.sortOrder ?? 99
+              let rOrder = ActivityCategory(rawValue: rhs.key)?.sortOrder ?? 99
+              if lOrder != rOrder { return lOrder < rOrder }
+              return lhs.key < rhs.key
+          }
+          .map { (category: $0.key, entries: $0.value) }
+  }
+
+  /// Everything the home DERIVES from the entries but doesn't render: the widget
+  /// snapshot, the streak inputs and the crash-report context. The list itself is not
+  /// here any more — the view reads it from `@Query`.
   func updateCurrentEntries() {
       do {
-          guard let fetchEntries = try muscleEntryManager?.fetchAllEntries() else { return }
-          entries = fetchEntries
+          entries = try muscleEntryManager.fetchAllEntries()
 
-          // No filtering: the old `weekOfYear == currentWeek` test only ever passed
-          // because the weekly reset re-stamped every entry. "Current week" is not a
-          // property of the row — it's a question about its sessions, answered by
-          // `MuscleEntry.isChecked`.
-          if weekEntries != entries {
-              weekEntries = entries
-          }
+          // Attached to any crash report from here on: a stack trace on the home list
+          // is much easier to read knowing how many rows and sections were on screen.
+          CrashDiagnostics.setHomeState(entries: entries.count,
+                                        sections: Self.group(entries).count)
 
-          // Group entries by category in stable order
-          let grouped = Dictionary(grouping: weekEntries) { $0.category }
-          groupedCurrentWeekEntries = grouped
-              .sorted { lhs, rhs in
-                  // Built-ins keep their declared order; custom categories (no enum match)
-                  // share the trailing bucket, so break ties on the key for a STABLE order
-                  // — Swift's sort isn't stable, and without this several customs jittered.
-                  let lOrder = ActivityCategory(rawValue: lhs.key)?.sortOrder ?? 99
-                  let rOrder = ActivityCategory(rawValue: rhs.key)?.sortOrder ?? 99
-                  if lOrder != rOrder { return lOrder < rOrder }
-                  return lhs.key < rhs.key
-              }
-              .map { (category: $0.key, entries: $0.value) }
-
-          let sharedEntries = weekEntries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked, icon: $0.icon) }
+          let sharedEntries = entries.map { SharedMuscleEntry(name: $0.name, isChecked: $0.isChecked, icon: $0.icon) }
           let currentStreak = StreakCalculator.currentStreak(from: entries)
           let maxStreak = StreakCalculator.maxStreak(from: entries)
           Task.detached {
@@ -125,12 +132,12 @@ final class ContentViewModel: ObservableObject {
     
     for group in defaultGroups {
       let entry = MuscleEntry(name: group)
-      context?.insert(entry)
+      context.insert(entry)
     }
     
     UserDefaultsManager.shared.defaultEntriesCreated = true
     do {
-      try context?.save()
+      try context.save()
     } catch  {
       assertionFailure("Failed to save context after resetting entries: \(error)")
     }
@@ -148,7 +155,7 @@ final class ContentViewModel: ObservableObject {
       distanceMeters: input.distanceMeters
     )
     do {
-      try context?.save()
+      try context.save()
     } catch {
       assertionFailure("Failed to save session: \(error)")
     }
@@ -176,7 +183,7 @@ final class ContentViewModel: ObservableObject {
 
   private func persist(_ message: String) {
     do {
-      try self.context?.save()
+      try self.context.save()
     } catch {
       assertionFailure("\(message): \(error)")
     }
@@ -201,7 +208,7 @@ final class ContentViewModel: ObservableObject {
         }
     }
     do {
-      try context?.save()
+      try context.save()
     } catch  {
       assertionFailure("Failed to save context after resetting entries: \(error)")
     }
@@ -211,17 +218,18 @@ final class ContentViewModel: ObservableObject {
   func deleteEntries(at offsets: IndexSet) {
     for index in offsets {
       guard let entry = entries[safe: index] else { return  }
-      context?.delete(entry)
+      context.delete(entry)
     }
-    try? context?.save()
+    try? context.save()
   }
   
   func deleteEntries(from sectionEntries: [MuscleEntry], at offsets: IndexSet) {
+    CrashDiagnostics.log("deleteEntries: \(offsets.count) of \(sectionEntries.count) in section")
     for index in offsets {
       guard let entry = sectionEntries[safe: index] else { return }
-      context?.delete(entry)
+      context.delete(entry)
     }
-    try? context?.save()
+    try? context.save()
     updateCurrentEntries()
   }
   
@@ -230,7 +238,7 @@ final class ContentViewModel: ObservableObject {
   /// targets. If `targets` is empty (the category has no entries yet) a generic entry is
   /// created from the workout as a fallback.
   func logHealthKitWorkout(_ workout: HKWorkout, to targets: [MuscleEntry]) {
-    guard let manager = muscleEntryManager else { return }
+    let manager = muscleEntryManager
 
     let workoutDate = workout.startDate
 

@@ -10,7 +10,7 @@ struct GetWeeklyProgressIntent: AppIntent {
     static var description = IntentDescription("See which muscles you trained this week")
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let actor = MuscleDataActor(modelContainer: MuscleDataActor.sharedContainer)
+        let actor = try MuscleDataActor.makeActor()
         let checkedMuscles = try await actor.getWeeklyProgress()
 
         let message: String

@@ -22,7 +22,7 @@ struct ContentViewModelTests {
         UserDefaultsManager.shared.hasCompletedOnboarding = true
         UserDefaultsManager.shared.defaultEntriesCreated = false
 
-        let viewModel = ContentViewModel()
+        let viewModel = ContentViewModel(context: context)
         await viewModel.setup(context: context, entries: [])
 
         #expect(context.inserted.count > 0)
@@ -36,7 +36,7 @@ struct ContentViewModelTests {
         UserDefaultsManager.shared.hasCompletedOnboarding = false
         UserDefaultsManager.shared.defaultEntriesCreated = false
 
-        let viewModel = ContentViewModel()
+        let viewModel = ContentViewModel(context: context)
         await viewModel.setup(context: context, entries: [])
 
         #expect(context.inserted.isEmpty)
@@ -46,8 +46,9 @@ struct ContentViewModelTests {
     @MainActor @Test
     func testToggleActivityAddsAndRemovesSession() async {
         let entry = MuscleEntry(name: "Piernas")
-        let viewModel = ContentViewModel()
-        await viewModel.setup(context: MockContext(), entries: [entry])
+        let context = MockContext()
+        let viewModel = ContentViewModel(context: context)
+        await viewModel.setup(context: context, entries: [entry])
 
         viewModel.toggleActivity(for: entry)
         #expect(entry.isChecked == true)
@@ -61,8 +62,9 @@ struct ContentViewModelTests {
     @MainActor @Test
     func testSaveSessionPersistsAndMarksChecked() async {
         let entry = MuscleEntry(name: "Pecho")
-        let viewModel = ContentViewModel()
-        await viewModel.setup(context: MockContext(), entries: [entry])
+        let context = MockContext()
+        let viewModel = ContentViewModel(context: context)
+        await viewModel.setup(context: context, entries: [entry])
 
         viewModel.saveSession(SessionInput(weightKg: 80.0, sets: 4, reps: 10), for: entry)
 
@@ -76,8 +78,9 @@ struct ContentViewModelTests {
     @MainActor @Test
     func testSaveSessionPersistsDurationAndDistance() async {
         let entry = MuscleEntry(name: "Correr", category: "running")
-        let viewModel = ContentViewModel()
-        await viewModel.setup(context: MockContext(), entries: [entry])
+        let context = MockContext()
+        let viewModel = ContentViewModel(context: context)
+        await viewModel.setup(context: context, entries: [entry])
 
         viewModel.saveSession(SessionInput(durationSeconds: 1800, distanceMeters: 5000), for: entry)
 
@@ -100,8 +103,9 @@ struct ContentViewModelTests {
         let entry = MuscleEntry(name: "Piernas")
         entry.addSession(earlierThisWeek)
 
-        let viewModel = ContentViewModel()
-        await viewModel.setup(context: MockContext(), entries: [entry])
+        let context = MockContext()
+        let viewModel = ContentViewModel(context: context)
+        await viewModel.setup(context: context, entries: [entry])
         #expect(entry.isChecked == true)
 
         viewModel.toggleActivity(for: entry)

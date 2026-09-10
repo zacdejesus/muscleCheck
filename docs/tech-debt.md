@@ -80,12 +80,27 @@ Primero, para reducir superficie antes de refactorizar.
 **silencioso**. `ContentView` ya tiene el `context` por `@Environment` antes del primer body,
 así que la opcionalidad no compra nada.
 
-## 3. Unificar `@Query` vs ViewModel (doble fuente de verdad)
+## 3. ✅ Unificar `@Query` vs ViewModel (doble fuente de verdad) — hecho para la lista
 
-- [ ] Elegir dueño único: `@Query` como fuente + VM derivando (menos código con SwiftData),
-      o VM dueño y se va el `@Query` de `ContentView.swift:32`.
-- [ ] Eliminar el refetch de `updateCurrentEntries()` (`fetchAllEntries()` completo).
-      (El filtro semanal ya se fue con el ítem 4; queda el refetch y el `@Query`.)
+- [x] Dueño único: **`@Query`**. El agrupado pasó a función pura (`ContentViewModel.group(_:)`)
+      que la vista deriva en cada body; se fueron las `@Published` `weekEntries` y
+      `groupedCurrentWeekEntries`.
+- [x] Dejó de ser deuda técnica: **era el crash de producción**
+      `MuscleEntry.exercisesSummary.getter` / EXC_BREAKPOINT. La lista cacheada sostenía
+      referencias a entries borradas por otros caminos (`AddExerciseView.unadd()`), la home
+      las renderizaba y SwiftData trapeaba al faultear `exercises`.
+- [x] Se descartó el guard defensivo **con evidencia**, no por opinión: `isDeleted` da
+      `false` tras un delete guardado, y `modelContext` solo se vuelve nil si el borrado
+      vino del mismo contexto. Ver `HomeStaleEntryTests`.
+- [ ] Queda el refetch de `updateCurrentEntries()`: ya no alimenta la lista, pero sigue
+      haciendo `fetchAllEntries()` para el widget, la racha y las keys de Crashlytics.
+      Podría recibir las entries del `@Query` en vez de re-consultar.
+
+**Verificado de paso (pendiente del ítem 4):** el ensayo de migración se hizo con un store
+escrito por el schema viejo (`db471bc`, con `isChecked`/`weekOfYear`/`year` almacenados)
+abierto por el schema actual: **abre sin problemas y no pierde nada** — entries, sesiones y
+ejercicios intactos. La migración implícita de SwiftData cubre el borrado de esos tres
+atributos, así que el fallback que borra el store no se dispara.
 
 **Por qué:** hoy cada tap en un check dispara **dos** pipelines sobre los mismos datos:
 mutar → `updateCurrentEntries()` (refetch + refiltrado + reagrupado + streak O(n²) + JSON del

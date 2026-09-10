@@ -14,6 +14,16 @@ struct SettingsView: View {
     @EnvironmentObject var storeManager: StoreManager
     @Environment(\.modelContext) private var context
     @State private var showingPaywall = false
+    #if DEBUG
+    // Herramientas de crash-test. Todo el bloque está bajo #if DEBUG: en un build de
+    // Release estas propiedades, los botones y el diálogo NO SE COMPILAN — no hay forma
+    // de que aparezcan, ni por un flag mal seteado ni por un bug de estado. Verificable:
+    // los literales no existen en el binario de Release.
+    @State private var showingCrashTools = CrashDiagnostics.isRevealedByLaunchArgument
+    @State private var confirmingTestCrash = false
+    @State private var versionTapCount = 0
+    @State private var lastVersionTapAt = Date.distantPast
+    #endif
 
     var body: some View {
         List {
@@ -145,6 +155,49 @@ struct SettingsView: View {
                     Text(viewModel.appVersion)
                         .foregroundColor(.secondary)
                 }
+                #if DEBUG
+                // Deliberadamente indescubrible: 5 taps, la misma idea que el modo
+                // desarrollador de Android.
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    // Counting taps by hand instead of `.onTapGesture(count:)`: that
+                    // modifier needs all taps inside one tight gesture sequence, and
+                    // inside a List row it drops taps constantly. This just needs five
+                    // taps with less than two seconds between them.
+                    guard CrashDiagnostics.isTestBuild else { return }
+                    let now = Date()
+                    versionTapCount = now.timeIntervalSince(lastVersionTapAt) > 2 ? 1 : versionTapCount + 1
+                    lastVersionTapAt = now
+                    if versionTapCount >= 5 { showingCrashTools = true }
+                }
+                #endif
+
+                #if DEBUG
+                if showingCrashTools {
+                    // Text(verbatim:) en todos: un literal suelto en Text/Button es
+                    // LocalizedStringKey y Xcode lo extrae al catálogo. La primera
+                    // versión de esto metió 6 claves en Localizable.xcstrings.
+                    Button {
+                        CrashDiagnostics.sendTestNonFatal()
+                    } label: {
+                        Label {
+                            Text(verbatim: "Enviar non-fatal de prueba")
+                        } icon: {
+                            Image(systemName: "paperplane")
+                        }
+                    }
+
+                    Button(role: .destructive) {
+                        confirmingTestCrash = true
+                    } label: {
+                        Label {
+                            Text(verbatim: "Forzar crash de prueba")
+                        } icon: {
+                            Image(systemName: "exclamationmark.triangle")
+                        }
+                    }
+                }
+                #endif
 
                 Button {
                     viewModel.openPrivacyPolicy()
@@ -164,6 +217,21 @@ struct SettingsView: View {
             PaywallView()
                 .environmentObject(storeManager)
         }
+        #if DEBUG
+        .confirmationDialog(Text(verbatim: "¿Forzar un crash de prueba?"),
+                            isPresented: $confirmingTestCrash, titleVisibility: .visible) {
+            Button(role: .destructive) {
+                CrashDiagnostics.forceTestCrash()
+            } label: {
+                Text(verbatim: "Crashear ahora")
+            }
+            Button(role: .cancel) {} label: {
+                Text(verbatim: "Cancelar")
+            }
+        } message: {
+            Text(verbatim: "La app se va a cerrar. El reporte se envía al VOLVER a abrirla, y solo si Xcode no está adjunto.")
+        }
+        #endif
     }
 }
 

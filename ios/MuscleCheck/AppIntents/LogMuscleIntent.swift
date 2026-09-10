@@ -13,7 +13,7 @@ struct LogMuscleIntent: AppIntent {
     var muscle: MuscleAppEntity
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let actor = MuscleDataActor(modelContainer: MuscleDataActor.sharedContainer)
+        let actor = try MuscleDataActor.makeActor()
         let message = try await actor.logMuscle(named: muscle.id)
         return .result(dialog: "\(message)")
     }
