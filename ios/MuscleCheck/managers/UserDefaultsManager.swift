@@ -77,6 +77,18 @@ final class UserDefaultsManager {
         set { defaults.set(newValue, forKey: "healthKitEnabled") }
     }
 
+    /// Último pedido de reseña del App Store (ver `ReviewPromptPolicy`).
+    var lastReviewRequestDate: Date? {
+        get { defaults.object(forKey: "lastReviewRequestDate") as? Date }
+        set { defaults.set(newValue, forKey: "lastReviewRequestDate") }
+    }
+
+    /// Versión de la app en la que se hizo ese pedido: uno por versión como máximo.
+    var lastReviewRequestVersion: String? {
+        get { defaults.string(forKey: "lastReviewRequestVersion") }
+        set { defaults.set(newValue, forKey: "lastReviewRequestVersion") }
+    }
+
     /// User-selected weight unit. Defaults to .kg when never set.
     var weightUnit: WeightUnit {
         get {

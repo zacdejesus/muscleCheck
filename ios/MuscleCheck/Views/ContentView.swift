@@ -8,6 +8,7 @@ import SwiftUI
 import SwiftData
 import HealthKit
 import TipKit
+import StoreKit
 
 struct ContentView: View {
   
@@ -19,6 +20,7 @@ struct ContentView: View {
   @EnvironmentObject var settingsViewModel: SettingsViewModel
   private let context: ModelContextProtocol
   @Environment(\.scenePhase) private var scenePhase
+  @Environment(\.requestReview) private var requestReview
   // Same key UserDefaultsManager owns; @AppStorage so the cover dismisses reactively
   // when OnboardingViewModel flips the flag.
   @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
@@ -67,7 +69,10 @@ struct ContentView: View {
 
         List {
           if entries.isEmpty {
-            EmptyStateView { showingAddSheet = true }
+            EmptyStateView {
+              viewModel.trackAddStarted(from: .emptyState)
+              showingAddSheet = true
+            }
           } else if groups.count == 1 {
             // Single category — no section headers for clean look
             let group = groups[0]
@@ -106,7 +111,10 @@ struct ContentView: View {
         // background so the list shows through (no bar-material band).
         .safeAreaInset(edge: .bottom) {
           VStack(spacing: 8) {
-            AddFAB { showingAddSheet = true }
+            AddFAB {
+              viewModel.trackAddStarted(from: .fab)
+              showingAddSheet = true
+            }
               .frame(maxWidth: .infinity, alignment: .trailing)
               .padding(.trailing, 20)
             if coach.isAppleIntelligenceAvailable() {
@@ -186,7 +194,10 @@ struct ContentView: View {
           }
         }
       }
-      .onChange(of: scenePhase) { _, newPhase in
+      .onChange(of: scenePhase, initial: true) { _, newPhase in
+        if newPhase == .active {
+          viewModel.markAppOpened()
+        }
         if newPhase == .background && UserDefaultsManager.shared.notificationsEnabled {
           Task {
             await NotificationManager.shared.scheduleInactivityReminders(for: entries)
@@ -196,6 +207,15 @@ struct ContentView: View {
       .onChange(of: entries) { oldEntries, newEntries in
         viewModel.updateCurrentEntries()
         streakViewModel.update(with: newEntries)
+      }
+      .onChange(of: viewModel.reviewRequestPending) { _, pending in
+        guard pending else { return }
+        Task {
+          // Que el check termine de animarse: el pedido interrumpe, no tiene que tapar el tap.
+          try? await Task.sleep(for: .seconds(1.5))
+          requestReview()
+          viewModel.didRequestReview()
+        }
       }
       .sheet(isPresented: $showingAddSheet) {
         AddExerciseView()
