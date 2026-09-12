@@ -3512,25 +3512,25 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Train smarter with AI Coach, advanced stats and more."
+            "value" : "Auto-detect workouts from Health and track your progress with photos."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrena mejor con AI Coach, estadísticas avanzadas y más."
+            "value" : "Detecta tus entrenamientos con Salud y sigue tu progreso con fotos."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entraînez-vous plus intelligemment avec AI Coach, des statistiques avancées et plus encore."
+            "value" : "Détectez vos entraînements avec Santé et suivez vos progrès en photos."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allenati meglio con AI Coach, statistiche avanzate e altro."
+            "value" : "Rileva i tuoi allenamenti con Salute e segui i tuoi progressi con le foto."
           }
         }
       }
