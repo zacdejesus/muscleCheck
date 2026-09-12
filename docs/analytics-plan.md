@@ -205,12 +205,12 @@ un parámetro).
 | Evento | Cuándo | Parámetros |
 |---|---|---|
 | `onboarding_started` | Primera pantalla del first-run | — |
-| `onboarding_completed` | Termina el flujo | `seed_count` |
-| `onboarding_abandoned` | Sale antes de terminar | `step` |
-| `activity_checked` | Se marca un grupo como entrenado | `category`, `metric`, `source`, `seconds_since_open` |
+| `onboarding_completed` | Termina el flujo (continuar o saltear) | `seed_count` (disciplinas), `skipped` |
+| ~~`onboarding_abandoned`~~ | *Descartado:* el onboarding es un cover que no se puede cerrar, así que abandonar = matar la app. `started` sin `completed` ya lo mide | — |
+| `activity_checked` | La semana de un grupo pasa de "no entrenada" a "entrenada", por cualquier vía. Re-registrar en la misma semana no cuenta | `category` (built-in o `custom`), `metric`, `source`, `seconds_since_open` (solo `source=app`) |
 | `activity_unchecked` | Se destilda | `category` |
 | `exercise_add_started` | Se abre el alta | `source` (`fab`/`empty_state`/`category`) |
-| `exercise_add_completed` | Se guarda | `category`, `metric`, `from_preset`, `count` |
+| `exercise_add_completed` | Se cierra el alta habiendo agregado algo (una vez por presentación) | `category` y `metric` del último agregado, `from_preset`, `count` |
 | `category_created` | Se crea una categoría custom | `metric` |
 | `group_detail_opened` | Se abre el detalle de un grupo | `exercise_count_bucket` |
 | `session_logged` | Se guardan valores | `metric`, `target` (`group`/`exercise`), `source` |
@@ -263,6 +263,8 @@ No son eventos: son los ejes con los que se segmenta cualquier funnel.
   implementación. Hay además una NoOp (tests y UI tests — los UI tests **no deben
   ensuciar los datos**, y ya pasan `-uiTesting` para desactivar TipKit: mismo hook) y
   una que loguea a consola en debug.
+  Implementado en `AnalyticsService.make`: `-uiTesting YES` → NoOp; Debug → consola;
+  Debug con `-analyticsDebug YES -FIRDebugEnabled` → Firebase + DebugView; Release → Firebase.
 - **Eventos tipados, nunca strings sueltos en las vistas.** Es la lección del
   `WidgetBridge`: un literal duplicado en dos lados es un typo esperando ocurrir, y en
   analítica el typo **no rompe nada** — el dato simplemente no existe, y te enterás tres
@@ -297,6 +299,8 @@ No son eventos: son los ejes con los que se segmenta cualquier funnel.
   **hecho** (`source=healthkit`), nunca el **payload**.
 - **ATT/IDFA**: Firebase Analytics sin IDFA no requiere el prompt de ATT. Conviene
   desactivar explícitamente la recolección de ad_id y evitarse el prompt entero.
+  **Hecho:** el target linkea solo `FirebaseAnalyticsCore`, el producto sin soporte de
+  IDFA. `FirebaseAnalytics` estaba linkeado a la par y se sacó.
 - **App Store privacy labels**: hay que declarar Usage Data → Product Interaction, no
   vinculado a identidad.
 - **Play Data safety**: ídem del lado de Android. Recordatorio fresco: la app acaba de
@@ -327,10 +331,13 @@ agregar un ejercicio, encontrar lo de ayer. Callarse y mirar.
 
 ## 14. Fases
 
-- [ ] **Fase 0 — este doc.** Nombres y params congelados antes de escribir código.
+- [x] **Fase 0 — este doc.** Nombres y params congelados antes de escribir código.
 - [ ] **Fase 1 — iOS, solo activación.** El seam + `onboarding_*`, `activity_checked`,
       `exercise_add_started/completed`. Registrar las custom dimensions en la consola
       **antes** de shipear. Verificar con DebugView.
+      *Código hecho* (con `source` app/siri/healthkit). **Falta, manual:** registrar las
+      custom dimensions (`category`, `metric`, `source`, `seconds_since_open`, `seed_count`,
+      `skipped`, `from_preset`, `count`) y verificar en DebugView antes de shipear.
 - [ ] **Fase 2 — Android.** Firebase + los mismos eventos, verificados contra este doc.
 - [ ] **Fase 3 — el resto** de la tabla de §8 y las user properties de §9.
 - [ ] **Fase 4 — lectura.** Un funnel armado en la consola por cada momento de §7.

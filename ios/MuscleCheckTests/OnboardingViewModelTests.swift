@@ -94,4 +94,42 @@ struct OnboardingViewModelTests {
 
         #expect(!UserDefaultsManager.shared.hasCompletedOnboarding)
     }
+
+    // MARK: - Analytics
+    // In this suite (not a separate file) on purpose: completing/skipping writes the same
+    // UserDefaults flags, and only a serialized suite keeps that from racing.
+
+    @MainActor @Test
+    func startIsTrackedOncePerPresentation() {
+        let spy = SpyAnalytics()
+        let viewModel = OnboardingViewModel(analytics: spy)
+
+        viewModel.trackStarted()
+        viewModel.trackStarted() // onAppear can fire again
+
+        #expect(spy.events == [.onboardingStarted])
+    }
+
+    @MainActor @Test
+    func completingTracksHowManyDisciplinesWereChosen() {
+        resetFlags()
+        let spy = SpyAnalytics()
+        let viewModel = OnboardingViewModel(analytics: spy)
+
+        viewModel.toggle(.yoga) // gym stays pre-selected → gym + yoga
+        viewModel.completeOnboarding(context: MockContext())
+
+        #expect(spy.events == [.onboardingCompleted(seedCount: 2, skipped: false)])
+    }
+
+    @MainActor @Test
+    func skippingIsTrackedAsSkipped() {
+        resetFlags()
+        let spy = SpyAnalytics()
+        let viewModel = OnboardingViewModel(analytics: spy)
+
+        viewModel.skipOnboarding(context: MockContext())
+
+        #expect(spy.events == [.onboardingCompleted(seedCount: 1, skipped: true)])
+    }
 }

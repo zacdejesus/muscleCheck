@@ -35,20 +35,38 @@ actor MuscleDataActor {
         return Array(names).sorted()
     }
 
-    func logMuscle(named name: String) throws -> String {
+    /// Lo que deja un registro por Siri: el diálogo para el usuario y, si la semana del grupo
+    /// pasó a "entrenada", lo que necesita `activity_checked`. El actor no habla con la
+    /// analítica: decide el intent.
+    struct LogOutcome: Sendable {
+        let message: String
+        let newlyTrained: NewlyTrained?
+    }
+
+    struct NewlyTrained: Sendable, Equatable {
+        let category: String
+        let metric: MetricType
+    }
+
+    func logMuscle(named name: String) throws -> LogOutcome {
         let predicate = #Predicate<MuscleEntry> { $0.name == name }
         let entries = try modelContext.fetch(FetchDescriptor(predicate: predicate))
 
         guard let entry = entries.first else {
-            return String(localized: "intent_muscle_not_found \(name)")
+            return LogOutcome(message: String(localized: "intent_muscle_not_found \(name)"), newlyTrained: nil)
         }
 
+        let now = Date()
+        let wasTrained = entry.isTrained(inWeekOf: now)
         // Logging from Siri is just a session: the weekly check derives from it, so
         // the week-reset bookkeeping that used to live here is gone.
-        entry.addSession(Date())
+        entry.addSession(now)
         try modelContext.save()
 
-        return String(localized: "intent_muscle_logged \(name)")
+        return LogOutcome(
+            message: String(localized: "intent_muscle_logged \(name)"),
+            newlyTrained: wasTrained ? nil : NewlyTrained(category: entry.category, metric: entry.metric)
+        )
     }
 
     func getWeeklyProgress() throws -> [String] {

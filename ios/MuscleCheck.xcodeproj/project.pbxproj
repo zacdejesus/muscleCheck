@@ -12,7 +12,6 @@
 		CB1DFA832EA828AC00B2047E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA822EA828AC00B2047E /* WidgetKit.framework */; };
 		CB1DFA852EA828AC00B2047E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA842EA828AC00B2047E /* SwiftUI.framework */; };
 		CB1DFA962EA828AD00B2047E /* MuscleCheckWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CB1DFA802EA828AC00B2047E /* MuscleCheckWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		CB6772D42DF48CDA00A683BC /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = CB6772D32DF48CDA00A683BC /* FirebaseAnalytics */; };
 		CB6772D62DF48CDA00A683BC /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = CB6772D52DF48CDA00A683BC /* FirebaseAnalyticsCore */; };
 		CB6772D82DF48CDA00A683BC /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = CB6772D72DF48CDA00A683BC /* FirebaseAppCheck */; };
 		CB6772DA2DF48CDA00A683BC /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = CB6772D92DF48CDA00A683BC /* FirebaseCrashlytics */; };
@@ -153,7 +152,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CB6772D42DF48CDA00A683BC /* FirebaseAnalytics in Frameworks */,
 				CB6772DA2DF48CDA00A683BC /* FirebaseCrashlytics in Frameworks */,
 				19C99F812F942D22007BD023 /* RevenueCat in Frameworks */,
 				CB6772D82DF48CDA00A683BC /* FirebaseAppCheck in Frameworks */,
@@ -258,7 +256,6 @@
 			);
 			name = MuscleCheck;
 			packageProductDependencies = (
-				CB6772D32DF48CDA00A683BC /* FirebaseAnalytics */,
 				CB6772D52DF48CDA00A683BC /* FirebaseAnalyticsCore */,
 				CB6772D72DF48CDA00A683BC /* FirebaseAppCheck */,
 				CB6772D92DF48CDA00A683BC /* FirebaseCrashlytics */,
@@ -939,11 +936,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 19C99F7F2F942D22007BD023 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat;
-		};
-		CB6772D32DF48CDA00A683BC /* FirebaseAnalytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CB6772D22DF48CDA00A683BC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalytics;
 		};
 		CB6772D52DF48CDA00A683BC /* FirebaseAnalyticsCore */ = {
 			isa = XCSwiftPackageProductDependency;
