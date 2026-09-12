@@ -9,7 +9,7 @@
 
 > **MODO CALIDAD DE CÓDIGO — SOLO MEJORAS DE CÓDIGO. Cero features nuevos.**
 >
-> 2.2.1 (fix del crash de la home + diagnóstico en Crashlytics + App Intents sin `fatalError`) está **aprobada**. En `main` se prepara **2.3.0**: pedido de reseña + analítica de activación (Fase 1 de `docs/analytics-plan.md`), pedidos **explícitamente** como prerrequisitos del plan de marketing. Fuera de eso, hasta el próximo release al App Store, **NO se construyen ni se planifican features nuevos** — ni los del roadmap diferido, ni los del backlog. Si el developer quiere un feature, lo tiene que pedir **explícitamente**; por default, asumir que NO.
+> 2.2.1 (fix del crash de la home + diagnóstico en Crashlytics + App Intents sin `fatalError`) está **aprobada**. En `main` se prepara **2.2.2**: pedido de reseña + analítica de activación (Fase 1 de `docs/analytics-plan.md`), pedidos **explícitamente** como prerrequisitos del plan de marketing. Fuera de eso, hasta el próximo release al App Store, **NO se construyen ni se planifican features nuevos** — ni los del roadmap diferido, ni los del backlog. Si el developer quiere un feature, lo tiene que pedir **explícitamente**; por default, asumir que NO.
 >
 > Todo el esfuerzo va exclusivamente a:
 > - Refactors arquitectónicos (god objects, two-phase init, denormalización)
@@ -136,7 +136,7 @@ main (always deployable, tagged for releases)
 - 2.1.x — Categorías custom (Feature 17) + onboarding + localización italiana ✅
 - 2.2.0 — Métrica por ejercicio + alta unificada + FAB (Feature 18) + ejercicios dentro del grupo (Feature 19) ✅ *(publicada como 2.2.0 (2), 22/7)*
 - 2.2.1 — Fix del crash de la home (`exercisesSummary`) + diagnóstico en Crashlytics + App Intents sin `fatalError` ✅ *(build 2, aprobada)*
-- 2.3.0 — Pedido de reseña + analítica de activación (Fase 1) *(en preparación)*
+- 2.2.2 — Pedido de reseña + analítica de activación (Fase 1) *(en preparación)*
 - Apple Watch app (Feature 10) — diferido, post-2.2.0
 
 ---

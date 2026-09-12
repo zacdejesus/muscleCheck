@@ -1,14 +1,14 @@
 # ⚠️ Pendientes — por dónde arrancar
 
-> Snapshot al 2026-09-12. 2.2.1 aprobada; en `main` se prepara 2.3.0 (pedido de reseña +
+> Snapshot al 2026-09-12. 2.2.1 aprobada; en `main` se prepara 2.2.2 (pedido de reseña +
 > analítica de activación).
 
-## 🔜 Próximo build: 2.3.0 (1)
+## 🔜 Próximo build: 2.2.2 (1)
 
 El código está en `main`. Antes de subir:
 
 - [ ] **Liberar 2.2.1** si quedó en *Pending Developer Release*: mientras no esté a la venta,
-      App Store Connect no deja crear la versión 2.3.0.
+      App Store Connect no deja crear la versión 2.2.2.
 - [ ] **Registrar las custom dimensions** en Firebase **antes de TestFlight** (si no, los
       params no aparecen en los reportes): `category`, `metric`, `source`,
       `seconds_since_open`, `seed_count`, `skipped`, `from_preset`, `count`.
@@ -18,7 +18,7 @@ El código está en `main`. Antes de subir:
       muestra siempre).
 - [ ] **App Privacy** en App Store Connect: Usage Data → Product Interaction, no vinculado a
       identidad, sin tracking.
-- [ ] **What's New** de 2.3.0 en ES/EN/FR/IT.
+- [ ] **What's New** de 2.2.2 en ES/EN/FR/IT.
 
 ## 👀 Cuando 2.2.1 llegue a usuarios
 
@@ -37,7 +37,7 @@ El código está en `main`. Antes de subir:
 
 ## 📣 Marketing
 
-- Prerrequisitos del plan: pedido de reseña y analítica → salen en 2.3.0.
+- Prerrequisitos del plan: pedido de reseña y analítica → salen en 2.2.2.
 - Falta en la ficha: subtítulo, keywords y screenshots en ES y EN (iPhone 6.9" + iPad 13"),
   y links de campaña (`ct=`) por canal.
 
@@ -72,7 +72,7 @@ El código está en `main`. Antes de subir:
   `fatalError` (#37, aprobada).
 - Pedido de reseña + analítica de activación, Fase 1 — código (#39).
 - Landing con Google Play y tabla de Pro alineada con el gateo real (#38).
-- Subtítulo del paywall alineado con su tabla (2.3.0).
+- Subtítulo del paywall alineado con su tabla (2.2.2).
 - Compras iOS (contrato Paid Apps activo).
 - Fase 2 iOS: ejercicios dentro del grupo + métricas por ejercicio + alta unificada + FAB.
 - Localización ES/EN/FR/IT en ambas plataformas.
