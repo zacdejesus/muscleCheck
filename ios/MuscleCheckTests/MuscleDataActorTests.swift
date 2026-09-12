@@ -62,13 +62,28 @@ struct MuscleDataActorTests {
         #expect(after == ["Pecho"])
     }
 
+    /// What feeds `activity_checked(source: siri)`: only the registration that trains the
+    /// week counts, so a second "I trained chest" the same week isn't a new activation.
+    @Test
+    func testLogMuscleReportsOnlyTheFirstRegistrationOfTheWeek() async throws {
+        let container = try makeContainer([(name: "Pecho", daysAgo: [])])
+        let actor = MuscleDataActor(modelContainer: container)
+
+        let first = try await actor.logMuscle(named: "Pecho")
+        let second = try await actor.logMuscle(named: "Pecho")
+
+        #expect(first.newlyTrained == MuscleDataActor.NewlyTrained(category: ActivityCategory.gym.rawValue, metric: .strength))
+        #expect(second.newlyTrained == nil)
+    }
+
     @Test
     func testLogUnknownMuscleDoesNotChangeProgress() async throws {
         let container = try makeContainer([(name: "Pecho", daysAgo: [])])
         let actor = MuscleDataActor(modelContainer: container)
 
-        let message = try await actor.logMuscle(named: "NoExiste")
-        #expect(!message.isEmpty)
+        let outcome = try await actor.logMuscle(named: "NoExiste")
+        #expect(!outcome.message.isEmpty)
+        #expect(outcome.newlyTrained == nil)
 
         let progress = try await actor.getWeeklyProgress()
         #expect(progress.isEmpty)

@@ -22,6 +22,20 @@ final class OnboardingViewModel: ObservableObject {
 
     var canContinue: Bool { !selectedCategories.isEmpty }
 
+    private let analytics: any AnalyticsTracking
+    /// `onAppear` puede volver a dispararse: el inicio del funnel se cuenta una vez.
+    private var didTrackStart = false
+
+    init(analytics: any AnalyticsTracking = AnalyticsService.shared) {
+        self.analytics = analytics
+    }
+
+    func trackStarted() {
+        guard !didTrackStart else { return }
+        didTrackStart = true
+        analytics.track(.onboardingStarted)
+    }
+
     func toggle(_ category: ActivityCategory) {
         if selectedCategories.contains(category) {
             selectedCategories.remove(category)
@@ -32,11 +46,13 @@ final class OnboardingViewModel: ObservableObject {
 
     func completeOnboarding(context: ModelContextProtocol) {
         seed(selectedCategories, context: context)
+        analytics.track(.onboardingCompleted(seedCount: selectedCategories.count, skipped: false))
     }
 
     /// Skipping keeps parity with the pre-onboarding behavior: a gym checklist.
     func skipOnboarding(context: ModelContextProtocol) {
         seed([.gym], context: context)
+        analytics.track(.onboardingCompleted(seedCount: 1, skipped: true))
     }
 
     private func seed(_ categories: Set<ActivityCategory>, context: ModelContextProtocol) {

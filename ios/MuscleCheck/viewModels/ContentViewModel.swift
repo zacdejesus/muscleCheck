@@ -16,6 +16,15 @@ final class ContentViewModel: ObservableObject {
   let context: ModelContextProtocol
   private(set) var entries: [MuscleEntry] = []
   let muscleEntryManager: MuscleEntryManager
+  private let analytics: any AnalyticsTracking
+  private let appVersion: String
+
+  /// Última vez que la app pasó a primer plano. `activity_checked` la usa para medir la
+  /// promesa del tagline: registrar en 2 segundos.
+  private var openedAt: Date?
+
+  /// El pedido de reseña necesita el environment de la vista; el view model solo decide.
+  @Published private(set) var reviewRequestPending = false
 
   func setup(context: ModelContextProtocol, entries: [MuscleEntry]) async {
     self.entries = entries
@@ -37,9 +46,13 @@ final class ContentViewModel: ObservableObject {
       updateCurrentEntries()
   }
     
-    init(context: ModelContextProtocol) {
+    init(context: ModelContextProtocol,
+         analytics: any AnalyticsTracking = AnalyticsService.shared,
+         appVersion: String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "") {
         self.context = context
         self.muscleEntryManager = .init(context: context)
+        self.analytics = analytics
+        self.appVersion = appVersion
     }
     
     /// The weekly list clears itself now (the check derives from the week's sessions),
@@ -167,8 +180,10 @@ final class ContentViewModel: ObservableObject {
   /// Logs today's values for one exercise inside a group. `MuscleEntry.logExercise`
   /// also marks the group trained today, so the check/streak/stats keep working.
   func logExercise(_ exercise: Exercise, _ input: SessionInput, in group: MuscleEntry) {
+    let wasTrained = group.isTrained(inWeekOf: Date())
     group.logExercise(id: exercise.id, input: input)
     persist("Failed to log exercise")
+    if !wasTrained { didRegisterTraining(group, source: .app) }
   }
 
   func addExercise(name: String, metric: MetricType, icon: String, to group: MuscleEntry) {
@@ -193,7 +208,8 @@ final class ContentViewModel: ObservableObject {
   func toggleActivity(for entry: MuscleEntry) {
     let today = Date()
     // Read the derived state BEFORE mutating: the answer changes with the sessions.
-    if entry.isTrained(inWeekOf: today) {
+    let wasTrained = entry.isTrained(inWeekOf: today)
+    if wasTrained {
       // Un-checking means "I did not train this this week", so the whole week goes.
       // Dropping only today's session would leave the check ON whenever an earlier
       // day of the same week still had one — the tap would look like a no-op.
@@ -213,8 +229,9 @@ final class ContentViewModel: ObservableObject {
       assertionFailure("Failed to save context after resetting entries: \(error)")
     }
     updateCurrentEntries()
+    if !wasTrained { didRegisterTraining(entry, source: .app) }
   }
-  
+
   func deleteEntries(at offsets: IndexSet) {
     for index in offsets {
       guard let entry = entries[safe: index] else { return  }
@@ -241,6 +258,7 @@ final class ContentViewModel: ObservableObject {
     let manager = muscleEntryManager
 
     let workoutDate = workout.startDate
+    var newlyTrained: [MuscleEntry] = []
 
     do {
       var entriesToLog = targets
@@ -257,13 +275,56 @@ final class ContentViewModel: ObservableObject {
       for target in entriesToLog {
         // The session is the check: if the workout falls in the current week, the
         // entry reads as checked on its own (that `if` WAS the derivation, by hand).
+        let wasTrained = target.isTrained(inWeekOf: workoutDate)
         target.addSession(workoutDate)
         try manager.update(target)
+        if !wasTrained { newlyTrained.append(target) }
       }
     } catch {
       return
     }
 
     updateCurrentEntries()
+    newlyTrained.forEach { didRegisterTraining($0, source: .healthkit) }
+  }
+
+  // MARK: - Analytics & review
+
+  /// La app volvió a primer plano: arranca el reloj de `seconds_since_open`.
+  func markAppOpened(at date: Date = Date()) {
+    openedAt = date
+  }
+
+  func trackAddStarted(from source: AnalyticsEvent.AddSource) {
+    analytics.track(.exerciseAddStarted(source: source))
+  }
+
+  /// Un grupo pasó a "entrenado esta semana": el momento de éxito del producto. Se mide,
+  /// y si ya hay hábito es cuando tiene sentido pedir la reseña.
+  private func didRegisterTraining(_ entry: MuscleEntry, source: AnalyticsEvent.CheckSource) {
+    let seconds = source == .app ? openedAt.map { max(0, Int(Date().timeIntervalSince($0))) } : nil
+    analytics.track(.activityChecked(category: entry.category, metric: entry.metric,
+                                     source: source, secondsSinceOpen: seconds))
+    evaluateReviewPrompt()
+  }
+
+  private func evaluateReviewPrompt() {
+    let defaults = UserDefaultsManager.shared
+    guard !reviewRequestPending,
+          ReviewPromptPolicy.shouldRequest(
+            currentStreak: StreakCalculator.currentStreak(from: entries),
+            lastRequestDate: defaults.lastReviewRequestDate,
+            lastRequestVersion: defaults.lastReviewRequestVersion,
+            currentVersion: appVersion
+          ) else { return }
+    reviewRequestPending = true
+  }
+
+  /// La vista ya se lo pidió al sistema. Se anota aunque iOS decida no mostrarlo: no hay
+  /// forma de saberlo, y volver a pedir en cada check sería peor.
+  func didRequestReview(at date: Date = Date()) {
+    UserDefaultsManager.shared.lastReviewRequestDate = date
+    UserDefaultsManager.shared.lastReviewRequestVersion = appVersion
+    reviewRequestPending = false
   }
 }

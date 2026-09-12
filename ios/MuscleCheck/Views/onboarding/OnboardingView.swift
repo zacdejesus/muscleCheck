@@ -38,6 +38,7 @@ struct OnboardingView: View {
             }
         }
         .background(Color(.systemBackground))
+        .onAppear { viewModel.trackStarted() }
     }
 }
 

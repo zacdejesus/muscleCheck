@@ -28,6 +28,8 @@ struct AddExerciseView: View {
     /// deletes them — no history to lose). Older entries stay locked: un-adding
     /// those would silently destroy training history.
     @State private var sessionAddedIDs: Set<UUID> = []
+    /// De esos, los creados a mano (no presets). Solo lo usa la analítica del alta.
+    @State private var sessionCustomIDs: Set<UUID> = []
     /// Bumped on every successful add — drives the success haptic.
     @State private var addCount = 0
     @State private var errorMessage: String?
@@ -147,6 +149,9 @@ struct AddExerciseView: View {
             .tint(Color.brand)
         }
         .sensoryFeedback(.success, trigger: addCount)
+        // On the NavigationStack, not on its root: pushing the create form must not count
+        // as closing the sheet.
+        .onDisappear(perform: trackCompletedIfAnything)
     }
 
     /// Header copy: a question the user can answer ("what do you train?"), switching
@@ -273,6 +278,7 @@ struct AddExerciseView: View {
                 defaultIcon: resolvedCategory.icon,
                 onAdded: { entry in
                     sessionAddedIDs.insert(entry.id)
+                    sessionCustomIDs.insert(entry.id)
                     addCount += 1
                 }
             )
@@ -316,10 +322,24 @@ struct AddExerciseView: View {
         do {
             try MuscleEntryManager(context: context).delete(entry)
             sessionAddedIDs.remove(entryID)
+            sessionCustomIDs.remove(entryID)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// One presentation of the sheet = one attempt, counted on close with what stayed
+    /// added (undone rows don't count). Closing without adding anything isn't an add.
+    private func trackCompletedIfAnything() {
+        let added = entries.filter { sessionAddedIDs.contains($0.id) }
+        guard let last = added.max(by: { $0.dateCreated < $1.dateCreated }) else { return }
+        AnalyticsService.shared.track(.exerciseAddCompleted(
+            category: last.category,
+            metric: last.metric,
+            fromPreset: !sessionAddedIDs.subtracting(sessionCustomIDs).isEmpty,
+            count: added.count
+        ))
     }
 
     /// Start on the remembered category — unless it has nothing actionable (the
