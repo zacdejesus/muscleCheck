@@ -15,8 +15,8 @@ import Foundation
 struct RoutineImportTests {
 
     private func item(_ name: String, sets: Int? = nil, reps: String? = nil, muscle: TargetMuscle? = nil,
-                      written: String? = nil, low: Bool = false) -> ScannedRoutine.Item {
-        .init(name: name, sets: sets, repsText: reps, muscle: muscle, writtenGroup: written, lowConfidence: low)
+                      low: Bool = false) -> ScannedRoutine.Item {
+        .init(name: name, sets: sets, repsText: reps, muscle: muscle, lowConfidence: low)
     }
 
     private func draft(_ name: String, sets: Int? = nil, reps: Int? = nil,
@@ -50,8 +50,8 @@ struct RoutineImportTests {
         let espalda = MuscleEntry(name: "Espalda", category: "gym")
         let routine = ScannedRoutine(items: [
             item("  Press banca ", sets: 4, reps: " 8-12 ", muscle: .chest),
-            item("Remo", written: "espalda"),
-            item("Hip thrust", written: "Glúteos"),
+            item("Remo", muscle: .back),
+            item("Hip thrust", muscle: .glutes),
             item("Plancha"),
             item("Curl", sets: 45),
             item("   "),
@@ -65,11 +65,11 @@ struct RoutineImportTests {
         // Stored value is the range's minimum; the literal is kept for the hint.
         #expect(drafts[0].reps == 8)
         #expect(drafts[0].repRange == "8-12")
-        // The sheet's heading matches a group (case-insensitively).
+        // The model's muscle → the user's group for it.
         #expect(drafts[1].group == .existing(espalda.id))
-        // Unknown heading → proposed as a new group.
-        #expect(drafts[2].group == .new("Glúteos"))
-        #expect(drafts[2].suggestedGroupName == "Glúteos")
+        // No group for that muscle → a new one, named in the app's language.
+        #expect(drafts[2].group == .new(TargetMuscle.glutes.localizedName))
+        #expect(drafts[2].suggestedGroupName == TargetMuscle.glutes.localizedName)
         // Nothing to go on → the user picks.
         #expect(drafts[3].group == nil)
         // 45 sets is a misread: dropped and flagged.
@@ -101,6 +101,41 @@ struct RoutineImportTests {
         #expect(!drafts[1].lowConfidence)
         // No reps to compare against: nothing to suspect.
         #expect(!drafts[2].lowConfidence)
+    }
+
+    @Test(arguments: [
+        (nil as Int?, "4x10", 4, 10, nil as String?),
+        (1, "5x5", 5, 5, nil),
+        (3, "3x12", 3, 12, nil),
+        (3, "x8", 3, 8, nil),
+        (4, "4 x 8-12", 4, 8, "8-12"),
+        (4, "12-10-8", 4, 8, "12-10-8"),
+    ])
+    func setsAndRepsWrittenTogetherAreSplit(sets: Int?, reps: String, expectedSets: Int, expectedReps: Int, range: String?) {
+        // Seen on device: the model put "5x5" whole in reps and left sets at 1.
+        let drafts = RoutineImport.drafts(from: ScannedRoutine(items: [item("Sentadilla", sets: sets, reps: reps)]), groups: [])
+
+        #expect(drafts[0].sets == expectedSets)
+        #expect(drafts[0].reps == expectedReps)
+        #expect(drafts[0].repRange == range)
+    }
+
+    @Test
+    func aPairThatContradictsTheReadSetsDoesNotOverrideThem() {
+        let drafts = RoutineImport.drafts(from: ScannedRoutine(items: [item("Prensa", sets: 4, reps: "3x10")]), groups: [])
+
+        #expect(drafts[0].sets == 4)
+        #expect(drafts[0].reps == 10)
+    }
+
+    @Test
+    func placeholderRowsTheModelMakesUpAreDropped() {
+        // Seen on device: a blank page came back as rows called "none" with "4x8-12".
+        let drafts = RoutineImport.drafts(from: ScannedRoutine(items: [
+            item("none", sets: 4, reps: "8-12"), item(" NULL "), item("n/a", sets: 3), item("Press banca", sets: 4, reps: "8"),
+        ]), groups: [])
+
+        #expect(drafts.map(\.name) == ["Press banca"])
     }
 
     @Test
@@ -227,26 +262,6 @@ struct RoutineImportTests {
 
         #expect(drafts[0].group == .new(TargetMuscle.glutes.localizedName))
         #expect(drafts[0].suggestedGroupName == TargetMuscle.glutes.localizedName)
-    }
-
-    @Test
-    func theSheetsHeadingBeatsTheModelsGuess() {
-        let piernas = group("Piernas")
-        let gluteos = group("Glúteos")
-
-        #expect(groupFor(item("Hip thrust", muscle: .glutes, written: "Piernas"), in: [gluteos, piernas]) == .existing(piernas.id))
-    }
-
-    @Test
-    func aHeadingThatNamesAMuscleFindsTheGroupInAnyLanguage() {
-        let legs = group("Legs")
-
-        #expect(groupFor(item("Prensa", written: "Día 1 - Cuádriceps"), in: [legs]) == .existing(legs.id))
-    }
-
-    @Test
-    func aFreeFormHeadingWithNoMuscleIsProposedAsItIs() {
-        #expect(groupFor(item("Prensa", written: "Día 1"), in: [group("Pecho")]) == .new("Día 1"))
     }
 
     @Test

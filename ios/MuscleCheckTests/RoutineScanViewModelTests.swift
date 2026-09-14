@@ -36,8 +36,8 @@ struct RoutineScanViewModelTests {
     }
 
     private func item(_ name: String, sets: Int? = nil, reps: String? = nil, muscle: TargetMuscle? = nil,
-                      written: String? = nil, low: Bool = false) -> ScannedRoutine.Item {
-        .init(name: name, sets: sets, repsText: reps, muscle: muscle, writtenGroup: written, lowConfidence: low)
+                      low: Bool = false) -> ScannedRoutine.Item {
+        .init(name: name, sets: sets, repsText: reps, muscle: muscle, lowConfidence: low)
     }
 
     @Test

@@ -39,8 +39,6 @@ struct ExtractedExercise {
     var reps: String?
     @Guide(description: "Main muscle group this exercise trains. Use other for cardio, full-body movements or when unsure")
     var muscle: ExtractedMuscle
-    @Guide(description: "Muscle group or heading written above this exercise on the sheet, or null")
-    var writtenGroup: String?
     @Guide(description: "low if any field was hard to read or had to be guessed, otherwise high")
     var confidence: ReadConfidence
 }
@@ -165,7 +163,6 @@ final class FoundationModelsRoutineScanner: RoutineScanning {
                 sets: exercise.sets ?? nil,
                 repsText: exercise.reps ?? nil,
                 muscle: exercise.muscle.flatMap(Self.targetMuscle),
-                writtenGroup: exercise.writtenGroup ?? nil,
                 lowConfidence: exercise.confidence == .low
             )
         }

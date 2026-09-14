@@ -27,8 +27,6 @@ struct ScannedRoutine: Equatable {
         /// Main muscle the model says the exercise trains; nil for cardio, full body or unsure.
         /// `RoutineImport` maps it to the user's groups — never an index into their list.
         let muscle: TargetMuscle?
-        /// Group heading written on the sheet ("Pecho", "Día 1 — Piernas"), if any.
-        let writtenGroup: String?
         let lowConfidence: Bool
     }
 
@@ -56,7 +54,7 @@ struct ScannedExerciseDraft: Identifiable, Equatable {
     var group: GroupChoice?
     /// The model flagged the row, or its numbers look read in the unusual order. Amber dot.
     var lowConfidence: Bool
-    /// Pre-fill for "Grupo nuevo" — the heading read from the sheet, if any.
+    /// Pre-fill for "Grupo nuevo" — the model's muscle, named in the app's language.
     var suggestedGroupName: String
 
     init(

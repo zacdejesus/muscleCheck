@@ -60,49 +60,74 @@ enum RoutineImport {
 
     // MARK: - Read → drafts
 
-    /// Turns what the model read into editable cards, validating everything the model can
-    /// get wrong: implausible sets, sets/reps in the unusual order, blank names — and choosing
-    /// each card's group in code (`groupChoice`), not by trusting the model with the user's list.
+    /// Placeholder names the model emits for rows it makes up on images that aren't routines
+    /// (in the on-device evaluation a blank page produced rows called "none" with "4x8-12").
+    private static let placeholderNames: Set<String> = ["none", "null", "nil", "n a", "na", "ninguno", "ninguna", "nada", "unknown", "desconocido"]
+
+    /// The model sometimes writes the whole "sets × reps" pair in the reps field ("5x5",
+    /// "4 x 8-12") or keeps the separator ("x8"). Returns the sets found in the pair, if any, and
+    /// the reps part alone. Anything else comes back untouched.
+    static func splitSetsAndReps(_ text: String) -> (sets: Int?, reps: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let separators: Set<Character> = ["x", "X", "×", "*"]
+        guard let index = trimmed.firstIndex(where: { separators.contains($0) }) else { return (nil, trimmed) }
+        let left = trimmed[..<index].trimmingCharacters(in: .whitespaces)
+        let right = trimmed[trimmed.index(after: index)...].trimmingCharacters(in: .whitespaces)
+        guard parseReps(right) != nil else { return (nil, trimmed) }
+        if left.isEmpty { return (nil, right) }
+        guard let sets = Int(left) else { return (nil, trimmed) }
+        return (sets, right)
+    }
+
+    /// Turns what the model read into editable cards, validating everything the model can get
+    /// wrong: implausible sets, sets and reps in one field, sets/reps in the unusual order,
+    /// placeholder or blank names — and choosing each card's group in code (`groupChoice`).
     /// - Parameter groups: the gym groups the review picker offers; every guess lands in one.
     @MainActor
     static func drafts(from routine: ScannedRoutine, groups: [MuscleEntry]) -> [ScannedExerciseDraft] {
         routine.items.compactMap { item in
             let name = item.name.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !name.isEmpty else { return nil }
+            guard !name.isEmpty, !placeholderNames.contains(NameMatching.fold(name)) else { return nil }
 
-            let written = item.writtenGroup?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let sets = item.sets.flatMap { plausibleSets.contains($0) ? $0 : nil }
-            let setsMisread = item.sets != nil && sets == nil
-            let repsText = item.repsText?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let reps = parseReps(repsText)
+            let readSets = item.sets.flatMap { plausibleSets.contains($0) ? $0 : nil }
+            let setsMisread = item.sets != nil && readSets == nil
+            let pair = splitSetsAndReps(item.repsText ?? "")
+            // "5x5" landed whole in reps while sets came back empty or as 1: trust the pair.
+            var sets = readSets
+            if let pairSets = pair.sets, plausibleSets.contains(pairSets),
+               readSets == nil || readSets == 1 || readSets == pairSets {
+                sets = pairSets
+            }
+            let reps = parseReps(pair.reps)
             // Keep the literal only when it says more than the stored number.
-            let repRange = (repsText.isEmpty || repsText == reps.map(String.init)) ? nil : repsText
+            let repRange = (pair.reps.isEmpty || pair.reps == reps.map(String.init)) ? nil : pair.reps
 
             return ScannedExerciseDraft(
                 name: name,
                 sets: sets,
                 reps: reps,
                 repRange: repRange,
-                group: groupChoice(exercise: name, muscle: item.muscle, written: written, groups: groups),
+                group: groupChoice(exercise: name, muscle: item.muscle, groups: groups),
                 lowConfidence: item.lowConfidence || setsMisread || setsAndRepsLookSwapped(sets: sets, reps: reps),
-                suggestedGroupName: item.muscle?.localizedName ?? written
+                suggestedGroupName: item.muscle?.localizedName ?? ""
             )
         }
     }
 
     /// Where a scanned exercise lands, most certain signal first:
-    /// 1. The exercise already exists in one of the groups → that group. Deterministic, and
-    ///    exactly what the model got wrong in the field ("Prensa" sat in Legs, went to Back).
-    /// 2. The sheet's own heading names an existing group, by name or by muscle synonym.
-    /// 3. The model's muscle → the best of the user's groups for it (the same muscle in two
+    /// 1. The exercise already exists in one of the groups → that group. Deterministic, and it's
+    ///    what kept "Prensa" in Legs while the model said chest.
+    /// 2. The model's muscle → the best of the user's groups for it (the same muscle in two
     ///    languages is resolved by `bestGroup`), or a new group named in the app's language.
-    /// 4. The heading as a new group.
-    /// 5. Nothing: the user picks (and the import stays blocked until they do).
+    /// 3. Nothing: the user picks (and the import stays blocked until they do).
+    ///
+    /// Headings on the sheet are deliberately NOT used: in the on-device evaluation the model
+    /// filled that field on every row — with "legs", "AMRAP", the exercise's own name or a
+    /// section title — sending a whole PDF to Legs and creating groups named "AMRAP".
     @MainActor
     static func groupChoice(
         exercise: String,
         muscle: TargetMuscle?,
-        written: String,
         groups: [MuscleEntry]
     ) -> ScannedExerciseDraft.GroupChoice? {
         let exerciseKey = NameMatching.fold(exercise)
@@ -112,25 +137,11 @@ enum RoutineImport {
         if let holder = GroupRanking.mostInUse(holders) {
             return .existing(holder.id)
         }
-
-        if !written.isEmpty {
-            if let match = existingGroup(named: written, in: groups) {
-                return .existing(match.id)
-            }
-            let named = TargetMuscle.muscles(inName: written)
-            if named.count == 1, let only = named.first, let match = bestGroup(for: only, in: groups) {
-                return .existing(match.id)
-            }
+        guard let muscle else { return nil }
+        if let match = bestGroup(for: muscle, in: groups) {
+            return .existing(match.id)
         }
-
-        if let muscle {
-            if let match = bestGroup(for: muscle, in: groups) {
-                return .existing(match.id)
-            }
-            return .new(muscle.localizedName)
-        }
-
-        return written.isEmpty ? nil : .new(written)
+        return .new(muscle.localizedName)
     }
 
     /// The user's group for `muscle`. Several candidates usually mean the same muscle in two
