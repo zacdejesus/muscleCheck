@@ -92,6 +92,14 @@ final class FoundationModelsRoutineScanner: RoutineScanning {
         image: CGImage,
         onPartial: ((ScannedRoutine) -> Void)?
     ) async throws -> ScannedRoutine {
+        // Pre-check with Vision: photos that can't be a routine never reach the model, which
+        // would otherwise invent exercises for them (RoutineTextGate).
+        switch await RoutineTextGate.check(image) {
+        case .noText: throw RoutineScanError.noText
+        case .notARoutine: throw RoutineScanError.notARoutine
+        case .looksLikeRoutine: break
+        }
+
         // A fresh session per scan: nothing to remember between photos, and an old
         // transcript would only eat the context window.
         let session = LanguageModelSession(model: Self.model, instructions: Self.instructions)

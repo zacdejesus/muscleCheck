@@ -87,6 +87,10 @@ final class RoutineScanViewModel: ObservableObject {
             phase = .review
         } catch is CancellationError {
             phase = .pickPhoto
+        } catch RoutineScanError.noText {
+            fail("scan_error_no_text")
+        } catch RoutineScanError.notARoutine {
+            fail("scan_error_not_routine")
         } catch RoutineScanError.nothingFound {
             fail("scan_error_nothing_found")
         } catch {

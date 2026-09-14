@@ -133,6 +133,19 @@ struct RoutineScanViewModelTests {
         #expect(vm.errorMessage != nil)
     }
 
+    @Test(arguments: [RoutineScanError.noText, .notARoutine])
+    func photosThatAreNotRoutinesGetTheirOwnMessage(error: RoutineScanError) async {
+        let scanner = MockRoutineScanner()
+        scanner.result = .failure(error)
+        let vm = RoutineScanViewModel(scanner: scanner)
+
+        await vm.scan(photo, groups: [])
+
+        #expect(vm.phase == .pickPhoto)
+        #expect(vm.errorMessage != nil)
+        #expect(vm.errorMessage != String(localized: "scan_error_generic"))
+    }
+
     @Test
     func modelFailureReturnsToThePickerWithAMessage() async {
         let scanner = MockRoutineScanner()

@@ -4547,6 +4547,64 @@
         }
       }
     },
+    "scan_error_no_text" : {
+      "comment" : "Routine scan (escanear rutina en papel).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No text found in the photo. Try with more light or closer."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No encontré texto en la foto. Prueba con más luz o más cerca."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun texte trouvé sur la photo. Essaie avec plus de lumière ou de plus près."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun testo trovato nella foto. Riprova con più luce o più da vicino."
+          }
+        }
+      }
+    },
+    "scan_error_not_routine" : {
+      "comment" : "Routine scan (escanear rutina en papel).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This doesn't look like a workout routine. Try another photo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esto no parece una rutina de entrenamiento. Prueba con otra foto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ça ne ressemble pas à une routine d'entraînement. Essaie une autre photo."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non sembra una scheda di allenamento. Prova un'altra foto."
+          }
+        }
+      }
+    },
     "scan_error_nothing_found" : {
       "comment" : "Routine scan (escanear rutina en papel).",
       "localizations" : {

@@ -22,6 +22,10 @@ enum RoutineScanAvailability: Equatable {
 }
 
 enum RoutineScanError: Error, Equatable {
+    /// Vision found no text at all in the photo (blank page, photo without text, too blurry).
+    case noText
+    /// The photo has text, but nothing of a routine in it (a shopping list, a note).
+    case notARoutine
     /// The photo was read but no exercise came out of it.
     case nothingFound
     /// The model failed (guardrails, context window, assets) or produced nothing.

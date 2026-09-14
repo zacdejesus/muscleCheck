@@ -54,7 +54,7 @@ for case in cases:
     notes = []
 
     if case.get("expectNothing"):
-        ok = (err is not None and "nothingFound" in err) or (err is None and not drafts)
+        ok = (err is not None and any(k in err for k in ("nothingFound", "noText", "notARoutine"))) or (err is None and not drafts)
         bump(cat, "negTotal"); bump(cat, "negOk", 1 if ok else 0)
         verdict = "OK (no inventó)" if ok else f"MAL: {len(drafts)} ejercicios inventados" if drafts else f"error: {err}"
         if drafts: notes.append("inventó: " + ", ".join(d["name"] for d in drafts[:4]))
