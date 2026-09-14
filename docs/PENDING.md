@@ -61,10 +61,9 @@ El código está en `main`. Antes de subir:
   reps 81%, músculo 80%, grupo 81%, 8,4 s por escaneo (primer resultado a los 3,3 s).
   Segunda corrida, con los arreglos (encabezados fuera de la asignación, "5x5" en reps, filas
   "none"): detección 89%, series 95%, reps 86%, grupo 83%, 6,3 s por escaneo.
-- [ ] **Negativos**: con fotos que no son rutinas el modelo inventa ejercicios (y tarda 20–50 s)
-      → campo "¿es una rutina?" en el esquema y sacar ejemplos copiables ("8-12") del prompt.
-- [ ] **Diccionario ejercicio → músculo** en código: el modelo confunde por palabras
-      (Prensa → pecho ×5, Gemelos → piernas, Aperturas/Fondos → hombros, Jalón al pecho → pecho).
+- [ ] **Confirmar en el iPhone** el diccionario ejercicio → músculo y el pre-chequeo con Vision
+      juntos: se midieron repasando la salida de la v2 (músculo 98%, grupo 98%) y en el simulador
+      (28/28 rutinas pasan, 4/4 negativos rechazados), no en una corrida completa en device.
 - [ ] **Rutinas largas** (>10 filas) se degradan: 20 ejercicios → 11 bien, 10 inventados, 33 s.
       Sugerir "una rutina por foto" o partir la imagen.
 - [ ] **Hoja fotografiada de costado** → basura: detectar la orientación del texto (Vision).

@@ -54,4 +54,12 @@ Los casos y su respuesta correcta están definidos en `gen-cases.swift`.
 | Tiempo típico / máximo | 8,4 s / 50 s | 6,3 s / 22 s |
 
 v2 = sin encabezados de la hoja para asignar grupos, "5x5" en reps separado y filas "none"
-descartadas. Pendientes medidos: ver `docs/PENDING.md` (sección Escanear rutina).
+descartadas.
+
+Después de la v2:
+- **Diccionario ejercicio → músculo** (repasando la salida de la v2 por el código nuevo, sin volver
+  a correr el modelo): músculo 79% → **98%**, grupo 83% → **98%**.
+- **Pre-chequeo con Vision** (`RoutineTextGateTests`, corre en el simulador): 28/28 rutinas pasan,
+  4/4 negativos rechazados.
+
+Pendientes medidos: ver `docs/PENDING.md` (sección Escanear rutina).
