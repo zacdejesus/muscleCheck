@@ -55,6 +55,20 @@ El código está en `main`. Antes de subir:
       tipear números, menú de grupo, swipe para borrar, "Dar vuelta".
 - [ ] **Re-escanear la hoja que falló** (Prensa → Back, Bulgares → Shoulders) y confirmar que
       ahora caen en el grupo de piernas.
+- **Evaluación en iPhone** (2026-09-14, 32 imágenes sintéticas: a mano, PDF, screenshots y
+  negativos; cómo correrla: `tools/scan-eval/README.md`). El simulador NO corre el
+  modelo en macOS 26: solo se evalúa en device. Primera corrida: detección 86%, series 92%,
+  reps 81%, músculo 80%, grupo 81%, 8,4 s por escaneo (primer resultado a los 3,3 s).
+  Segunda corrida, con los arreglos (encabezados fuera de la asignación, "5x5" en reps, filas
+  "none"): detección 89%, series 95%, reps 86%, grupo 83%, 6,3 s por escaneo.
+- [ ] **Negativos**: con fotos que no son rutinas el modelo inventa ejercicios (y tarda 20–50 s)
+      → campo "¿es una rutina?" en el esquema y sacar ejemplos copiables ("8-12") del prompt.
+- [ ] **Diccionario ejercicio → músculo** en código: el modelo confunde por palabras
+      (Prensa → pecho ×5, Gemelos → piernas, Aperturas/Fondos → hombros, Jalón al pecho → pecho).
+- [ ] **Rutinas largas** (>10 filas) se degradan: 20 ejercicios → 11 bien, 10 inventados, 33 s.
+      Sugerir "una rutina por foto" o partir la imagen.
+- [ ] **Hoja fotografiada de costado** → basura: detectar la orientación del texto (Vision).
+- [ ] **Tachados** se cargan igual. **PDFs**: hoy solo fotos/capturas (no hay importador).
 - [ ] **CI a Xcode 27**: hoy `macos-26` compila la app SIN la feature (`#if compiler(>=6.4)`),
       así que `RoutineScanAI.swift` no se compila en CI.
 - [ ] **Archive con Crashlytics**: la subida de símbolos en primer plano sigue activa en archive;
