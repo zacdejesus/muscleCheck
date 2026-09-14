@@ -687,6 +687,9 @@
 				INFOPLIST_FILE = MuscleCheck/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Muscle check";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCameraUsageDescription = "MuscleCheck uses the camera to take your progress photos and to scan workout routines.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "MuscleCheck reads your workouts to automatically track your training";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "MuscleCheck can save your training sessions to the Health app";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -731,6 +734,9 @@
 				INFOPLIST_FILE = MuscleCheck/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Muscle check";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCameraUsageDescription = "MuscleCheck uses the camera to take your progress photos and to scan workout routines.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "MuscleCheck reads your workouts to automatically track your training";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "MuscleCheck can save your training sessions to the Health app";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
