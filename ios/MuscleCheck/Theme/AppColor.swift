@@ -27,3 +27,14 @@ extension Color {
     static let surface = Color(uiColor: .systemGroupedBackground)
     static let surfaceElevated = Color(uiColor: .secondarySystemGroupedBackground)
 }
+
+extension Color {
+    /// Amber for TEXT and small indicators (warnings, "¿Eran 8 series de 14?"). The Streak
+    /// amber reads at ~2:1 on white, so light mode uses a darker amber (#B45309, ≈5:1, WCAG
+    /// AA). Dark mode keeps the Streak hue (#FBBF24), already ≈10:1 on the dark card.
+    static let streakText = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0xFB / 255, green: 0xBF / 255, blue: 0x24 / 255, alpha: 1)
+            : UIColor(red: 0xB4 / 255, green: 0x53 / 255, blue: 0x09 / 255, alpha: 1)
+    })
+}
