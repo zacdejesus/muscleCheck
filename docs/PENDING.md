@@ -48,6 +48,22 @@ El código está en `main`. Antes de subir:
 - Archivar/borrar el repo viejo `~/Desktop/sideProjects/musclecheck-android` si todavía
   existe (su código vive en `android/`).
 
+## 📷 Escanear rutina (Feature 20, rama `feature/scan-routine`)
+
+- [ ] **Probar en iPhone con iOS 27** (el modelo no corre en el simulador): hoja manuscrita,
+      de revista y captura; foto vertical; rutina larga (>15 ejercicios); rangos y pirámides;
+      tipear números, menú de grupo, swipe para borrar, "Dar vuelta".
+- [ ] **Re-escanear la hoja que falló** (Prensa → Back, Bulgares → Shoulders) y confirmar que
+      ahora caen en el grupo de piernas.
+- [ ] **CI a Xcode 27**: hoy `macos-26` compila la app SIN la feature (`#if compiler(>=6.4)`),
+      así que `RoutineScanAI.swift` no se compila en CI.
+- [ ] **Archive con Crashlytics**: la subida de símbolos en primer plano sigue activa en archive;
+      si la red se cuelga, el archive se cuelga (matar `upload-symbols` o agregarle timeout).
+- [ ] **Duplicados de grupos que YA existen** (mismo músculo en dos idiomas): la prevención
+      está hecha (alta, presets y Coach usan `TargetMuscle`); unirlos ("Unir grupos") queda
+      pendiente y solo si la analítica muestra que les pasa a usuarios reales. Mientras tanto,
+      en el teléfono de desarrollo: mover los ejercicios y borrar el duplicado a mano.
+
 ## 🧹 Modo calidad de código (iOS)
 
 - Bug de test: `OnboardingUITests` falla por orden intra-suite (el hook `-resetOnboarding`
