@@ -52,14 +52,14 @@ struct RoutineImportTests {
             item("  Press banca ", sets: 4, reps: " 8-12 ", muscle: .chest),
             item("Remo", muscle: .back),
             item("Hip thrust", muscle: .glutes),
-            item("Plancha"),
+            item("Movilidad de cadera"),
             item("Curl", sets: 45),
             item("   "),
         ])
 
         let drafts = RoutineImport.drafts(from: routine, groups: [pecho, espalda])
 
-        #expect(drafts.map(\.name) == ["Press banca", "Remo", "Hip thrust", "Plancha", "Curl"])
+        #expect(drafts.map(\.name) == ["Press banca", "Remo", "Hip thrust", "Movilidad de cadera", "Curl"])
         #expect(drafts[0].group == .existing(pecho.id))
         #expect(drafts[0].sets == 4)
         // Stored value is the range's minimum; the literal is kept for the hint.
@@ -243,7 +243,7 @@ struct RoutineImportTests {
         let chest = group("Chest")
         let pecho = group("Pecho", exercises: ["Press banca", "Aperturas"])
 
-        #expect(groupFor(item("Fondos", muscle: .chest), in: [chest, pecho]) == .existing(pecho.id))
+        #expect(groupFor(item("Aperturas", muscle: .chest), in: [chest, pecho]) == .existing(pecho.id))
     }
 
     @Test
@@ -284,6 +284,39 @@ struct RoutineImportTests {
         #expect(drafts[0].group == .existing(piernas.id))   // new exercise → the legs group in use
         #expect(drafts[1].group == .existing(legs.id))      // already in Legs → stays with it
         #expect(drafts[2].group == .existing(legs.id))
+    }
+
+    @Test
+    func theCatalogBeatsTheModelsGuess() {
+        // Seen on device: "Prensa" (leg press) came back as chest five times.
+        let pecho = group("Pecho")
+        let piernas = group("Piernas")
+        let espalda = group("Espalda")
+
+        #expect(groupFor(item("Prensa", muscle: .chest), in: [pecho, piernas]) == .existing(piernas.id))
+        #expect(groupFor(item("Jalón al pecho", muscle: .chest), in: [pecho, espalda]) == .existing(espalda.id))
+    }
+
+    @Test
+    func aMuscleNamedInTheExerciseBeatsTheModel() {
+        let piernas = group("Piernas")
+        let hombros = group("Hombros")
+
+        #expect(groupFor(item("Movilidad de hombros", muscle: .legs), in: [piernas, hombros]) == .existing(hombros.id))
+    }
+
+    @Test
+    func knownCardioGetsNoGroupWhateverTheModelSays() {
+        #expect(groupFor(item("Cinta 20 min", muscle: .core), in: [group("Abdomen")]) == nil)
+    }
+
+    @Test
+    func whereTheUserKeepsAnExerciseBeatsTheCatalog() {
+        // The user keeps "Aperturas" in Hombros: their own list wins over the table.
+        let pecho = group("Pecho")
+        let hombros = group("Hombros", exercises: ["Aperturas"])
+
+        #expect(groupFor(item("Aperturas"), in: [pecho, hombros]) == .existing(hombros.id))
     }
 
     // MARK: - Drafts → model

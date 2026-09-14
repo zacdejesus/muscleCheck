@@ -101,23 +101,34 @@ enum RoutineImport {
             let reps = parseReps(pair.reps)
             // Keep the literal only when it says more than the stored number.
             let repRange = (pair.reps.isEmpty || pair.reps == reps.map(String.init)) ? nil : pair.reps
+            let muscle = resolvedMuscle(exercise: name, modelMuscle: item.muscle)
 
             return ScannedExerciseDraft(
                 name: name,
                 sets: sets,
                 reps: reps,
                 repRange: repRange,
-                group: groupChoice(exercise: name, muscle: item.muscle, groups: groups),
+                group: groupChoice(exercise: name, muscle: muscle, groups: groups),
                 lowConfidence: item.lowConfidence || setsMisread || setsAndRepsLookSwapped(sets: sets, reps: reps),
-                suggestedGroupName: item.muscle?.localizedName ?? ""
+                suggestedGroupName: muscle?.localizedName ?? ""
             )
+        }
+    }
+
+    /// The muscle a scanned exercise trains, most certain source first: the exercise catalog (code
+    /// knows "Prensa" is legs), then a muscle named in the exercise itself ("Movilidad de hombros"),
+    /// then the model's guess. Known cardio ("Cinta 20 min") has none.
+    static func resolvedMuscle(exercise: String, modelMuscle: TargetMuscle?) -> TargetMuscle? {
+        switch ExerciseCatalog.lookup(exercise) {
+        case .known(let muscle): return muscle
+        case .unknown: return TargetMuscle.single(inName: exercise) ?? modelMuscle
         }
     }
 
     /// Where a scanned exercise lands, most certain signal first:
     /// 1. The exercise already exists in one of the groups → that group. Deterministic, and it's
     ///    what kept "Prensa" in Legs while the model said chest.
-    /// 2. The model's muscle → the best of the user's groups for it (the same muscle in two
+    /// 2. The exercise's muscle (`resolvedMuscle`) → the best of the user's groups for it (the same muscle in two
     ///    languages is resolved by `bestGroup`), or a new group named in the app's language.
     /// 3. Nothing: the user picks (and the import stays blocked until they do).
     ///

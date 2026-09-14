@@ -59,7 +59,7 @@ struct RoutineScanViewModelTests {
         let scanner = MockRoutineScanner()
         scanner.result = .success(ScannedRoutine(items: [
             item("Press banca", sets: 4, reps: "8-12", muscle: .chest),
-            item("Aperturas", low: true),
+            item("Movilidad de cadera", low: true),
         ]))
         let vm = RoutineScanViewModel(scanner: scanner)
 
@@ -81,7 +81,7 @@ struct RoutineScanViewModelTests {
     func pickingTheMissingGroupEnablesTheImport() async {
         let pecho = MuscleEntry(name: "Pecho", category: "gym")
         let scanner = MockRoutineScanner()
-        scanner.result = .success(ScannedRoutine(items: [item("Aperturas")]))
+        scanner.result = .success(ScannedRoutine(items: [item("Movilidad de cadera")]))
         let vm = RoutineScanViewModel(scanner: scanner)
         await vm.scan(photo, groups: [pecho])
         #expect(!vm.canImport)

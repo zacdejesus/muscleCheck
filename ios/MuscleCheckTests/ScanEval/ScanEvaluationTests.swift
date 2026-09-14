@@ -67,9 +67,12 @@ struct ScanEvaluationTests {
                 }
                 out["seconds"] = Date().timeIntervalSince(start)
                 out["items"] = routine.items.map(itemJSON)
-                let named = routine.items.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-                let drafts = RoutineImport.drafts(from: routine, groups: groups)
-                out["drafts"] = zip(drafts, named).map { draftJSON($0.0, item: $0.1, groups: groups) }
+                // Pair each draft with the row it came from by name (drafts drop blank and placeholder rows).
+                var pool = routine.items
+                out["drafts"] = RoutineImport.drafts(from: routine, groups: groups).map { draft -> [String: Any] in
+                    let index = pool.firstIndex { $0.name.trimmingCharacters(in: .whitespacesAndNewlines) == draft.name }
+                    return draftJSON(draft, modelMuscle: index.map { pool.remove(at: $0) }?.muscle, groups: groups)
+                }
             } catch {
                 out["seconds"] = Date().timeIntervalSince(start)
                 out["error"] = String(describing: error)
@@ -107,7 +110,7 @@ struct ScanEvaluationTests {
          "muscle": item.muscle?.rawValue ?? NSNull(), "low": item.lowConfidence]
     }
 
-    private func draftJSON(_ draft: ScannedExerciseDraft, item: ScannedRoutine.Item, groups: [MuscleEntry]) -> [String: Any] {
+    private func draftJSON(_ draft: ScannedExerciseDraft, modelMuscle: TargetMuscle?, groups: [MuscleEntry]) -> [String: Any] {
         var kind = "none"
         var groupName: String?
         switch draft.group {
@@ -116,7 +119,9 @@ struct ScanEvaluationTests {
         case nil: break
         }
         return ["name": draft.name, "sets": draft.sets ?? NSNull(), "reps": draft.reps ?? NSNull(),
-                "repRange": draft.repRange ?? NSNull(), "muscle": item.muscle?.rawValue ?? NSNull(),
+                "repRange": draft.repRange ?? NSNull(),
+                "muscle": RoutineImport.resolvedMuscle(exercise: draft.name, modelMuscle: modelMuscle)?.rawValue ?? NSNull(),
+                "modelMuscle": modelMuscle?.rawValue ?? NSNull(),
                 "groupKind": kind, "groupName": groupName ?? NSNull(),
                 "groupMuscles": groupName.map { TargetMuscle.muscles(inName: $0).map(\.rawValue).sorted() } ?? [],
                 "lowConfidence": draft.lowConfidence, "suggestsSwap": draft.suggestsSwap]
