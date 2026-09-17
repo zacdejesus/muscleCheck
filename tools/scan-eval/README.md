@@ -12,7 +12,7 @@ manifiesto viven en `ios/MuscleCheckTests/ScanEval/`; el test es `ScanEvaluation
 1. iPhone conectado y **desbloqueado** (bloqueo automático en "Nunca" mientras corre).
 2. Correr el test y guardar el log:
    ```sh
-   DEVELOPER_DIR=/Applications/Xcode27.app/Contents/Developer xcodebuild test \
+   xcodebuild test \
      -project ios/MuscleCheck.xcodeproj -scheme MuscleCheck \
      -destination "id=<UDID del iPhone>" \
      -only-testing:MuscleCheckTests/ScanEvaluationTests \

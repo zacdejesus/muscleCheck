@@ -190,6 +190,43 @@ Implementado. HealthKitManager singleton con authorization, workout fetching (ú
 
 Archivos nuevos: `managers/HealthKitManager.swift`, `managers/protocols/HealthKitManagerProtocol.swift`, `Views/HealthKitSuggestionsView.swift`. Modificados: MuscleCheck.entitlements, Info.plist, UserDefaultsManager, SettingsViewModel, SettingsView, ContentView, ContentViewModel.
 
+#### 📝 Escribir EN HealthKit — investigado 2026-09-17, NO construido
+
+**¿Se puede? Sí**, y media parte ya está: el entitlement `com.apple.developer.healthkit` existe y
+`INFOPLIST_KEY_NSHealthUpdateUsageDescription` ya promete *"MuscleCheck can save your training
+sessions to the Health app"*. Hoy esa promesa **no se cumple**: `HealthKitManager` pide
+`requestAuthorization(toShare: [], read: [workoutType])` — solo lectura. Escribir requiere sumar
+`HKObjectType.workoutType()` (y los quantity types que se adjunten) a `toShare:`.
+
+**API vigente** (verificada compilando contra el SDK de iOS 27):
+- `HKWorkoutBuilder(healthStore:configuration:device:)` → `beginCollection(at:)` →
+  `addSamples(_:)` / `addMetadata(_:)` → `endCollection(at:)` → `finishWorkout()`.
+- `HKWorkout(activityType:start:end:)` está **deprecado desde iOS 17**: no usarlo.
+- `HKWorkoutConfiguration.activityType` acepta los tipos que ya mapeamos al leer
+  (`.traditionalStrengthTraining`, `.yoga`, `.pilates`, `.running`, `.flexibility`, `.coreTraining`).
+
+**Qué se puede escribir con los datos que tenemos.** `WorkoutSession` guarda `date` (timestamp real
+del registro), `weight`, `sets`, `reps`, `durationSeconds` y `distanceMeters`:
+- **Sí:** entradas con métrica `duration` o `distanceDuration` (yoga, pilates, cardio, running) →
+  workout con inicio y fin reales, más `distanceWalkingRunning` cuando hay distancia.
+- **No, gimnasio (`strength`):** un workout exige inicio y fin y no registramos duración. Inventarla
+  mete datos falsos en Salud; pedirla rompe el flujo de "2 segundos".
+- **No hay metadato oficial de series/reps** (verificado en `HKMetadata.h`): el detalle por ejercicio
+  no es representable, Salud solo mostraría "entrenamiento". Sin energía activa el workout aporta
+  poco a los anillos, y estimar calorías sería otro dato inventado.
+
+**Duplicados, lo más delicado:**
+- `HKMetadataKeySyncIdentifier` + `HKMetadataKeySyncVersion`: guardar con el mismo identificador
+  **reemplaza** nuestro registro anterior si la versión es mayor (identificador = UUID de la sesión,
+  versión = contador al editar). Resuelve duplicar lo NUESTRO al re-guardar.
+- **No** resuelve el eco: una sesión que vino de un workout importado (`logHealthKitWorkout`)
+  escrita de vuelta duplica lo que ya registró el Apple Watch. Hoy no marcamos el origen; haría falta
+  un flag aditivo en `WorkoutSession` (p. ej. `importedFromHealthKit`) para nunca reescribirlas.
+
+**Recomendación:** escribir solo sesiones con duración real, nunca las importadas, detrás de Pro como
+la lectura. Si se decide no construirlo, cambiar el texto de `NSHealthUpdateUsageDescription` para que
+no prometa guardar.
+
 ---
 
 ### ⏳ Feature 10: Apple Watch App (branch: `feature/apple-watch`) — DIFERIDO
@@ -346,7 +383,7 @@ Archivos nuevos: `models/Exercise.swift`, `Views/GroupDetailView.swift`, tests `
 ### 🚧 Feature 20: Escanear rutina en papel (branch: `feature/scan-routine`)
 Pedido **explícitamente** (sep 2026), fuera del modo calidad. El usuario le saca una foto a una rutina (papel, revista o captura), el modelo on-device la lee y la app carga los ejercicios — **siempre después de una revisión editable**. La IA propone un borrador; nunca escribe en el store sin confirmación.
 
-**Gate: solo iOS 27** (entrada de imágenes de FoundationModels, `Attachment<ImageAttachmentContent>`). Tres chequeos: `@available(iOS 27)`, `SystemLanguageModel.availability` y `capabilities.contains(.vision)` (disponible ≠ acepta imágenes). Todo el código iOS 27 vive en `managers/RoutineScanAI.swift` dentro de `#if compiler(>=6.4)`: Xcode 26 y el runner `macos-26` compilan **sin** la feature (`RoutineScanSupport` la reporta no disponible). Para que el CI la compile, el workflow tiene que pasar a Xcode 27.
+**Gate: solo iOS 27** (entrada de imágenes de FoundationModels, `Attachment<ImageAttachmentContent>`). Tres chequeos: `@available(iOS 27)`, `SystemLanguageModel.availability` y `capabilities.contains(.vision)` (disponible ≠ acepta imágenes). Todo el código iOS 27 vive en `managers/RoutineScanAI.swift` dentro de `#if compiler(>=6.4)`: el runner `macos-26` compila **sin** la feature (desde el 2026-09-17 la Mac solo tiene Xcode 27, así que ese camino ya no se puede reproducir localmente) (`RoutineScanSupport` la reporta no disponible). Para que el CI la compile, el workflow tiene que pasar a Xcode 27.
 
 **Arquitectura (Dependency Inversion):**
 - `RoutineScanning` (protocolo version-agnostic, `@MainActor`) ← `FoundationModelsRoutineScanner` (iOS 27). El VM (`RoutineScanViewModel`, iOS 18) recibe `(any RoutineScanning)?` inyectado → sin el truco `aiStorage: Any?` del Coach, y testeable con un mock.
