@@ -18,9 +18,12 @@ concurrency:
 jobs:
   test:
     name: Build & unit test
-    # Xcode 26 is required: the AI coach compiles against the iOS 26
-    # FoundationModels SDK, gated at runtime but resolved at build time.
-    runs-on: macos-26
+    # xcode-27: the routine scan (Feature 20) compiles against the iOS 27 FoundationModels
+    # SDK — image APIs that don't exist in the iOS 26 SDK. GitHub marks this image as
+    # "preview" (it ships Xcode 27.0 beta and can queue slowly); if it turns flaky, go back
+    # to `macos-26` AND restore the `#if compiler(>=6.4)` guards around RoutineScanAI.swift,
+    # RoutineScanSupport and ScanEvaluationTests, which compiled the feature out on Xcode 26.
+    runs-on: xcode-27
     timeout-minutes: 30
 
     steps:

@@ -9,12 +9,10 @@
 //  that list was where it went wrong. Validation and every mapping rule live in
 //  `RoutineImport`, which is plain testable code.
 //
-//  Wrapped in `#if compiler(>=6.4)`: the iOS 27 SDK ships with Xcode 27 (Swift 6.4).
-//  Older toolchains (Xcode 26 locally, the macos-26 CI runner) skip this file and
-//  `RoutineScanSupport` reports the feature as unavailable.
+//  Everything here is `@available(iOS 27, *)`: the project builds with Xcode 27 (iOS 27 SDK)
+//  locally and in CI, so the file no longer needs a toolchain guard.
 //
 
-#if compiler(>=6.4)
 import FoundationModels
 import Foundation
 import CoreGraphics
@@ -177,4 +175,3 @@ final class FoundationModelsRoutineScanner: RoutineScanning {
         return ScannedRoutine(items: items)
     }
 }
-#endif

@@ -68,9 +68,10 @@ El código está en `main`. Antes de subir:
       Sugerir "una rutina por foto" o partir la imagen.
 - [ ] **Hoja fotografiada de costado** → basura: detectar la orientación del texto (Vision).
 - [ ] **Tachados** se cargan igual. **PDFs**: hoy solo fotos/capturas (no hay importador).
-- [ ] **CI a Xcode 27**: hoy `macos-26` compila la app SIN la feature (`#if compiler(>=6.4)`),
-      así que `RoutineScanAI.swift` no se compila en CI. Desde el 2026-09-17 la Mac tiene solo
-      Xcode 27: ese camino ya no se puede probar localmente, solo en el CI.
+- [ ] **Vigilar el CI en `xcode-27`** (2026-09-17): el workflow pasó a esa imagen y se sacaron las
+      guardas `#if compiler(>=6.4)`, así que el escaneo ahora se compila y se testea en CI. GitHub
+      la marca como preview (Xcode 27.0 beta, puede encolar lento): si molesta, volver a `macos-26`
+      + guardas, como explica el comentario del workflow.
 - [ ] **Archive con Crashlytics**: la subida de símbolos en primer plano sigue activa en archive;
       si la red se cuelga, el archive se cuelga (matar `upload-symbols` o agregarle timeout).
 - [ ] **Duplicados de grupos que YA existen** (mismo músculo en dos idiomas): la prevención

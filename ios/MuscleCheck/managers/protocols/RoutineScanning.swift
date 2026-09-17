@@ -49,25 +49,19 @@ protocol RoutineScanning {
 @MainActor
 enum RoutineScanSupport {
 
-    /// The production scanner, or nil where it can't exist. Two gates:
-    /// `#if compiler` keeps Xcode 26 (Swift 6.3, no iOS 27 SDK) and CI building — the
-    /// feature is simply absent there; `#available` handles the device's OS.
+    /// The production scanner, or nil on an OS older than iOS 27.
     static func makeScanner() -> (any RoutineScanning)? {
-        #if compiler(>=6.4)
         if #available(iOS 27, *) {
             return FoundationModelsRoutineScanner()
         }
-        #endif
         return nil
     }
 
     /// Whether the home shows the entry point, without building a scanner.
     static var availability: RoutineScanAvailability {
-        #if compiler(>=6.4)
         if #available(iOS 27, *) {
             return FoundationModelsRoutineScanner.currentAvailability
         }
-        #endif
         return .unavailable
     }
 }

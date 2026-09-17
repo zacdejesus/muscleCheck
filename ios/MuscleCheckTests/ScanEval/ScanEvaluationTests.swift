@@ -8,7 +8,7 @@
 //  tools/scan-eval/score.py. How to run: tools/scan-eval/README.md.
 //
 
-#if compiler(>=6.4) && !targetEnvironment(simulator)
+#if !targetEnvironment(simulator)
 import Testing
 @testable import MuscleCheck
 import FoundationModels
