@@ -421,7 +421,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n# El paso anterior sube solo el dSYM de ESTE target. En un archive la carpeta\n# tiene tambien el de MuscleCheckWidgetExtension, que si no queda sin simbolicar.\n# || true: que un fallo de subida nunca rompa el build.\n\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols\" -gsp \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist\" -p ios \"${DWARF_DSYM_FOLDER_PATH}\" || true\n";
+			shellScript = "# Simulador: no hay nada util que simbolicar, y upload-symbols puede quedar colgado\n# esperando la red sin timeout (bloqueaba todos los builds con Xcode 27).\nif [ \"${PLATFORM_NAME}\" = \"iphonesimulator\" ]; then\n  exit 0\nfi\n\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n# El paso anterior sube solo el dSYM de ESTE target. En un archive la carpeta\n# tiene tambien el de MuscleCheckWidgetExtension, que si no queda sin simbolicar.\n# Solo en archive (ACTION=install): esta subida corre en primer plano y, si la red\n# se cuelga, bloquea el build; en un build de desarrollo no vale ese riesgo.\n# || true: que un fallo de subida nunca rompa el build.\nif [ \"${ACTION}\" = \"install\" ]; then\n  \"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols\" -gsp \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist\" -p ios \"${DWARF_DSYM_FOLDER_PATH}\" || true\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -687,6 +687,9 @@
 				INFOPLIST_FILE = MuscleCheck/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Muscle check";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCameraUsageDescription = "MuscleCheck uses the camera to take your progress photos and to scan workout routines.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "MuscleCheck reads your workouts to automatically track your training";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "MuscleCheck can save your training sessions to the Health app";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -731,6 +734,9 @@
 				INFOPLIST_FILE = MuscleCheck/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Muscle check";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCameraUsageDescription = "MuscleCheck uses the camera to take your progress photos and to scan workout routines.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "MuscleCheck reads your workouts to automatically track your training";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "MuscleCheck can save your training sessions to the Health app";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

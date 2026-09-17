@@ -190,6 +190,43 @@ Implementado. HealthKitManager singleton con authorization, workout fetching (ú
 
 Archivos nuevos: `managers/HealthKitManager.swift`, `managers/protocols/HealthKitManagerProtocol.swift`, `Views/HealthKitSuggestionsView.swift`. Modificados: MuscleCheck.entitlements, Info.plist, UserDefaultsManager, SettingsViewModel, SettingsView, ContentView, ContentViewModel.
 
+#### 📝 Escribir EN HealthKit — investigado 2026-09-17, NO construido
+
+**¿Se puede? Sí**, y media parte ya está: el entitlement `com.apple.developer.healthkit` existe y
+`INFOPLIST_KEY_NSHealthUpdateUsageDescription` ya promete *"MuscleCheck can save your training
+sessions to the Health app"*. Hoy esa promesa **no se cumple**: `HealthKitManager` pide
+`requestAuthorization(toShare: [], read: [workoutType])` — solo lectura. Escribir requiere sumar
+`HKObjectType.workoutType()` (y los quantity types que se adjunten) a `toShare:`.
+
+**API vigente** (verificada compilando contra el SDK de iOS 27):
+- `HKWorkoutBuilder(healthStore:configuration:device:)` → `beginCollection(at:)` →
+  `addSamples(_:)` / `addMetadata(_:)` → `endCollection(at:)` → `finishWorkout()`.
+- `HKWorkout(activityType:start:end:)` está **deprecado desde iOS 17**: no usarlo.
+- `HKWorkoutConfiguration.activityType` acepta los tipos que ya mapeamos al leer
+  (`.traditionalStrengthTraining`, `.yoga`, `.pilates`, `.running`, `.flexibility`, `.coreTraining`).
+
+**Qué se puede escribir con los datos que tenemos.** `WorkoutSession` guarda `date` (timestamp real
+del registro), `weight`, `sets`, `reps`, `durationSeconds` y `distanceMeters`:
+- **Sí:** entradas con métrica `duration` o `distanceDuration` (yoga, pilates, cardio, running) →
+  workout con inicio y fin reales, más `distanceWalkingRunning` cuando hay distancia.
+- **No, gimnasio (`strength`):** un workout exige inicio y fin y no registramos duración. Inventarla
+  mete datos falsos en Salud; pedirla rompe el flujo de "2 segundos".
+- **No hay metadato oficial de series/reps** (verificado en `HKMetadata.h`): el detalle por ejercicio
+  no es representable, Salud solo mostraría "entrenamiento". Sin energía activa el workout aporta
+  poco a los anillos, y estimar calorías sería otro dato inventado.
+
+**Duplicados, lo más delicado:**
+- `HKMetadataKeySyncIdentifier` + `HKMetadataKeySyncVersion`: guardar con el mismo identificador
+  **reemplaza** nuestro registro anterior si la versión es mayor (identificador = UUID de la sesión,
+  versión = contador al editar). Resuelve duplicar lo NUESTRO al re-guardar.
+- **No** resuelve el eco: una sesión que vino de un workout importado (`logHealthKitWorkout`)
+  escrita de vuelta duplica lo que ya registró el Apple Watch. Hoy no marcamos el origen; haría falta
+  un flag aditivo en `WorkoutSession` (p. ej. `importedFromHealthKit`) para nunca reescribirlas.
+
+**Recomendación:** escribir solo sesiones con duración real, nunca las importadas, detrás de Pro como
+la lectura. Si se decide no construirlo, cambiar el texto de `NSHealthUpdateUsageDescription` para que
+no prometa guardar.
+
 ---
 
 ### ⏳ Feature 10: Apple Watch App (branch: `feature/apple-watch`) — DIFERIDO
@@ -340,6 +377,38 @@ Implementado (Fase 2). Los grupos musculares ahora contienen **ejercicios** (ej.
 Archivos nuevos: `models/Exercise.swift`, `Views/GroupDetailView.swift`, tests `ExerciseTests`/`MuscleEntryExerciseTests`. Modificados: `MuscleEntry` (métodos de ejercicios + `exercisesSummary`), `SessionLogView` (→ `SessionLogTarget`), `MuscleEntryRowView`, `ContentViewModel`, `MonthCalendarCalculator`/`WeekDetailSection` (historial por ejercicio), `Localizable.xcstrings`.
 
 **Versión:** 2.2.0
+
+---
+
+### 🚧 Feature 20: Escanear rutina en papel (branch: `feature/scan-routine`)
+Pedido **explícitamente** (sep 2026), fuera del modo calidad. El usuario le saca una foto a una rutina (papel, revista o captura), el modelo on-device la lee y la app carga los ejercicios — **siempre después de una revisión editable**. La IA propone un borrador; nunca escribe en el store sin confirmación.
+
+**Gate: solo iOS 27** (entrada de imágenes de FoundationModels, `Attachment<ImageAttachmentContent>`). Tres chequeos: `@available(iOS 27)`, `SystemLanguageModel.availability` y `capabilities.contains(.vision)` (disponible ≠ acepta imágenes). Desde el 2026-09-17 **todo se construye con Xcode 27** (la Mac tiene solo esa versión y el CI usa la imagen `xcode-27`), así que ya no hay guardas `#if compiler`: el escaneo se compila y se testea siempre, y el gate sigue siendo de runtime. Esa imagen está en preview con Xcode 27 beta; el comentario del workflow explica cómo volver a `macos-26` con las guardas si se vuelve inestable.
+
+**Arquitectura (Dependency Inversion):**
+- `RoutineScanning` (protocolo version-agnostic, `@MainActor`) ← `FoundationModelsRoutineScanner` (iOS 27). El VM (`RoutineScanViewModel`, iOS 18) recibe `(any RoutineScanning)?` inyectado → sin el truco `aiStorage: Any?` del Coach, y testeable con un mock.
+- Tres formas del dato: `@Generable ExtractedRoutine` (salida cruda) → `ScannedRoutine` (lo que el modelo **leyó**) → `ScannedExerciseDraft` (lo que el usuario **edita**) → modelo real vía `RoutineImport` (puro, sin LLM ni contexto; los grupos nuevos entran por closure inyectada).
+- La persistencia queda en `ContentViewModel.importScannedRoutine` (dueño del store y del refresh de la home).
+- Imagen: `RoutineScanImage.prepare` reescala a 1600 px y hornea la orientación en un solo render (`CGImage` no tiene orientación); `@concurrent` porque el target tiene Approachable Concurrency y un `nonisolated async` correría en el main actor.
+
+**Mapeo sin tocar el modelo de datos:**
+- **Grupo decidido en código, no por índice.** El modelo NO ve los grupos del usuario (con el mismo músculo en dos idiomas — "Back"/"Espalda", porque los presets se guardan con el texto del idioma de ese momento — elegir un índice de esa lista fallaba: "Prensa" → Back, "Bulgares" → Shoulders). Devuelve el músculo como enum cerrado (`ExtractedMuscle` → `TargetMuscle`) y `RoutineImport.groupChoice` asigna en orden: (1) el ejercicio ya existe en un grupo → ese grupo; (2) músculo → `bestGroup` (grupo de un solo músculo antes que combinado, luego el entrenado más reciente, luego más ejercicios) o grupo nuevo con el nombre localizado; (3) sin grupo. **Los encabezados de la hoja NO se usan**: en la evaluación en device el modelo llenaba ese campo en todas las filas con cualquier cosa ("legs", "AMRAP", el nombre del ejercicio) y mandaba un PDF entero a Legs. `TargetMuscle` = tabla de sinónimos ES/EN/FR/IT sobre texto plegado (`NameMatching.fold`: sin mayúsculas, tildes ni puntuación; "dos" solo como nombre completo). Sin cambios al modelo de datos.
+- Series/reps de la hoja son un **plan**, no historial → se guardan como **sesión plantilla** en el ejercicio con fecha centinela `RoutineImport.templateSessionDate` (`Date.distantPast`). No marca el grupo, no aparece en historial/racha/stats (leen las sesiones del grupo), y precarga `SessionLogView` vía `lastSets`/`lastReps` hasta el primer registro real. **Chequear siempre con `RoutineImport.isTemplate`, nunca comparar la fecha a mano.**
+- **Prevención de duplicados por idioma (fuera del escaneo):** la misma tabla evita crearlos y usarlos. `TargetMuscle.repeatsMuscle(ofName:in:)` (mismo músculo con OTRO nombre en la categoría; combinados nunca cuentan) oculta el chip "Pecho" en el alta si ya existe "Chest" y lo saltea en `addPresetEntries` (onboarding + Settings). `GroupRanking.onePerMuscle` deja un grupo por músculo en `WorkoutEligibility` (el Coach no puede sugerir "Chest + Pecho" y el descanso se juzga sobre el músculo). Unir los duplicados que ya existen: diferido (ver PENDING).
+- **Limpieza de lo que devuelve el modelo** (hallazgos de la evaluación en device): si escribe "5x5" entero en reps con series vacías o en 1, se usa el par (`RoutineImport.splitSetsAndReps`); filas llamadas "none"/"null" (las inventa con fotos que no son rutinas) se descartan.
+- **Músculo decidido en código:** `ExerciseCatalog` (~200 ejercicios comunes ES/EN/FR/IT; gana la frase más específica; ambiguos documentados: peso muerto → espalda, fondos → tríceps) → músculo nombrado en el propio ejercicio → recién después el modelo (`RoutineImport.resolvedMuscle`). El cardio conocido no tiene grupo. Medido repasando la salida del iPhone: músculo 79% → 98%, grupo 83% → 98%.
+- **Pre-chequeo con Vision antes del modelo** (`RoutineTextGate`): sin texto → `noText` ("No encontré texto en la foto"); texto sin señales de rutina (par series×reps, ejercicio del catálogo o palabra de entrenamiento) → `notARoutine`. Si Vision falla, la foto pasa igual. En las 32 imágenes de la evaluación: 28/28 rutinas pasan, 4/4 negativos rechazados.
+- Rango de reps → **mínimo** ("8-12" → 8, "12-10-8" → 8). El borrador guarda `reps: Int?` + `repRange` (el literal de la hoja); la card muestra "La hoja dice 8-12 · se guarda 8" mientras el valor no se edite. Series fuera de 1…20 = mala lectura → nil + punto ámbar.
+- Orden **series × reps**: el prompt le da la convención al modelo ("4x8" = 4 series de 8) y le prohíbe invertir. Red de seguridad en código, **en dos niveles**: `setsAndRepsLookSwapped` (series > 6 y > reps, p.ej. "8×4") → punto ámbar; `setsAndRepsLookImplausible` (series > 10 y reps ≤ 10, p.ej. "14×8") → aviso "¿Eran 8 series de 14?" + botón **"Dar vuelta"** (un tap invierte, limpia el rango y el punto). **Nunca se invierte sola** — un "8×3" pesado es real.
+- Duplicados (mismo nombre normalizado en el grupo) se saltean sin tocar el existente. Un grupo check-only que recibe ejercicios pasa a `.strength` (si no, `canOpenGroup` los dejaría inaccesibles).
+
+**UX (ideas del handoff de diseño aplicadas sobre el estilo de la app, sep 2026 — no una copia pixel a pixel):** la home ya **no tiene FAB**: `HomeActionBar` (se aplica con `.homeActionBar(...)`: en iOS 26+ es un `safeAreaBar` **transparente** con botones Liquid Glass — `.glass` / `.glassProminent` — y la lista pasa por debajo con el scroll edge effect; en iOS 18–25, `safeAreaInset` con fondo opaco para que la lista no se transparente por los `.bordered`; sin sombras) apila las acciones de IA disponibles ("Día sugerido", "Escanear rutina") arriba de "Agregar ejercicio" a ancho completo. Las de IA van lado a lado **a ancho igual** con `EqualWidthHStack` (un `Layout` cuyo ancho ideal es "label más ancho × cantidad", así `ViewThatFits` solo las pone juntas si cada label entra en su mitad — un `HStack` truncaba); si no entran (FR/IT, Dynamic Type XXL) se apilan. Botones **nativos**: IA `.glass` (iOS 26+) / `.bordered` `.controlSize(.regular)` subheadline semibold (secundarias, más livianas), "Agregar" `.glassProminent` / `.borderedProminent` `.controlSize(.large)`, todo `.tint(.brand)`, sin colores propios. Textos del escaneo en **tú** (convención de la app). Se arma desde el array de acciones disponibles, así ambas / una / ninguna son el mismo layout (el id `home.addFAB` y el origen de analítica `fab` se mantienen). Sheet de 4 estados: foto → leyendo (streaming) → **revisión: una card compacta por ejercicio, siempre expandida** (`surfaceElevated` + campos `tertiarySystemFill`; nombre, series y reps con sufijo y grupo en `Menu` en una línea; en tamaños de accesibilidad el grupo baja; duda = punto ámbar `.streak`, sin fondos amarillos; sin grupo = borde ámbar y bloquea, con caption que dice qué falta; swipe para borrar; swipe-to-dismiss deshabilitado) → "Rutina cargada · N ejercicios agregados".
+
+**Pendiente:** probar en device real (iPhone 15 Pro+ con iOS 27 — el modelo no corre en el simulador), tuning del prompt con hojas manuscritas reales.
+
+Archivos nuevos: `models/ScannedRoutine.swift`, `managers/RoutineImport.swift`, `managers/RoutineScanAI.swift`, `managers/protocols/RoutineScanning.swift`, `viewModels/RoutineScanViewModel.swift`, `Views/scan/RoutineScanView.swift`, `Views/scan/ScannedExerciseRow.swift`, tests `RoutineImportTests`/`RoutineScanViewModelTests`. Modificados: `ContentView`, `ContentViewModel`, `Localizable.xcstrings`, permiso de cámara (build settings).
+
+**Versión:** post-2.2.2.
 
 ---
 

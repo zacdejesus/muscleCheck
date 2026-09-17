@@ -68,6 +68,7 @@ struct AddExerciseView: View {
     private var rows: [PickerRow] {
         var seen = Set<String>()
         var result: [PickerRow] = []
+        let categoryEntries = entries.filter { $0.category == selectedCategoryID }
         let entriesByName = Dictionary(
             entries.map { (MuscleEntryManager.normalizedName($0.name), $0) },
             uniquingKeysWith: { first, _ in first }
@@ -78,6 +79,9 @@ struct AddExerciseView: View {
                 let normalized = MuscleEntryManager.normalizedName(name)
                 guard seen.insert(normalized).inserted else { continue }
                 let existing = entriesByName[normalized]
+                // Same muscle already in this category under another name (a preset added in
+                // another language): don't offer it again — the existing row is listed below.
+                if existing == nil, TargetMuscle.repeatsMuscle(ofName: name, in: categoryEntries) { continue }
                 result.append(PickerRow(
                     id: preset.nameKey,
                     name: name,
@@ -372,8 +376,11 @@ struct AddExerciseView: View {
     private func hasPendingPresets(_ categoryID: String) -> Bool {
         guard let builtIn = ActivityCategory(rawValue: categoryID) else { return false }
         let added = addedNames
+        let categoryEntries = entries.filter { $0.category == categoryID }
         return builtIn.presetEntries.contains {
-            !added.contains(MuscleEntryManager.normalizedName(NSLocalizedString($0.nameKey, comment: "")))
+            let name = NSLocalizedString($0.nameKey, comment: "")
+            return !added.contains(MuscleEntryManager.normalizedName(name))
+                && !TargetMuscle.repeatsMuscle(ofName: name, in: categoryEntries)
         }
     }
 }

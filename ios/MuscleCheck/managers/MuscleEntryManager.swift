@@ -71,15 +71,19 @@ final class MuscleEntryManager {
     }
 
     /// Adds all preset entries for a given activity category, skipping duplicates
-    /// (same case-insensitive rule as `addEntry`).
+    /// (same case-insensitive rule as `addEntry`) and presets whose muscle the category
+    /// already has under another name — the same preset added in another language.
     func addPresetEntries(for category: ActivityCategory) throws {
         let existing = try context.fetch(FetchDescriptor<MuscleEntry>())
         var existingNames = Set(existing.map { Self.normalizedName($0.name) })
+        let sameCategory = existing.filter { $0.category == category.rawValue }
 
         for preset in category.presetEntries {
             let name = NSLocalizedString(preset.nameKey, comment: "")
             let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmedName.isEmpty else { continue }
+            // The same muscle already added in another language ("Chest" when adding "Pecho").
+            guard !TargetMuscle.repeatsMuscle(ofName: trimmedName, in: sameCategory) else { continue }
             guard existingNames.insert(Self.normalizedName(trimmedName)).inserted else { continue }
 
             let entry = MuscleEntry(name: trimmedName, category: category.rawValue, icon: preset.icon)

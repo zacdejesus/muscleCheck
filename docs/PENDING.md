@@ -48,6 +48,37 @@ El código está en `main`. Antes de subir:
 - Archivar/borrar el repo viejo `~/Desktop/sideProjects/musclecheck-android` si todavía
   existe (su código vive en `android/`).
 
+## 📷 Escanear rutina (Feature 20, rama `feature/scan-routine`)
+
+- [ ] **Probar en iPhone con iOS 27** (el modelo no corre en el simulador): hoja manuscrita,
+      de revista y captura; foto vertical; rutina larga (>15 ejercicios); rangos y pirámides;
+      tipear números, menú de grupo, swipe para borrar, "Dar vuelta".
+- [ ] **Re-escanear la hoja que falló** (Prensa → Back, Bulgares → Shoulders) y confirmar que
+      ahora caen en el grupo de piernas.
+- **Evaluación en iPhone** (2026-09-14, 32 imágenes sintéticas: a mano, PDF, screenshots y
+  negativos; cómo correrla: `tools/scan-eval/README.md`). El simulador NO corre el
+  modelo en macOS 26: solo se evalúa en device. Primera corrida: detección 86%, series 92%,
+  reps 81%, músculo 80%, grupo 81%, 8,4 s por escaneo (primer resultado a los 3,3 s).
+  Segunda corrida, con los arreglos (encabezados fuera de la asignación, "5x5" en reps, filas
+  "none"): detección 89%, series 95%, reps 86%, grupo 83%, 6,3 s por escaneo.
+- [ ] **Confirmar en el iPhone** el diccionario ejercicio → músculo y el pre-chequeo con Vision
+      juntos: se midieron repasando la salida de la v2 (músculo 98%, grupo 98%) y en el simulador
+      (28/28 rutinas pasan, 4/4 negativos rechazados), no en una corrida completa en device.
+- [ ] **Rutinas largas** (>10 filas) se degradan: 20 ejercicios → 11 bien, 10 inventados, 33 s.
+      Sugerir "una rutina por foto" o partir la imagen.
+- [ ] **Hoja fotografiada de costado** → basura: detectar la orientación del texto (Vision).
+- [ ] **Tachados** se cargan igual. **PDFs**: hoy solo fotos/capturas (no hay importador).
+- [ ] **Vigilar el CI en `xcode-27`** (2026-09-17): el workflow pasó a esa imagen y se sacaron las
+      guardas `#if compiler(>=6.4)`, así que el escaneo ahora se compila y se testea en CI. GitHub
+      la marca como preview (Xcode 27.0 beta, puede encolar lento): si molesta, volver a `macos-26`
+      + guardas, como explica el comentario del workflow.
+- [ ] **Archive con Crashlytics**: la subida de símbolos en primer plano sigue activa en archive;
+      si la red se cuelga, el archive se cuelga (matar `upload-symbols` o agregarle timeout).
+- [ ] **Duplicados de grupos que YA existen** (mismo músculo en dos idiomas): la prevención
+      está hecha (alta, presets y Coach usan `TargetMuscle`); unirlos ("Unir grupos") queda
+      pendiente y solo si la analítica muestra que les pasa a usuarios reales. Mientras tanto,
+      en el teléfono de desarrollo: mover los ejercicios y borrar el duplicado a mano.
+
 ## 🧹 Modo calidad de código (iOS)
 
 - Bug de test: `OnboardingUITests` falla por orden intra-suite (el hook `-resetOnboarding`

@@ -1,0 +1,2042 @@
+[
+  {
+    "notation" : "setsFirst",
+    "file" : "scaneval_H01.jpg",
+    "expectNothing" : false,
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Prensa"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Estocadas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "calves"
+        ],
+        "reps" : 15,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Gemelos de pie"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes",
+          "legs"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Hip thrust"
+      }
+    ],
+    "description" : "Cuaderno rayado, letra prolija, encabezado de día, foto buena",
+    "category" : "handwritten",
+    "id" : "H01"
+  },
+  {
+    "id" : "H02",
+    "notation" : "setsFirst",
+    "file" : "scaneval_H02.jpg",
+    "category" : "handwritten",
+    "expectNothing" : false,
+    "description" : "Como la hoja real del dueño: letra desprolija, sin encabezado, foto movida",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Bulgares"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Prensa"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Extension cuadriceps"
+      }
+    ]
+  },
+  {
+    "notation" : "repsFirst",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Aperturas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest",
+          "triceps"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Fondos"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press inclinado"
+      }
+    ],
+    "file" : "scaneval_H03.jpg",
+    "id" : "H03",
+    "category" : "handwritten",
+    "description" : "Notación al revés (reps x series): 10x4, 12x3, 15x3",
+    "expectNothing" : false
+  },
+  {
+    "id" : "H04",
+    "category" : "handwritten",
+    "description" : "Con pesos al lado (80kg 4x8)",
+    "file" : "scaneval_H04.jpg",
+    "expectNothing" : false,
+    "notation" : "setsFirst",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Remo con barra"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Press militar"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl biceps"
+      }
+    ]
+  },
+  {
+    "description" : "Pirámides, AMRAP, tiempo y 'al fallo'",
+    "category" : "handwritten",
+    "file" : "scaneval_H05.jpg",
+    "expectNothing" : false,
+    "id" : "H05",
+    "notation" : "setsFirst",
+    "expected" : [
+      {
+        "muscles" : [
+          "back"
+        ],
+        "setsAny" : false,
+        "sets" : 4,
+        "name" : "Dominadas",
+        "excluded" : false,
+        "repsAny" : false
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 6,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 8,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Remo"
+      },
+      {
+        "muscles" : [
+          "core"
+        ],
+        "setsAny" : false,
+        "sets" : 3,
+        "name" : "Plancha",
+        "excluded" : false,
+        "repsAny" : true
+      },
+      {
+        "muscles" : [
+
+        ],
+        "setsAny" : true,
+        "repsAny" : true,
+        "name" : "Burpees",
+        "excluded" : false
+      }
+    ]
+  },
+  {
+    "description" : "Dos días en una hoja, 10 ejercicios, letra más chica",
+    "category" : "handwritten",
+    "notation" : "setsFirst",
+    "expectNothing" : false,
+    "id" : "H06",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Press inclinado mancuernas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Aperturas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest",
+          "triceps"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Fondos"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "triceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Extensión tríceps polea"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Dominadas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Remo con barra"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Jalón al pecho"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl bíceps"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps",
+          "forearms"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl martillo"
+      }
+    ],
+    "file" : "scaneval_H06.jpg"
+  },
+  {
+    "category" : "handwritten",
+    "description" : "La hoja de H01 fotografiada de costado (girada 90°, sin EXIF)",
+    "notation" : "setsFirst",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Prensa"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Estocadas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "calves"
+        ],
+        "reps" : 15,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Gemelos de pie"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes",
+          "legs"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Hip thrust"
+      }
+    ],
+    "file" : "scaneval_H07.jpg",
+    "expectNothing" : false,
+    "id" : "H07"
+  },
+  {
+    "file" : "scaneval_H08.jpg",
+    "description" : "Poca luz, perspectiva fuerte y sombra",
+    "category" : "handwritten",
+    "id" : "H08",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back",
+          "legs"
+        ],
+        "reps" : 6,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Peso muerto"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press militar"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Elevaciones laterales"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders",
+          "back"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Face pull"
+      }
+    ],
+    "expectNothing" : false,
+    "notation" : "setsFirst"
+  },
+  {
+    "expectNothing" : false,
+    "file" : "scaneval_H09.jpg",
+    "description" : "Un ejercicio tachado y anotaciones sueltas",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : true,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Prensa"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Zancadas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "calves"
+        ],
+        "reps" : 20,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Gemelos"
+      }
+    ],
+    "notation" : "setsFirst",
+    "category" : "handwritten",
+    "id" : "H09"
+  },
+  {
+    "description" : "Rutina en inglés a mano",
+    "file" : "scaneval_H10.jpg",
+    "category" : "handwritten",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 6,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Bench press"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Incline DB press"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 8,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Shoulder press"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Lateral raises"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "triceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Tricep pushdown"
+      }
+    ],
+    "id" : "H10",
+    "notation" : "setsFirst",
+    "expectNothing" : false
+  },
+  {
+    "id" : "H11",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Panca piana"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Lat machine"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Squat"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl bilanciere"
+      }
+    ],
+    "description" : "Scheda en italiano a mano",
+    "notation" : "setsFirst",
+    "file" : "scaneval_H11.jpg",
+    "expectNothing" : false,
+    "category" : "handwritten"
+  },
+  {
+    "file" : "scaneval_H12.jpg",
+    "expectNothing" : false,
+    "description" : "Cursiva difícil de leer (Snell Roundhand)",
+    "id" : "H12",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Remo"
+      }
+    ],
+    "notation" : "setsFirst",
+    "category" : "handwritten"
+  },
+  {
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Prensa"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "calves"
+        ],
+        "reps" : 15,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Gemelos"
+      }
+    ],
+    "id" : "H13",
+    "notation" : "setsFirst",
+    "file" : "scaneval_H13.jpg",
+    "expectNothing" : false,
+    "description" : "Series y reps escritas en palabras ('4 series de 10')",
+    "category" : "handwritten"
+  },
+  {
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Remo con mancuerna"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Press militar"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl bíceps"
+      },
+      {
+        "muscles" : [
+          "core"
+        ],
+        "setsAny" : false,
+        "sets" : 3,
+        "name" : "Plancha",
+        "excluded" : false,
+        "repsAny" : true
+      }
+    ],
+    "notation" : "setsFirst",
+    "id" : "P01",
+    "description" : "PDF con tabla (Ejercicio | Series | Reps | Descanso)",
+    "category" : "pdf",
+    "file" : "scaneval_P01.jpg",
+    "expectNothing" : false
+  },
+  {
+    "id" : "P02",
+    "notation" : "setsFirst",
+    "description" : "PDF de gimnasio: encabezado, dos columnas Día A \/ Día B, notas al pie",
+    "file" : "scaneval_P02.jpg",
+    "expectNothing" : false,
+    "category" : "pdf",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Remo"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Press militar"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl bíceps"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes",
+          "back"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Peso muerto rumano"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Prensa"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "calves"
+        ],
+        "reps" : 15,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Gemelos"
+      }
+    ]
+  },
+  {
+    "category" : "printed-photo",
+    "file" : "scaneval_P03.jpg",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Remo con mancuerna"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Press militar"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl bíceps"
+      },
+      {
+        "muscles" : [
+          "core"
+        ],
+        "setsAny" : false,
+        "sets" : 3,
+        "name" : "Plancha",
+        "excluded" : false,
+        "repsAny" : true
+      }
+    ],
+    "id" : "P03",
+    "notation" : "setsFirst",
+    "expectNothing" : false,
+    "description" : "La hoja de P01 impresa y fotografiada (perspectiva, sombra)"
+  },
+  {
+    "expectNothing" : false,
+    "id" : "P04",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes"
+        ],
+        "reps" : 12,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Hip thrust"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes",
+          "legs"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Sentadilla búlgara"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Puente de glúteo"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes"
+        ],
+        "reps" : 20,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Patada de glúteo"
+      }
+    ],
+    "description" : "Artículo de revista: párrafos + lista '4 series de 12 repeticiones'",
+    "file" : "scaneval_P04.jpg",
+    "notation" : "setsFirst",
+    "category" : "pdf"
+  },
+  {
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Développé couché"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 6,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Tractions"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Squat"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Fentes"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl biceps"
+      }
+    ],
+    "file" : "scaneval_P05.jpg",
+    "expectNothing" : false,
+    "id" : "P05",
+    "notation" : "setsFirst",
+    "category" : "pdf",
+    "description" : "Programa en francés"
+  },
+  {
+    "description" : "Rutina larga: 20 ejercicios en dos tablas",
+    "notation" : "setsFirst",
+    "category" : "pdf",
+    "id" : "P06",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Press inclinado"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Aperturas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press militar"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Elevaciones laterales"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest",
+          "triceps"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Fondos"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "triceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Extensión tríceps"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "core"
+        ],
+        "reps" : 20,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Crunch"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "core"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Elevación de piernas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "core"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Rueda abdominal"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Prensa"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back",
+          "legs"
+        ],
+        "reps" : 6,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Peso muerto"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl femoral"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Extensión cuádriceps"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes",
+          "legs"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Hip thrust"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "calves"
+        ],
+        "reps" : 15,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Gemelos"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Dominadas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Remo con barra"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl bíceps"
+      }
+    ],
+    "expectNothing" : false,
+    "file" : "scaneval_P06.jpg"
+  },
+  {
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Remo con barra"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl bíceps"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "triceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Extensión tríceps"
+      },
+      {
+        "muscles" : [
+
+        ],
+        "setsAny" : true,
+        "repsAny" : true,
+        "name" : "Burpees",
+        "excluded" : false,
+        "reps" : 10
+      },
+      {
+        "muscles" : [
+
+        ],
+        "setsAny" : true,
+        "repsAny" : true,
+        "name" : "Saltos al cajón",
+        "excluded" : false,
+        "reps" : 15
+      },
+      {
+        "muscles" : [
+          "core"
+        ],
+        "setsAny" : true,
+        "repsAny" : true,
+        "name" : "Mountain climbers",
+        "excluded" : false,
+        "reps" : 30
+      }
+    ],
+    "expectNothing" : false,
+    "notation" : "setsFirst",
+    "id" : "P07",
+    "description" : "Superseries (A1\/A2) y circuito final sin series fijas",
+    "file" : "scaneval_P07.jpg",
+    "category" : "pdf"
+  },
+  {
+    "id" : "P08",
+    "notation" : "weekly",
+    "description" : "Tabla de progresión por semana (Sem 1..4): ambigua a propósito",
+    "expectNothing" : false,
+    "expected" : [
+      {
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "setsAny" : true,
+        "repsAny" : true,
+        "name" : "Sentadilla",
+        "excluded" : false
+      },
+      {
+        "muscles" : [
+          "chest"
+        ],
+        "setsAny" : true,
+        "repsAny" : true,
+        "name" : "Press banca",
+        "excluded" : false
+      },
+      {
+        "muscles" : [
+          "back"
+        ],
+        "setsAny" : true,
+        "repsAny" : true,
+        "name" : "Remo",
+        "excluded" : false
+      }
+    ],
+    "category" : "pdf",
+    "file" : "scaneval_P08.jpg"
+  },
+  {
+    "description" : "Nota de iOS en modo claro con viñetas",
+    "expectNothing" : false,
+    "file" : "scaneval_S01.jpg",
+    "notation" : "setsFirst",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Press inclinado"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Remo sentado"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Jalón al pecho"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl bíceps"
+      }
+    ],
+    "category" : "screenshot",
+    "id" : "S01"
+  },
+  {
+    "file" : "scaneval_S02.jpg",
+    "id" : "S02",
+    "description" : "Nota en modo oscuro con emoji y 5x5",
+    "category" : "screenshot",
+    "expectNothing" : false,
+    "notation" : "setsFirst",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 5,
+        "sets" : 5,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 12,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Prensa"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Curl femoral"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "calves"
+        ],
+        "reps" : 20,
+        "sets" : 5,
+        "setsAny" : false,
+        "name" : "Gemelos"
+      }
+    ]
+  },
+  {
+    "category" : "screenshot",
+    "description" : "Chat de WhatsApp: el coach manda la rutina entre otros mensajes",
+    "notation" : "setsFirst",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press militar"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders"
+        ],
+        "reps" : 15,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Elevaciones laterales"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders",
+          "back"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Pájaros"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "shoulders",
+          "back"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Encogimientos"
+      }
+    ],
+    "expectNothing" : false,
+    "id" : "S03",
+    "file" : "scaneval_S03.jpg"
+  },
+  {
+    "category" : "screenshot",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "chest"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Press banca"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back",
+          "legs"
+        ],
+        "reps" : 5,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Peso muerto"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 8,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Dominadas"
+      }
+    ],
+    "id" : "S04",
+    "file" : "scaneval_S04.jpg",
+    "expectNothing" : false,
+    "description" : "Planilla (Sheets) con columna de peso que no son reps",
+    "notation" : "setsFirst"
+  },
+  {
+    "id" : "S05",
+    "category" : "screenshot",
+    "description" : "Post de Instagram: texto grande en mayúsculas sobre degradé",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes"
+        ],
+        "reps" : 12,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Hip thrust"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes"
+        ],
+        "reps" : 15,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Patada"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes",
+          "legs"
+        ],
+        "reps" : 20,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Abducción"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla sumo"
+      }
+    ],
+    "notation" : "setsFirst",
+    "file" : "scaneval_S05.jpg",
+    "expectNothing" : false
+  },
+  {
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back",
+          "legs"
+        ],
+        "reps" : 5,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Deadlift"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Pull-ups"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "back"
+        ],
+        "reps" : 10,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Barbell row"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "biceps",
+          "forearms"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Hammer curl"
+      }
+    ],
+    "category" : "screenshot",
+    "description" : "App de fitness en inglés con tarjetas '4 × 5 · 140 kg'",
+    "file" : "scaneval_S06.jpg",
+    "notation" : "setsFirst",
+    "expectNothing" : false,
+    "id" : "S06"
+  },
+  {
+    "file" : "scaneval_S07.jpg",
+    "id" : "S07",
+    "expectNothing" : false,
+    "category" : "screenshot",
+    "description" : "Nota con cardio por tiempo y core ('Cinta 20 min', 'Plancha 3x45s')",
+    "notation" : "setsFirst",
+    "expected" : [
+      {
+        "muscles" : [
+
+        ],
+        "setsAny" : true,
+        "repsAny" : true,
+        "name" : "Cinta",
+        "excluded" : false
+      },
+      {
+        "muscles" : [
+
+        ],
+        "setsAny" : true,
+        "repsAny" : true,
+        "name" : "Bici",
+        "excluded" : false
+      },
+      {
+        "muscles" : [
+          "core"
+        ],
+        "setsAny" : false,
+        "sets" : 3,
+        "name" : "Plancha",
+        "excluded" : false,
+        "repsAny" : true
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "core"
+        ],
+        "reps" : 20,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Abdominales"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "core"
+        ],
+        "reps" : 30,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Russian twist"
+      }
+    ]
+  },
+  {
+    "file" : "scaneval_N01.jpg",
+    "notation" : "setsFirst",
+    "description" : "Lista del súper a mano (no es una rutina)",
+    "id" : "N01",
+    "expectNothing" : true,
+    "expected" : [
+
+    ],
+    "category" : "negative"
+  },
+  {
+    "expected" : [
+
+    ],
+    "category" : "negative",
+    "expectNothing" : true,
+    "notation" : "setsFirst",
+    "file" : "scaneval_N02.jpg",
+    "description" : "Hoja rayada en blanco",
+    "id" : "N02"
+  },
+  {
+    "description" : "La rutina de H01 ilegible (desenfoque extremo)",
+    "expectNothing" : false,
+    "file" : "scaneval_N03.jpg",
+    "category" : "negative",
+    "expected" : [
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 8,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Sentadilla"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Prensa"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "legs",
+          "glutes"
+        ],
+        "reps" : 12,
+        "sets" : 3,
+        "setsAny" : false,
+        "name" : "Estocadas"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "calves"
+        ],
+        "reps" : 15,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Gemelos de pie"
+      },
+      {
+        "repsAny" : false,
+        "excluded" : false,
+        "muscles" : [
+          "glutes",
+          "legs"
+        ],
+        "reps" : 10,
+        "sets" : 4,
+        "setsAny" : false,
+        "name" : "Hip thrust"
+      }
+    ],
+    "id" : "N03",
+    "notation" : "unreadable"
+  },
+  {
+    "expectNothing" : true,
+    "description" : "Foto sin texto (formas y degradé)",
+    "expected" : [
+
+    ],
+    "notation" : "setsFirst",
+    "file" : "scaneval_N04.jpg",
+    "category" : "negative",
+    "id" : "N04"
+  }
+]
