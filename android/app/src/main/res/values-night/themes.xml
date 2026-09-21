@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Night override of the launch/window background only. The in-app palette comes from
+      MuscleCheckTheme (which also honours the user's explicit light/dark preference); this
+      just matches DarkColors.background so there is no white flash before Compose draws.
+    -->
+    <style name="Theme.MuscleCheck" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+</resources>
