@@ -339,6 +339,10 @@ agregar un ejercicio, encontrar lo de ayer. Callarse y mirar.
       custom dimensions (`category`, `metric`, `source`, `seconds_since_open`, `seed_count`,
       `skipped`, `from_preset`, `count`) y verificar en DebugView antes de shipear.
 - [ ] **Fase 2 — Android.** Firebase + los mismos eventos, verificados contra este doc.
+      *Código hecho* (Analytics + Crashlytics, sin ad ID; `source` siempre `app`: Android no
+      tiene Siri ni HealthKit). **Falta, manual:** verificar en DebugView (build con
+      `-PanalyticsDebug` + `adb shell setprop debug.firebase.analytics.app com.zadkiel.musclecheck`),
+      forzar un crash para ver llegar Crashlytics, y declarar Play Data safety.
 - [ ] **Fase 3 — el resto** de la tabla de §8 y las user properties de §9.
 - [ ] **Fase 4 — lectura.** Un funnel armado en la consola por cada momento de §7.
       BigQuery export solo si hace falta SQL (es gratis en el tier diario).

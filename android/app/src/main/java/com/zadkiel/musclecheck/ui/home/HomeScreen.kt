@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zadkiel.musclecheck.R
+import com.zadkiel.musclecheck.analytics.AnalyticsEvent
 import com.zadkiel.musclecheck.domain.model.CategoryResolver
 import com.zadkiel.musclecheck.domain.model.CustomCategory
 import com.zadkiel.musclecheck.domain.model.MuscleEntry
@@ -111,7 +112,10 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddSheet = true }) {
+            FloatingActionButton(onClick = {
+                viewModel.addFlowStarted(AnalyticsEvent.AddSource.FAB)
+                showAddSheet = true
+            }) {
                 Icon(
                     Icons.Filled.Add,
                     contentDescription = stringResource(R.string.add_new_muscle_group),
@@ -132,7 +136,10 @@ fun HomeScreen(
             Spacer(Modifier.height(16.dp))
 
             if (state.loaded && state.isEmpty) {
-                EmptyState(onAdd = { showAddSheet = true })
+                EmptyState(onAdd = {
+                    viewModel.addFlowStarted(AnalyticsEvent.AddSource.EMPTY_STATE)
+                    showAddSheet = true
+                })
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     val showHeaders = state.groups.size > 1
@@ -179,6 +186,7 @@ fun HomeScreen(
             onCreateCategory = { name, icon, metric -> viewModel.createCategory(name, icon, metric) },
             onDismiss = {
                 viewModel.clearAddError()
+                viewModel.addFlowFinished()
                 showAddSheet = false
             },
         )

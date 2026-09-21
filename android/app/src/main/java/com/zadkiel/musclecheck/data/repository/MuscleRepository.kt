@@ -50,14 +50,16 @@ class MuscleRepository @Inject constructor(
 
     /**
      * Adds a new entry, trimming the name and rejecting duplicates. [metric] defaults to
-     * the category's default when not overridden at creation.
+     * the category's default when not overridden at creation. Returns the new entry's id.
      */
-    suspend fun addEntry(name: String, category: String, icon: String, metric: MetricType? = null) {
+    suspend fun addEntry(name: String, category: String, icon: String, metric: MetricType? = null): String {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) throw InvalidNameException()
         if (muscleDao.countByName(trimmed) > 0) throw DuplicateEntryException(trimmed)
-        muscleDao.insertEntry(newEntryEntity(trimmed, category, icon, metric ?: defaultMetricFor(category)))
+        val entity = newEntryEntity(trimmed, category, icon, metric ?: defaultMetricFor(category))
+        muscleDao.insertEntry(entity)
         refreshWidget()
+        return entity.id
     }
 
     /** Adds all preset entries for a category, skipping duplicates, and marks the preset added. */
@@ -71,12 +73,17 @@ class MuscleRepository @Inject constructor(
         refreshWidget()
     }
 
-    /** Adds a single preset entry (one-tap add from the unified add screen). */
-    suspend fun addPresetEntry(category: ActivityCategory, nameRes: Int, icon: String) {
+    /**
+     * Adds a single preset entry (one-tap add from the unified add screen). Returns the new
+     * entry's id, or null when it already existed and nothing was added.
+     */
+    suspend fun addPresetEntry(category: ActivityCategory, nameRes: Int, icon: String): String? {
         val name = context.getString(nameRes).trim()
-        if (name.isEmpty() || muscleDao.countByName(name) > 0) return
-        muscleDao.insertEntry(newEntryEntity(name, category.id, icon, category.defaultMetric))
+        if (name.isEmpty() || muscleDao.countByName(name) > 0) return null
+        val entity = newEntryEntity(name, category.id, icon, category.defaultMetric)
+        muscleDao.insertEntry(entity)
         refreshWidget()
+        return entity.id
     }
 
     /**

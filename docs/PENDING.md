@@ -32,8 +32,11 @@ El código está en `main`. Antes de subir:
   "suscribirse" gratis con precios que no se cobran.
 - Swap del stub por RevenueCat real (una sola clase): bloqueado por setup externo —
   productos en Play Billing, API key pública Android, app Android en el proyecto RevenueCat.
-- Analítica Fase 2: Firebase + los mismos eventos, verificados contra
-  `docs/analytics-plan.md`.
+- Firebase (Analytics + Crashlytics) conectado con los eventos de la Fase 1. Falta, manual:
+  verificar en DebugView (`./gradlew installDebug -PanalyticsDebug` +
+  `adb shell setprop debug.firebase.analytics.app com.zadkiel.musclecheck`), ver llegar un
+  crash a Crashlytics, y **Play Data safety**: App activity → App interactions + Crash logs,
+  sin ad ID.
 
 ## 📣 Marketing
 

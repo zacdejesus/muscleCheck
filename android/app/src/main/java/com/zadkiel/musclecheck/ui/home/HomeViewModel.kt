@@ -2,6 +2,8 @@ package com.zadkiel.musclecheck.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.zadkiel.musclecheck.analytics.AnalyticsEvent
+import com.zadkiel.musclecheck.analytics.HomeAnalytics
 import com.zadkiel.musclecheck.data.prefs.UserPreferencesRepository
 import com.zadkiel.musclecheck.data.repository.MuscleRepository
 import com.zadkiel.musclecheck.domain.AppWeek
@@ -43,6 +45,7 @@ data class HomeUiState(
 class HomeViewModel @Inject constructor(
     private val repository: MuscleRepository,
     private val prefs: UserPreferencesRepository,
+    private val analytics: HomeAnalytics,
 ) : ViewModel() {
 
     /** Error shown inside the add sheet (duplicate/empty name). */
@@ -87,7 +90,10 @@ class HomeViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
     fun toggleActivity(entry: MuscleEntry) {
-        viewModelScope.launch { repository.toggleActivity(entry) }
+        viewModelScope.launch {
+            repository.toggleActivity(entry)
+            analytics.checked(before = entry)
+        }
     }
 
     /** Group-level session (groups with no exercises yet). */
@@ -96,7 +102,10 @@ class HomeViewModel @Inject constructor(
     }
 
     fun deleteEntry(entry: MuscleEntry) {
-        viewModelScope.launch { repository.deleteEntry(entry.id) }
+        viewModelScope.launch {
+            repository.deleteEntry(entry.id)
+            analytics.entryRemoved(entry.id)
+        }
     }
 
     // MARK: - Exercises
@@ -118,23 +127,39 @@ class HomeViewModel @Inject constructor(
 
     /** Saves an exercise's values; the repository also marks the group trained today. */
     fun logExercise(entry: MuscleEntry, exercise: Exercise, input: SessionInput) {
-        viewModelScope.launch { repository.logExercise(entry.id, exercise.id, input) }
+        viewModelScope.launch {
+            repository.logExercise(entry.id, exercise.id, input)
+            analytics.checked(before = entry)
+        }
     }
 
     // MARK: - Add flow
+
+    fun addFlowStarted(source: AnalyticsEvent.AddSource) {
+        analytics.addStarted(source)
+    }
+
+    fun addFlowFinished() {
+        analytics.addFinished()
+    }
 
     fun rememberAddCategory(categoryId: String) {
         lastAddCategory.value = categoryId
     }
 
     fun addPresetEntry(category: ActivityCategory, nameRes: Int, icon: String) {
-        viewModelScope.launch { repository.addPresetEntry(category, nameRes, icon) }
+        viewModelScope.launch {
+            repository.addPresetEntry(category, nameRes, icon)?.let { id ->
+                analytics.entryAdded(id, category.id, category.defaultMetric, fromPreset = true)
+            }
+        }
     }
 
     fun addEntry(name: String, category: String, icon: String, metric: MetricType) {
         viewModelScope.launch {
             try {
-                repository.addEntry(name, category, icon, metric)
+                val id = repository.addEntry(name, category, icon, metric)
+                analytics.entryAdded(id, category, metric, fromPreset = false)
                 addError.value = null
             } catch (e: Exception) {
                 addError.value = repository.errorMessage(e)
