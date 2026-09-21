@@ -32,7 +32,8 @@ language, and a set of ported domain semantics — but no code (Swift vs Kotlin)
 ios/        Xcode project (app + widget + tests)
 android/    Gradle project (Kotlin + Compose)
 docs/       Shared plan & design decisions (incl. the Android port plan)
-CLAUDE.md   Product context, architecture, roadmap (paths under ios/ are relative to ios/)
+CLAUDE.md   Product context, architecture, conventions (paths under ios/ are relative to ios/)
+docs/roadmap.md   Funnel, bets, feature designs
 ```
 
 ## Architecture

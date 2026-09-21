@@ -1,6 +1,6 @@
 # Feature 12 — Guía de implementación (AI Coach: día sugerido)
 
-Guía de los cambios de código pendientes para cerrar Feature 12. Diseño en `CLAUDE.md`,
+Guía de los cambios de código pendientes para cerrar Feature 12. Design in `docs/roadmap.md` → appendix C,
 hallazgos del tuning en `docs/feature12-prompt-tuning.md`. **Esta guía explica QUÉ hacer y POR QUÉ;
 los snippets son esquemas/firmas, no implementación.**
            

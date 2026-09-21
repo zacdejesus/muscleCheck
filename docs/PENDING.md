@@ -1,79 +1,49 @@
-# ⚠️ Pendientes — por dónde arrancar
+# Pending — where to start
 
-> Snapshot al 2026-09-12. 2.2.1 aprobada; en `main` se prepara 2.2.2 (pedido de reseña +
-> analítica de activación).
+> Snapshot 2026-09-21. 2.2.2 is live. Priorities and funnel in `docs/roadmap.md`.
 
-## 🔜 Próximo build: 2.2.2 (1)
+## 🚨 Risks first
 
-El código está en `main`. Antes de subir:
+- **Android Pro is a stub, and the paywall is likely live on Play.** Settings → "Upgrade to Pro"
+  opens the paywall with real prices, and "buying" grants Pro locally without charging
+  (`LocalProAccessManager`). Present since #29 (Aug 9), so versionCode 2 includes it — confirm
+  the live versionCode in Play Console. Beyond free Pro, selling digital goods outside Play
+  Billing risks a Payments policy violation. **Short term:** hide the paywall on Android.
+  **Real fix:** RevenueCat (one class), blocked on Play Billing products, the Android public API
+  key and the Android app in the RevenueCat project.
+- **Android keystore (`.jks`) lives only in iCloud Drive.** Keep a copy outside iCloud
+  (`docs/tech-debt.md` §0).
 
-- [ ] **Liberar 2.2.1** si quedó en *Pending Developer Release*: mientras no esté a la venta,
-      App Store Connect no deja crear la versión 2.2.2.
-- [ ] **Registrar las custom dimensions** en Firebase **antes de TestFlight** (si no, los
-      params no aparecen en los reportes): `category`, `metric`, `source`,
-      `seconds_since_open`, `seed_count`, `skipped`, `from_preset`, `count`.
-- [ ] **DebugView:** correr Debug con `-analyticsDebug YES -FIRDebugEnabled` y ver llegar
-      los eventos.
-- [ ] **Pedido de reseña a mano:** hace falta data con racha de 2 semanas (en Debug iOS lo
-      muestra siempre).
-- [ ] **App Privacy** en App Store Connect: Usage Data → Product Interaction, no vinculado a
-      identidad, sin tracking.
-- [ ] **What's New** de 2.2.2 en ES/EN/FR/IT.
+## 1 · Polish (portfolio)
 
-## 👀 Cuando 2.2.1 llegue a usuarios
+- **Open PRs / branches:**
+  - #44 Android Firebase — before merging: see events in DebugView, onboarding with clean data
+    (`adb shell pm clear com.zadkiel.musclecheck`), a forced crash reaching Crashlytics.
+  - `fix/android-onboarding-theme` — 3 commits with no PR (dark theme, onboarding checklist,
+    duplicate preset across languages).
+- **Restrict the Firebase API keys** in Google Cloud Console: iOS key → bundle ID, Android key →
+  package + signing SHA-1. The repo is public.
+- Archive/delete the old `~/Desktop/sideProjects/musclecheck-android` repo if it still exists
+  (its code lives in `android/`).
 
-- Crashlytics: confirmar que no vuelve `MuscleEntry.exercisesSummary.getter`
-  (EXC_BREAKPOINT). Es la validación real del fix.
+## 2 · Adoption
 
-## 🤖 Android
+- **Crashlytics:** confirm `MuscleEntry.exercisesSummary.getter` (EXC_BREAKPOINT) doesn't come
+  back — the real validation of the 2.2.1 fix.
+- **Store listing:** subtitle, keywords, ES + EN screenshots (iPhone 6.9" + iPad 13"),
+  campaign links (`ct=`) per channel.
+- **Play Data safety** after #44: App activity → App interactions + Crash logs, no ad ID.
+- **App Privacy** in App Store Connect (?) — Usage Data → Product Interaction, not linked to
+  identity, no tracking.
 
-- **Revisar ya:** Pro sigue siendo el stub `LocalProAccessManager`, que activa Pro localmente
-  sin cobrar. Si la versión publicada en Play muestra el paywall, alguien puede
-  "suscribirse" gratis con precios que no se cobran.
-- Swap del stub por RevenueCat real (una sola clase): bloqueado por setup externo —
-  productos en Play Billing, API key pública Android, app Android en el proyecto RevenueCat.
-- Analítica Fase 2: Firebase + los mismos eventos, verificados contra
-  `docs/analytics-plan.md`.
+## 3 · Code
 
-## 📣 Marketing
-
-- Prerrequisitos del plan: pedido de reseña y analítica → salen en 2.2.2.
-- Falta en la ficha: subtítulo, keywords y screenshots en ES y EN (iPhone 6.9" + iPad 13"),
-  y links de campaña (`ct=`) por canal.
-
-## 🔐 Operacional
-
-- El keystore de Android (`.jks`) vive solo en iCloud Drive: tener una copia fuera de iCloud
-  (ver `docs/tech-debt.md` §0).
-- Archivar/borrar el repo viejo `~/Desktop/sideProjects/musclecheck-android` si todavía
-  existe (su código vive en `android/`).
-
-## 🧹 Modo calidad de código (iOS)
-
-- Bug de test: `OnboardingUITests` falla por orden intra-suite (el hook `-resetOnboarding`
-  no restaura el first-run tras un onboarding ya completado en el mismo clone).
-- Dead code: `ContentViewModel.saveSession(_:for:)` quedó sin llamadores tras Fase 2
-  (está testeado — decidir si se saca).
-- Cleanup menor: el caso `.none` plegado en `.strength` dentro de `SessionLogView`.
-- Copy en español mezcla tú y vos ("Elegí otra semana", "Todavía no agregaste
-  ejercicios"): unificar en tú, que es lo que usa el resto de la app.
-- CI: sumar lint y, a futuro, distribución a TestFlight.
-
-## ⏸️ Diferido (features — NO construir en modo código)
-
-- **iOS:** stats de peso por ejercicio (Swift Charts), catálogo ExerciseDB, AI Coach
-  sobre ejercicios reales, Apple Watch (Feature 10). Backlog en evaluación: Features 13
-  (resto planilla) / 14 / 15 / 16.
-
-## ✅ Cerrado
-
-- CI: build + unit tests por plataforma en cada PR, con path-filters.
-- 2.2.1: fix del crash de la home + diagnóstico en Crashlytics + App Intents sin
-  `fatalError` (#37, aprobada).
-- Pedido de reseña + analítica de activación, Fase 1 — código (#39).
-- Landing con Google Play y tabla de Pro alineada con el gateo real (#38).
-- Subtítulo del paywall alineado con su tabla (2.2.2).
-- Compras iOS (contrato Paid Apps activo).
-- Fase 2 iOS: ejercicios dentro del grupo + métricas por ejercicio + alta unificada + FAB.
-- Localización ES/EN/FR/IT en ambas plataformas.
-- Monorepo armado y pusheado (iOS `ios/` + Android `android/` con historia atómica).
+- **Test bug:** `OnboardingUITests` fails on intra-suite order (the `-resetOnboarding` hook
+  doesn't restore first-run after an onboarding already completed in the same clone).
+- **Dead code:** `ContentViewModel.saveSession(_:for:)` (iOS) and `HomeViewModel.saveSession` +
+  the group-level `SessionLogSheet` (Android, `sessionEntry` is never set). Tested on iOS —
+  decide whether to remove on both.
+- **Cleanup:** the `.none` case folded into `.strength` inside `SessionLogView`.
+- **Copy:** Spanish mixes *tú* and *vos* ("Elegí otra semana", "Todavía no agregaste
+  ejercicios") — unify on *tú*, like the rest of the app.
+- **CI:** add lint; later, TestFlight distribution.
