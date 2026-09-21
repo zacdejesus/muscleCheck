@@ -16,6 +16,7 @@ import com.zadkiel.musclecheck.domain.model.CustomCategory
 import com.zadkiel.musclecheck.domain.model.MetricType
 import com.zadkiel.musclecheck.domain.model.MuscleEntry
 import com.zadkiel.musclecheck.domain.model.SessionInput
+import com.zadkiel.musclecheck.domain.model.TargetMuscle
 import com.zadkiel.musclecheck.R
 import com.zadkiel.musclecheck.widget.MuscleCheckWidget
 import androidx.glance.appwidget.updateAll
@@ -62,9 +63,16 @@ class MuscleRepository @Inject constructor(
 
     /** Adds all preset entries for a category, skipping duplicates, and marks the preset added. */
     suspend fun addPresetEntries(category: ActivityCategory) {
+        // Entries already in THIS category, to skip a preset whose muscle is present under
+        // another name ("Pecho" when "Chest" is there) — the same preset added in another
+        // language. Identical names are countByName's job.
+        val sameCategory = muscleDao.getEntriesWithSessions()
+            .map { it.toDomain() }
+            .filter { it.category == category.id }
         for (preset in category.presetEntries) {
             val name = context.getString(preset.nameRes).trim()
             if (name.isEmpty() || muscleDao.countByName(name) > 0) continue
+            if (TargetMuscle.repeatsMuscle(name, sameCategory)) continue
             muscleDao.insertEntry(newEntryEntity(name, category.id, preset.icon, category.defaultMetric))
         }
         prefs.markPresetAdded(category.id)
@@ -264,7 +272,10 @@ class MuscleRepository @Inject constructor(
     /** Seeds the preset entries for the categories picked in onboarding and completes it. */
     suspend fun completeOnboarding(selected: List<ActivityCategory>) {
         for (category in selected) {
-            addPresetEntries(category)
+            // One failed category must not block finishing onboarding: the completion flag is
+            // written below, so throwing here would leave the user reopening into the
+            // onboarding forever. Presets can be re-added from Settings.
+            runCatching { addPresetEntries(category) }
         }
         if (selected.isNotEmpty()) prefs.setDefaultEntriesCreated(true)
         prefs.setHasCompletedOnboarding(true)
