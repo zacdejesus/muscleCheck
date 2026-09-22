@@ -19,8 +19,8 @@
 - **Open PRs / branches:**
   - #44 Android Firebase — before merging: see events in DebugView, onboarding with clean data
     (`adb shell pm clear com.zadkiel.musclecheck`), a forced crash reaching Crashlytics.
-  - `fix/android-onboarding-theme` — 3 commits with no PR (dark theme, onboarding checklist,
-    duplicate preset across languages).
+  - #42 Scan a paper routine (iOS 27) — not ready: needs a real-device test on iOS 27, English
+    PR text, and its CLAUDE.md / PENDING additions moved into `docs/roadmap.md` and here.
 - **Restrict the Firebase API keys** in Google Cloud Console: iOS key → bundle ID, Android key →
   package + signing SHA-1. The repo is public.
 - Archive/delete the old `~/Desktop/sideProjects/musclecheck-android` repo if it still exists

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "270940771458",
+    "project_id": "muscle-check",
+    "storage_bucket": "muscle-check.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270940771458:android:7c13b54bb5e6a5399a509b",
+        "android_client_info": {
+          "package_name": "com.zadkiel.musclecheck"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBt46UiIY3EaONUTNaVppwgJB0ykKPJAwE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -6,6 +6,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    // Reads google-services.json (committed, like the iOS GoogleService-Info.plist: without
+    // it this plugin fails the build, and CI with it).
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 // Release signing credentials live in keystore.properties, which is gitignored — the
@@ -31,6 +35,11 @@ android {
         // product version with iOS.
         versionCode = 2
         versionName = "2.2.0"
+
+        // Debug builds print analytics events to Logcat and send nothing. Building with
+        // `-PanalyticsDebug` also sends them to Firebase, to watch them in DebugView (the
+        // twin of the iOS `-analyticsDebug YES` launch argument).
+        buildConfigField("boolean", "ANALYTICS_DEBUG", (findProperty("analyticsDebug") != null).toString())
     }
 
     signingConfigs {
@@ -100,6 +109,9 @@ dependencies {
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
     implementation(libs.coil.compose)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
     debugImplementation(libs.compose.ui.tooling)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
