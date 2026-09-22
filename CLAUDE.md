@@ -98,6 +98,11 @@ side — not learning iOS from scratch. **Don't write code unless explicitly ask
 to discuss architecture as a peer, do critical code review, propose trade-offs and answer
 specific questions (especially on views/UI). Without a request for code, guide in words.
 
+**Language:** everything written to the repo or GitHub is in **English** — docs, code
+comments, commit messages, PR titles, descriptions and comments. The repo is public and part of
+a portfolio. Conversation with the developer can be in Spanish; user-facing app copy stays
+localized (ES/EN/FR/IT).
+
 ## Important notes
 
 - App Group: `group.zadkiel.musclecheck` (widget)
