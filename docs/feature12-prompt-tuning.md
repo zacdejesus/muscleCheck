@@ -1,21 +1,27 @@
-# Feature 12 — AI Coach: hallazgos de tuning de prompt/instrucción
+# Feature 12 — AI Coach: prompt/instruction tuning findings
 
-Resultados de tunear las instrucciones/prompt del coach contra el modelo **real on-device**
-(FoundationModels, iOS 26) en un **iPhone 15 Pro físico**. ~70 generaciones en 4 rounds
-(2026-05-27). Harness: `MuscleCheckTests/PromptExperiment.swift` (temporal, borrar al cerrar la feature).
+Results of tuning the coach's instructions/prompt against the **real on-device** model
+(FoundationModels, iOS 26) on a **physical iPhone 15 Pro**. ~70 generations over 4 rounds
+(2026-05-27). Harness: `MuscleCheckTests/PromptExperiment.swift` (temporary, delete when the
+feature is closed).
 
-## TL;DR — la conclusión que manda
+## TL;DR — the conclusion that drives everything
 
-**La rotación NO la puede hacer el modelo de forma confiable. Hay que hacerla en código.**
-El modelo on-device (~3B) falla al razonar sobre el historial. La solución que funciona:
+**The model can NOT do rotation reliably. It has to be done in code.**
+The on-device model (~3B) fails at reasoning over history. What works:
 
-1. **Código filtra los grupos elegibles** (excluye los entrenados en los últimos ~1-2 días) y le pasa al modelo **solo esos**.
-2. **Código maneja "dame otra"**: excluye también lo recién sugerido → fuerza un día distinto (confirmado).
-3. **El modelo hace solo lo acotado**: elegir 2 grupos coherentes de los disponibles + 3 ejercicios c/u.
+1. **Code filters the eligible groups** (excludes those trained in the last ~1–2 days) and passes
+   the model **only those**.
+2. **Code handles "give me another"**: also excludes what was just suggested → forces a different
+   day (confirmed).
+3. **The model does only the narrow part**: pick 2 coherent groups from the available ones + 3
+   exercises each.
 
-Con la tarea así de acotada, el modelo es **confiable**. Cuando se le pedía razonar (rotación), fallaba.
+With the task this narrow, the model is **reliable**. When asked to reason (rotation), it failed.
 
-## Instrucción ganadora (Round 4)
+## Winning instruction (Round 4)
+
+Tested in Spanish, verbatim:
 
 > Sos un entrenador de gimnasio. De la lista de grupos DISPONIBLES, elegí EXACTAMENTE 2 que formen
 > un día coherente que se entrene junto (empuje: pecho/hombros/tríceps; tirón: espalda/bíceps;
@@ -23,47 +29,70 @@ Con la tarea así de acotada, el modelo es **confiable**. Cuando se le pedía ra
 > ESPECÍFICAMENTE ese músculo; nunca pongas ejercicios de otro grupo (ej: no pongas sentadillas en
 > bíceps, ni curls en tríceps). Respondé en español.
 
-**Prompt:** solo los grupos disponibles numerados (sin historial — la elegibilidad ya está resuelta en código). `temperature 0.7`, `maximumResponseTokens 512`.
+In English:
 
-## Qué se probó y qué pasó
+> You are a gym coach. From the list of AVAILABLE groups, pick EXACTLY 2 that form a coherent day
+> trained together (push: chest/shoulders/triceps; pull: back/biceps; legs: legs/abs). Pick by
+> index. For EACH group give 3 exercises that work SPECIFICALLY that muscle; never put exercises
+> from another group (e.g. no squats under biceps, no curls under triceps). Answer in Spanish.
 
-**Round 1 (3 variantes, 1 input):** V1 (la del código) ganó; las concisas/recovery-first perdieron coherencia. Primer indicio: la coherencia hay que pedirla explícita.
+**Prompt:** only the numbered available groups (no history — eligibility is already resolved in
+code). `temperature 0.7`, `maximumResponseTokens 512`.
 
-**Round 2 (I1 vs I2-con-más-reglas, 3 escenarios × 3 runs):**
-- **Ambas fallaron la rotación**: en "piernas entrenado ayer" sugirieron piernas igual (3/3). Fijación con "Piernas" (índice 2).
-- **I2 (más reglas) salió PEOR**: mezcló ejercicios (peso muerto bajo Hombros, etc.). → más instrucciones = peor en modelo chico.
+## What was tried and what happened
 
-**Round 3 (instrucción simple + 2 estrategias de rotación-en-código):**
-- **A) exclusión en el prompt** ("no recomiendes X"): a veces viola la exclusión, sigue fijado en piernas.
-- **B) pasar solo elegibles**: PUSH-ayer → Piernas+Abdomen 3/3, TODO 3/3. **Estable y coherente.** Ganó B.
+**Round 1 (3 variants, 1 input):** V1 (the one in the code) won; the concise and recovery-first
+variants lost coherence. First hint: coherence has to be asked for explicitly.
 
-**Round 4 (estrategia B + instrucción afinada para ejercicios):**
-- Coherencia ~8/12 limpia (resto borderline tipo legs+back o push+pull antagonista).
-- Variedad mejoró (TODO ya no da siempre piernas; dio Pecho+Tríceps).
-- "Dame otra" (excluir lo sugerido) → da un día distinto, confirmado 3/3.
-- **Residuo terco**: confunde bíceps↔tríceps en ejercicios a veces. Read-only, tolerable.
+**Round 2 (I1 vs I2-with-more-rules, 3 scenarios × 3 runs):**
+- **Both failed rotation**: with "legs trained yesterday" they still suggested legs (3/3). Fixated
+  on "Legs" (index 2).
+- **I2 (more rules) came out WORSE**: it mixed exercises (deadlift under Shoulders, etc.). → more
+  instructions = worse on a small model.
 
-**Round 5 (idiomas + músculos nuevos, estrategia B + instrucción ganadora):**
-- **Idiomas ES/EN/FR:** los tres dan output coherente, localizado y con ejercicios correctos. Las instrucciones/prompt localizados alcanzan. Sin laburo extra.
-- **Grupos nuevos/raros** (trapecios, antebrazos, gemelos, glúteos, lumbares): el modelo **se va a lo familiar** — eligió Pecho+Espalda e ignoró los raros las 2 veces. Riesgo: usuarios con grupos custom granulares pueden ver que el coach los subutiliza.
-- **Nombres vagos/custom** (tren superior, core, brazos): los **interpreta bien** (tren inferior→piernas, core→abdomen) y da contenido plausible, pero el mislabel de ejercicios reaparece más seguido (metió sentadillas en "Core").
-- Conclusión: multilingüe OK. Customización pesada = dos límites (sesgo a lo familiar + más mislabel). Aceptable para v1 (gym, grupos default); documentar.
+**Round 3 (simple instruction + 2 rotation-in-code strategies):**
+- **A) exclusion in the prompt** ("don't recommend X"): sometimes violates the exclusion, still
+  fixated on legs.
+- **B) pass only eligible groups**: PUSH-yesterday → Legs + Abs 3/3, ALL 3/3. **Stable and
+  coherent.** B won.
 
-## Limitaciones observadas del modelo (importante para futuras features de IA)
-- No razona confiablemente sobre datos provistos (rotación, "no repitas lo de ayer").
-- Se degrada con instrucciones más complejas.
-- Confunde dominio (ejercicios mal asignados al grupo).
-- Sesgo de anclaje/posición (se fija en un índice).
-- Inconsistente run-a-run (por eso temperature + variedad en código).
-- Hipo de cold-start ("server responded with an error" en la 1ra llamada) → mitigado con warmup.
+**Round 4 (strategy B + instruction refined for exercises):**
+- Coherence ~8/12 clean (the rest borderline, like legs+back or antagonist push+pull).
+- Variety improved (ALL no longer always gives legs; it gave Chest + Triceps).
+- "Give me another" (exclude what was suggested) → gives a different day, confirmed 3/3.
+- **Stubborn residue**: sometimes confuses biceps↔triceps in exercises. Read-only, tolerable.
 
-**Bien:** output estructurado (`@Generable`) impecable, conocimiento común en tarea acotada, multilingüe, gratis/on-device/rápido.
+**Round 5 (languages + new muscles, strategy B + winning instruction):**
+- **Languages ES/EN/FR:** all three give coherent, localized output with correct exercises.
+  Localized instructions/prompt are enough. No extra work.
+- **New/unusual groups** (traps, forearms, calves, glutes, lower back): the model **drifts to the
+  familiar** — it picked Chest + Back and ignored the unusual ones both times. Risk: users with
+  granular custom groups may see the coach underuse them.
+- **Vague/custom names** (upper body, core, arms): it **interprets them well** (lower body → legs,
+  core → abs) and gives plausible content, but exercise mislabeling comes back more often (it put
+  squats under "Core").
+- Conclusion: multilingual OK. Heavy customization = two limits (bias to the familiar + more
+  mislabeling). Acceptable for v1 (gym, default groups); document it.
 
-## Implicancias para el código (pendiente de aplicar)
-`MuscleCheckAI.suggestWorkout` (versión actual pasa todos los grupos + historial) hay que ajustarla:
-- Filtrar elegibles (excluir entrenados últimos 1-2 días); pasar solo esos.
-- Param `exclude: [String]` para "dame otra".
-- Instrucción simplificada (la ganadora de arriba); sacar la rotación del prompt.
-- Fallback: si quedan <2 elegibles, no filtrar / usar los más descansados.
-- Opcional: derivar `focus` en código de los 2 grupos elegidos (el modelo a veces pone un focus raro).
-- **UX: usar `streamResponse` (no `respond`)** para mostrar la sugerencia generándose progresivamente (focus → grupos → ejercicios) en lugar de un spinner. Mejor percepción de velocidad.
+## Observed model limitations (important for future AI features)
+- Doesn't reason reliably over provided data (rotation, "don't repeat yesterday").
+- Degrades with more complex instructions.
+- Confuses the domain (exercises assigned to the wrong group).
+- Anchoring/position bias (fixates on an index).
+- Inconsistent run to run (hence temperature + variety in code).
+- Cold-start hiccup ("server responded with an error" on the first call) → mitigated with a
+  warmup.
+
+**Good:** flawless structured output (`@Generable`), common knowledge on a narrow task,
+multilingual, free / on-device / fast.
+
+## Implications for the code (not yet applied)
+`MuscleCheckAI.suggestWorkout` (the current version passes all groups + history) needs to change:
+- Filter eligible groups (exclude those trained in the last 1–2 days); pass only those.
+- An `exclude: [String]` parameter for "give me another".
+- Simplified instruction (the winner above); take rotation out of the prompt.
+- Fallback: if fewer than 2 eligible groups remain, don't filter / use the most rested.
+- Optional: derive `focus` in code from the 2 chosen groups (the model sometimes returns an odd
+  focus).
+- **UX: use `streamResponse` (not `respond`)** to show the suggestion as it generates (focus →
+  groups → exercises) instead of a spinner. Better perceived speed.

@@ -1,233 +1,234 @@
-# 🧱 Deuda técnica — checklist de refactor
+# 🧱 Technical debt — refactor checklist
 
-> Branch: `refactor/tech-debt` (desde `main`). Snapshot del review al 2026-08-18, sobre
-> `ios/` (~8.000 LOC) + setup de `android/`.
+> Branch: `refactor/tech-debt` (from `main`). Review snapshot as of 2026-08-18, over `ios/`
+> (~8,000 LOC) + the `android/` setup.
 > Priorities in `CLAUDE.md` → Current focus.
 >
-> Orden pensado para que cada paso deje el terreno más limpio para el siguiente.
-> Los ítems 1–6 son mecánicos y **no tocan datos persistidos**. El 7 es el único con
-> migración real, y conviene hacerlo **antes** del release, mientras borrar el store
-> sigue siendo una salida legítima (cero usuarios).
+> Ordered so each step leaves the ground cleaner for the next.
+> Items 1–6 are mechanical and **don't touch persisted data**. Item 7 is the only one with a real
+> migration, and it's best done **before** the release, while wiping the store is still a
+> legitimate way out (zero users).
 >
-> Los números de línea son del snapshot original: el ítem 5 ya se hizo y corrió todo
-> lo que está debajo de `ContentViewModel:100`.
+> Line numbers are from the original snapshot: item 5 is done and shifted everything below
+> `ContentViewModel:100`.
 
 ---
 
-## 0. ✅ Keystore de Android — cerrado
+## 0. ✅ Android keystore — closed
 
-- [x] Reglas en el `.gitignore` **raíz** (`:70-72`): `android/keystore.properties`, `*.jks`,
-      `*.keystore`. Llegaron a `main` con el commit de firma (`db471bc`, PR #33).
-- [x] `.jks` **fuera del árbol del repo** → `~/Library/Mobile Documents/…/Documents/apps/`
-      (iCloud Drive), con `storeFile` apuntando a la ruta absoluta.
-- [x] Backup del `.jks` + las 3 contraseñas fuera de la laptop.
+- [x] Rules in the **root** `.gitignore` (`:70-72`): `android/keystore.properties`, `*.jks`,
+      `*.keystore`. They reached `main` with the signing commit (`db471bc`, PR #33).
+- [x] `.jks` **outside the repo tree** → `~/Library/Mobile Documents/…/Documents/apps/`
+      (iCloud Drive), with `storeFile` pointing to the absolute path.
+- [x] Backup of the `.jks` + the 3 passwords off the laptop.
 
-**Estado real:** la protección estaba bien implementada desde el principio, en el `.gitignore`
-raíz. El comentario de `android/app/build.gradle.kts:11` que dice *"is gitignored"* **es
-correcto** — no hay nada que corregir ahí.
+**Actual state:** the protection was implemented correctly from the start, in the root
+`.gitignore`. The comment at `android/app/build.gradle.kts:11` saying *"is gitignored"* **is
+correct** — nothing to fix there.
 
-**La ventana de riesgo ya está cerrada (2026-08-18).** Era angosta: las reglas vivían solo en
-el commit de la PR #33, así que `main` —y cualquier branch salida de main, como
-`refactor/tech-debt`— no las tenía, y trabajando parado ahí un `git add -A` habría staged las
-credenciales. Se cerró mergeando #33 (`db471bc`, squash) y trayendo `main` al branch;
-`git check-ignore -v android/keystore.properties` ahora responde `.gitignore:71` y el archivo
-desapareció de `git status`. `git log --all --full-history` confirma que las credenciales nunca
-entraron a la historia — el único match de `*keystore*` es `keystore.properties.example`, que es
-el template. No hay nada que purgar.
+**The risk window is closed (2026-08-18).** It was narrow: the rules lived only in PR #33's
+commit, so `main` — and any branch off main, like `refactor/tech-debt` — didn't have them, and
+working from there a `git add -A` would have staged the credentials. It was closed by merging
+#33 (`db471bc`, squash) and bringing `main` into the branch;
+`git check-ignore -v android/keystore.properties` now answers `.gitignore:71` and the file is
+gone from `git status`. `git log --all --full-history` confirms the credentials never entered
+history — the only `*keystore*` match is `keystore.properties.example`, the template. Nothing to
+purge.
 
-> Nota de proceso: GitHub trató a #33 como *stacked PR* y rechazó tanto `gh pr merge` como el
-> `PUT /pulls/33/merge` clásico. Hubo que usar el endpoint asíncrono
-> (`PUT /repos/{owner}/{repo}/pulls/33/merge-async` + polling del UUID que devuelve).
+> Process note: GitHub treated #33 as a *stacked PR* and rejected both `gh pr merge` and the
+> classic `PUT /pulls/33/merge`. The async endpoint was needed
+> (`PUT /repos/{owner}/{repo}/pulls/33/merge-async` + polling the UUID it returns).
 
-⚠️ **Pendiente operacional:** el `.jks` vive en iCloud Drive. Con "Optimizar almacenamiento del
-Mac" activado, macOS puede desalojarlo y dejar un placeholder → `bundleRelease` falla con un
-keystore "presente" pero vacío. Si pasa, abrir la carpeta en Finder para forzar la descarga, o
-tener una copia local además de la de iCloud. Al 2026-08-18 el archivo está materializado en
-disco (2786 bytes, no placeholder).
+⚠️ **Operational pending:** the `.jks` lives in iCloud Drive. With "Optimize Mac Storage" on,
+macOS can evict it and leave a placeholder → `bundleRelease` fails with a keystore that is
+"present" but empty. If it happens, open the folder in Finder to force the download, or keep a
+local copy besides the iCloud one. As of 2026-08-18 the file is materialized on disk (2786
+bytes, not a placeholder).
 
-Detalle del keystore (verificado): válido hasta **2053**, RSA 2048, SHA384withRSA. Cumple los
-requisitos de Play (expiración ≥ 2033). **No hay que regenerarlo.** Ver apéndice al final.
+Keystore details (verified): valid until **2053**, RSA 2048, SHA384withRSA. Meets Play's
+requirements (expiry ≥ 2033). **No need to regenerate it.** See the appendix at the end.
 
 ---
 
-## 1. Borrar código muerto y reglas contradictorias
+## 1. Delete dead code and contradictory rules
 
-Primero, para reducir superficie antes de refactorizar.
+First, to shrink the surface before refactoring.
 
-- [ ] `MuscleEntryManager.addDefaultEntries(names:)` (`:179`) — sin llamadores, y usa
-      predicado de nombre **exacto** mientras `addEntry` usa `normalizedName` case-insensitive
-      (`:63-67`). Dos definiciones de "ya existe" en la misma clase.
-- [x] `MuscleEntryManager.toggleActivity(for:on:)` (`:162`) — duplica
-      `ContentViewModel.toggleActivity` con semántica distinta (sin tips, sin refresh).
-      Borrado con el ítem 4 (escribía el flag). Ídem `fetchEntries(forWeek:year:)` y el
-      caso `MuscleEntryError.invalidWeekOrYear` que solo él tiraba.
-- [ ] `MuscleEntryManager.update(_:)` (`:143`) — ignora el parámetro, solo llama `save()`.
-- [ ] `ContentViewModel.saveSession(_:for:)` (`:252`) — sin llamadores desde Fase 2; solo lo
-      sostienen dos tests (`ContentViewModelTests:100`, `:115`). Borrar método + tests.
-- [ ] `SessionLogView`: el caso `.none` plegado en `.strength`.
-- [ ] Mover `extension ModelContext: ModelContextProtocol {}` fuera de `ContentView.swift:311`
-      (conformance de infraestructura escondida en una vista) a `ModelContextProtocol.swift`.
+- [ ] `MuscleEntryManager.addDefaultEntries(names:)` (`:179`) — no callers, and it uses an
+      **exact** name predicate while `addEntry` uses case-insensitive `normalizedName`
+      (`:63-67`). Two definitions of "already exists" in the same class.
+- [x] `MuscleEntryManager.toggleActivity(for:on:)` (`:162`) — duplicated
+      `ContentViewModel.toggleActivity` with different semantics (no tips, no refresh).
+      Deleted with item 4 (it wrote the flag). Same for `fetchEntries(forWeek:year:)` and the
+      `MuscleEntryError.invalidWeekOrYear` case only it threw.
+- [ ] `MuscleEntryManager.update(_:)` (`:143`) — ignores its parameter, only calls `save()`.
+- [ ] `ContentViewModel.saveSession(_:for:)` (`:252`) — no callers since Phase 2; only two tests
+      keep it alive (`ContentViewModelTests:100`, `:115`). Delete method + tests.
+- [ ] `SessionLogView`: the `.none` case folded into `.strength`.
+- [ ] Move `extension ModelContext: ModelContextProtocol {}` out of `ContentView.swift:311`
+      (infrastructure conformance hidden in a view) into `ModelContextProtocol.swift`.
 
-## 2. `context` no-opcional por init (two-phase init)
+## 2. Non-optional `context` via init (two-phase init)
 
-- [ ] Inyectar `ModelContextProtocol` por `init` en `ContentViewModel`; borrar los opcionales
-      `context` y `muscleEntryManager` (`:16-18`) y `setup(context:entries:)`.
-- [ ] Eliminar los ~15 `context?.save()`.
-- [ ] Revisar los errores que hoy se tragan: `logHealthKitWorkout` hace
-      `guard let manager else { return }` (`:345`) y `catch { return }` (`:368-370`).
+- [ ] Inject `ModelContextProtocol` through `init` in `ContentViewModel`; delete the optional
+      `context` and `muscleEntryManager` (`:16-18`) and `setup(context:entries:)`.
+- [ ] Remove the ~15 `context?.save()`.
+- [ ] Review the errors swallowed today: `logHealthKitWorkout` does
+      `guard let manager else { return }` (`:345`) and `catch { return }` (`:368-370`).
 
-**Por qué:** con el campo opcional, cualquier guardado antes de `setup()` es un no-op
-**silencioso**. `ContentView` ya tiene el `context` por `@Environment` antes del primer body,
-así que la opcionalidad no compra nada.
+**Why:** with an optional field, any save before `setup()` is a **silent** no-op. `ContentView`
+already has the `context` via `@Environment` before the first body, so the optionality buys
+nothing.
 
-## 3. ✅ Unificar `@Query` vs ViewModel (doble fuente de verdad) — hecho para la lista
+## 3. ✅ Unify `@Query` vs ViewModel (double source of truth) — done for the list
 
-- [x] Dueño único: **`@Query`**. El agrupado pasó a función pura (`ContentViewModel.group(_:)`)
-      que la vista deriva en cada body; se fueron las `@Published` `weekEntries` y
-      `groupedCurrentWeekEntries`.
-- [x] Dejó de ser deuda técnica: **era el crash de producción**
-      `MuscleEntry.exercisesSummary.getter` / EXC_BREAKPOINT. La lista cacheada sostenía
-      referencias a entries borradas por otros caminos (`AddExerciseView.unadd()`), la home
-      las renderizaba y SwiftData trapeaba al faultear `exercises`.
-- [x] Se descartó el guard defensivo **con evidencia**, no por opinión: `isDeleted` da
-      `false` tras un delete guardado, y `modelContext` solo se vuelve nil si el borrado
-      vino del mismo contexto. Ver `HomeStaleEntryTests`.
-- [ ] Queda el refetch de `updateCurrentEntries()`: ya no alimenta la lista, pero sigue
-      haciendo `fetchAllEntries()` para el widget, la racha y las keys de Crashlytics.
-      Podría recibir las entries del `@Query` en vez de re-consultar.
+- [x] Single owner: **`@Query`**. Grouping became a pure function (`ContentViewModel.group(_:)`)
+      the view derives on every body; the `@Published` `weekEntries` and
+      `groupedCurrentWeekEntries` are gone.
+- [x] It stopped being tech debt: **it was the production crash**
+      `MuscleEntry.exercisesSummary.getter` / EXC_BREAKPOINT. The cached list held references to
+      entries deleted through other paths (`AddExerciseView.unadd()`), the home rendered them and
+      SwiftData trapped when faulting `exercises`.
+- [x] The defensive guard was ruled out **with evidence**, not opinion: `isDeleted` is `false`
+      after a saved delete, and `modelContext` only becomes nil if the delete came from the same
+      context. See `HomeStaleEntryTests`.
+- [ ] The `updateCurrentEntries()` refetch remains: it no longer feeds the list, but still does
+      `fetchAllEntries()` for the widget, the streak and the Crashlytics keys. It could take the
+      `@Query` entries instead of re-querying.
 
-**Verificado de paso (pendiente del ítem 4):** el ensayo de migración se hizo con un store
-escrito por el schema viejo (`db471bc`, con `isChecked`/`weekOfYear`/`year` almacenados)
-abierto por el schema actual: **abre sin problemas y no pierde nada** — entries, sesiones y
-ejercicios intactos. La migración implícita de SwiftData cubre el borrado de esos tres
-atributos, así que el fallback que borra el store no se dispara.
+**Verified along the way (pending from item 4):** the migration rehearsal was done with a store
+written by the old schema (`db471bc`, with stored `isChecked`/`weekOfYear`/`year`) opened by the
+current schema: **it opens fine and loses nothing** — entries, sessions and exercises intact.
+SwiftData's implicit migration covers dropping those three attributes, so the store-wiping
+fallback doesn't fire.
 
-**Por qué:** hoy cada tap en un check dispara **dos** pipelines sobre los mismos datos:
-mutar → `updateCurrentEntries()` (refetch + refiltrado + reagrupado + streak O(n²) + JSON del
-widget), y en paralelo `@Query` se invalida sola → `onChange(of: entries)` (`:183`) →
-`updateCurrentEntries()` **otra vez**.
+**Why:** today every tap on a check fires **two** pipelines over the same data: mutate →
+`updateCurrentEntries()` (refetch + refilter + regroup + O(n²) streak + widget JSON), and in
+parallel `@Query` invalidates itself → `onChange(of: entries)` (`:183`) →
+`updateCurrentEntries()` **again**.
 
-## 4. ✅ `isChecked` como computed (denormalización) — hecho
+## 4. ✅ `isChecked` as a computed property (denormalization) — done
 
-- [x] `isChecked` → `isTrained(inWeekOf: Date())`, sobre `sessions`. La comparación se le
-      pide al calendario (`isDate(_:equalTo:toGranularity:.weekOfYear)`), no a los
-      componentes: una semana a caballo del año nuevo tiene un número de semana y **dos**
-      años calendario, así que comparar ints da falso negativo ~7 días al año.
-- [x] Borrado `resetCheckedEntriesIfnewWeek()` y los flags `lastResetWeek`/`lastResetYear`.
-- [x] `weekOfYear`/`year` fuera del modelo. Se fueron con ellos el filtro semanal de
-      `updateCurrentEntries` (que solo pasaba porque el reset re-estampaba todas las
-      entries) y `MuscleEntryManager.fetchEntries(forWeek:year:)`, sin llamadores.
-- [x] **Decisión de producto:** destildar = "no entrené esto esta semana" → borra todas las
-      sesiones de la semana en curso (`removeSessions(inWeekOf:)`). Borrar solo la del día
-      dejaba el check prendido si sobrevivía otra sesión de la misma semana.
-- [x] `WeeklyResetTip` conservado con donante nuevo: la home compara el lunes de esta semana
-      contra `UserDefaultsManager.lastSeenWeekStart` (**un `Date`**, no el par de ints).
-- [x] 18 tests nuevos en `MuscleEntryWeekCheckTests` + regresión del bug lunes/miércoles en
-      `ContentViewModelTests`. Suite completa: 229 tests en verde.
+- [x] `isChecked` → `isTrained(inWeekOf: Date())`, over `sessions`. The comparison is asked of
+      the calendar (`isDate(_:equalTo:toGranularity:.weekOfYear)`), not of components: a week
+      straddling the new year has one week number and **two** calendar years, so comparing ints
+      gives a false negative ~7 days a year.
+- [x] Deleted `resetCheckedEntriesIfnewWeek()` and the `lastResetWeek`/`lastResetYear` flags.
+- [x] `weekOfYear`/`year` out of the model. Gone with them: the weekly filter in
+      `updateCurrentEntries` (which only worked because the reset re-stamped every entry) and
+      `MuscleEntryManager.fetchEntries(forWeek:year:)`, which had no callers.
+- [x] **Product decision:** unchecking = "I didn't train this this week" → deletes every session
+      of the current week (`removeSessions(inWeekOf:)`). Deleting only the day's session left the
+      check on if another session from the same week survived.
+- [x] `WeeklyResetTip` kept with a new donor: the home compares this week's Monday against
+      `UserDefaultsManager.lastSeenWeekStart` (**a `Date`**, not the pair of ints).
+- [x] 18 new tests in `MuscleEntryWeekCheckTests` + a regression test for the Monday/Wednesday
+      bug in `ContentViewModelTests`. Full suite: 229 tests green.
 
-**Pendiente antes de mergear:** sacar 3 atributos de un `@Model` es cambio de schema — falta
-el ensayo store viejo → build nuevo para saber si SwiftData migra solo o si cae en el borrado
-de `MuscleCheckApp.swift:75-88`.
+**Pending before merging:** removing 3 attributes from a `@Model` is a schema change — the
+old store → new build rehearsal is still needed to know whether SwiftData migrates on its own or
+falls into the wipe at `MuscleCheckApp.swift:75-88`.
 
-**Decisión abierta:** al destildar la semana del grupo, las sesiones de esa semana **dentro de
-`Exercise.sessions`** siguen ahí. Hoy es comportamiento accidental, no decidido.
+**Open decision:** when unchecking a group's week, that week's sessions **inside
+`Exercise.sessions`** stay. Today that's accidental behavior, not a decision.
 
-**Por qué:** hoy hay 4 caminos que mantienen las dos representaciones a mano y pueden
-desincronizarse: `toggleActivity` (`:296-316`), `setTodaySession`, `logExercise`,
-`MuscleEntryManager.toggleActivity`. Como computed, la clase de bug desaparece y el
-reset semanal deja de existir como concepto.
+**Why:** today there are 4 paths that keep both representations by hand and can drift apart:
+`toggleActivity` (`:296-316`), `setTodaySession`, `logExercise`,
+`MuscleEntryManager.toggleActivity`. As a computed property, the whole class of bug disappears
+and the weekly reset stops existing as a concept.
 
-## 5. ✅ Romper el god object `ContentViewModel` (374 líneas, 7 responsabilidades) — hecho
+## 5. ✅ Break up the `ContentViewModel` god object (374 lines, 7 responsibilities) — done
 
-- [x] Extraer el coach de IA (`:22-102`, ~80 líneas) a `RoutineCoachViewModel`. No comparte
-      nada con el resto salvo `entries` — que ahora se pasa por parámetro en vez de guardarse,
-      así no hay una segunda copia de la lista que mantener sincronizada.
-- [x] Extraer el sync del widget (`:193-206`) a un `WidgetBridge` **compartido por ambos targets**:
-      hoy el App Group `"group.zadkiel.musclecheck"` y las 3 claves `widget*` están hardcodeadas
-      duplicadas en `ContentViewModel.swift:199-202` y `MuscleCheckWidget.swift:5-8`. Un typo
-      ahí rompe el widget en silencio.
-- [x] De yapa: `SharedMuscleEntry` estaba duplicado en los dos targets. Quedó una sola copia
-      (`MuscleCheck/models/`), compartida por `membershipExceptions` igual que el `.xcstrings`.
+- [x] Extract the AI coach (`:22-102`, ~80 lines) into `RoutineCoachViewModel`. It shares nothing
+      with the rest except `entries` — now passed as a parameter instead of stored, so there's no
+      second copy of the list to keep in sync.
+- [x] Extract the widget sync (`:193-206`) into a `WidgetBridge` **shared by both targets**:
+      today the App Group `"group.zadkiel.musclecheck"` and the 3 `widget*` keys are hardcoded
+      and duplicated in `ContentViewModel.swift:199-202` and `MuscleCheckWidget.swift:5-8`. A
+      typo there breaks the widget silently.
+- [x] Bonus: `SharedMuscleEntry` was duplicated in both targets. Now there's a single copy
+      (`MuscleCheck/models/`), shared via `membershipExceptions` like the `.xcstrings`.
 
-`ContentViewModel` pasó de 374 a 273 líneas.
+`ContentViewModel` went from 374 to 273 lines.
 
-## 6. Perf de las calculadoras puras
+## 6. Performance of the pure calculators
 
-- [ ] `StreakCalculator.uniqueTrainingDays` (`:19`) es O(n²) — `contains` lineal dentro del loop.
-- [ ] `StatsCalculator` usa `dayStart.description` como clave de `Set<String>` (`:37`, `:58`).
-      Formatear fecha a string para deduplicar es caro y frágil por locale → `Set<Date>` de
+- [ ] `StreakCalculator.uniqueTrainingDays` (`:19`) is O(n²) — a linear `contains` inside the
+      loop.
+- [ ] `StatsCalculator` uses `dayStart.description` as a `Set<String>` key (`:37`, `:58`).
+      Formatting dates to strings to deduplicate is expensive and locale-fragile → `Set<Date>` of
       `startOfDay`.
-- [ ] `MuscleEntry`: `lastWeight`/`lastSets`/`lastReps`/`lastDuration`/`lastDistance` son
-      **5 escaneos independientes** del array, por fila, por render. Un solo scan que devuelva
-      la última sesión relevante.
+- [ ] `MuscleEntry`: `lastWeight`/`lastSets`/`lastReps`/`lastDuration`/`lastDistance` are
+      **5 independent scans** of the array, per row, per render. One scan returning the last
+      relevant session.
 
-## 7. `WorkoutSession` → `@Model` (el techo real de escalabilidad)
+## 7. `WorkoutSession` → `@Model` (the real scalability ceiling)
 
-- [ ] `WorkoutSession` como `@Model` con relación real a `MuscleEntry`.
-- [ ] Ídem las `sessions` anidadas dentro de `Exercise`.
-- [ ] Agregar el modelo a `AppSchema.models`.
-- [ ] Reescribir stats/streak/historial con `#Predicate` por rango de fechas en vez de full scan.
+- [ ] `WorkoutSession` as a `@Model` with a real relationship to `MuscleEntry`.
+- [ ] Same for the `sessions` nested inside `Exercise`.
+- [ ] Add the model to `AppSchema.models`.
+- [ ] Rewrite stats/streak/history with `#Predicate` by date range instead of full scans.
 
-**Por qué:** hoy `sessions` y `exercises` son blobs Codable dentro de la fila →
-**nada es consultable**. Toda lectura histórica es full scan en memoria
-(`StatsCalculator.daysTrainedPerWeek:33` itera entries × sesiones × 8 semanas) y crece sin
-techo: 2 años × 7 grupos × ~100 sesiones + ejercicios adentro se cargan enteros para pintar
-la home.
+**Why:** today `sessions` and `exercises` are Codable blobs inside the row → **nothing is
+queryable**. Every historical read is an in-memory full scan
+(`StatsCalculator.daysTrainedPerWeek:33` iterates entries × sessions × 8 weeks) and grows without
+a ceiling: 2 years × 7 groups × ~100 sessions + exercises inside get loaded whole to paint the
+home.
 
-**Riesgo:** es la única migración de datos real de la lista. La estrategia actual ante schema
-mismatch es **borrar el store** (`MuscleCheckApp.swift:75-88`) — aceptable con cero usuarios,
-no después del release.
+**Risk:** it's the only real data migration on the list. The current strategy on schema mismatch
+is to **wipe the store** (`MuscleCheckApp.swift:75-88`) — acceptable with zero users, not after
+the release.
 
 ---
 
-## Menores / seguimiento
+## Minor / follow-up
 
 - [ ] `HistoryView.swift:10` — `StateObject(wrappedValue: HistoryViewModel.create(with: entries))`
-      captura `entries` en la primera construcción y nunca se actualiza. Hoy no se nota porque
-      la vista se pushea nueva cada vez; es una trampa cargada.
-- [ ] `UserDefaultsManager` — singleton concreto, 42 usos, **el único manager sin protocolo**,
-      justo el que gobierna onboarding, reset semanal y cache de IA.
-- [ ] Bug de `-resetOnboarding` (orden intra-suite de `OnboardingUITests`): `MuscleCheckApp`
-      puentea el manager con `UserDefaults.standard` crudo por strings (`:24-26`, `:40`),
-      duplicando dos claves que el manager ya define. **El bypass es donde vive el bug.**
-      Se arregla solo al darle protocolo al manager (ítem anterior).
+      captures `entries` on first construction and never updates. Not visible today because the
+      view is pushed fresh every time; it's a loaded trap.
+- [ ] `UserDefaultsManager` — concrete singleton, 42 uses, **the only manager without a
+      protocol**, precisely the one governing onboarding, weekly reset and the AI cache.
+- [ ] `-resetOnboarding` bug (intra-suite order of `OnboardingUITests`): `MuscleCheckApp`
+      bypasses the manager with raw `UserDefaults.standard` via strings (`:24-26`, `:40`),
+      duplicating two keys the manager already defines. **The bypass is where the bug lives.**
+      It fixes itself once the manager gets a protocol (previous item).
 
 ## Android
 
-La duplicación del dominio en Kotlin (`MonthCalendarCalculator`, `StreakCalculator`, modelos)
-es real pero **no se toca**: KMP para dos apps de un side project es ceremonia que no rinde.
-Lo que sí se mantiene barato es la **paridad de test suites** — que los mismos casos borde
-existan de los dos lados es lo que hace sostenible la duplicación.
+The domain duplication in Kotlin (`MonthCalendarCalculator`, `StreakCalculator`, models) is real
+but **left alone**: KMP for two apps of a side project is ceremony that doesn't pay off. What
+stays cheap to maintain is **test-suite parity** — the same edge cases existing on both sides is
+what makes the duplication sustainable.
 
 ---
 
-## Apéndice — cómo tratar el keystore de Android (para alguien que viene de iOS)
+## Appendix — handling the Android keystore (for someone coming from iOS)
 
-**El modelo mental de iOS no aplica.** En iOS, si perdés el certificado de distribución lo
-revocás en el portal y generás otro; Apple es la autoridad y la App Store re-firma tu app.
-En Android la clave **es** la identidad: no hay portal donde revocar y reemitir.
+**The iOS mental model doesn't apply.** On iOS, if you lose the distribution certificate you
+revoke it in the portal and generate another; Apple is the authority and the App Store re-signs
+your app. On Android the key **is** the identity: there's no portal to revoke and reissue.
 
-Lo que salva el día es **Play App Signing** (obligatorio para apps nuevas desde ago-2021, así
-que MuscleCheck lo va a usar sí o sí). Ahí hay **dos** claves:
+What saves the day is **Play App Signing** (mandatory for new apps since Aug 2021, so MuscleCheck
+uses it no matter what). There are **two** keys:
 
-| Clave | Quién la tiene | Si se pierde |
+| Key | Who holds it | If lost |
 |---|---|---|
-| **App signing key** — firma lo que instalan los usuarios | Google | No la tenés vos: no la podés perder |
-| **Upload key** — solo prueba a Play que el upload es tuyo (tu `.jks`) | Vos | Recuperable: se pide reset a soporte de Play (días de demora) |
+| **App signing key** — signs what users install | Google | You don't hold it: you can't lose it |
+| **Upload key** — only proves to Play that the upload is yours (your `.jks`) | You | Recoverable: request a reset from Play support (takes days) |
 
-Es decir: con Play App Signing, perder tu `.jks` es **molesto, no fatal**. Sin Play App Signing
-(no es el caso) sería fatal: nunca más podrías actualizar la app, y habría que publicar un
-listing nuevo perdiendo instalaciones y reviews.
+So with Play App Signing, losing your `.jks` is **annoying, not fatal**. Without Play App Signing
+(not our case) it would be fatal: you could never update the app again, and you'd have to publish
+a new listing, losing installs and reviews.
 
-Reglas prácticas:
+Practical rules:
 
-1. **Nunca al repo** — ni el `.jks` ni el `keystore.properties`. Ver ítem 0.
-2. **Fuera del árbol del repo** — hoy en `~/Library/Mobile Documents/…/Documents/apps/`
-   (iCloud Drive), con `storeFile` en ruta absoluta. Ver la advertencia de desalojo en el ítem 0.
-3. **Backup en el gestor de contraseñas**, no solo en la laptop: el `.jks` **y** las 3
-   contraseñas (store, key, alias). El alias actual es `musclecheck`.
-4. **Para CI**: nunca el archivo. Se sube el `.jks` en base64 como secret de GitHub Actions,
-   se decodifica en un step, y las contraseñas van como secrets aparte.
-5. **El build ya degrada bien**: sin `keystore.properties`, `hasReleaseSigning` es false y el
-   release compila sin firmar (`android/app/build.gradle.kts:20`, branch de firma). Eso mantiene
-   `bundleRelease` verificable en CI sin exponer nada.
+1. **Never in the repo** — neither the `.jks` nor `keystore.properties`. See item 0.
+2. **Outside the repo tree** — today in `~/Library/Mobile Documents/…/Documents/apps/`
+   (iCloud Drive), with `storeFile` as an absolute path. See the eviction warning in item 0.
+3. **Backup in the password manager**, not just on the laptop: the `.jks` **and** the 3
+   passwords (store, key, alias). The current alias is `musclecheck`.
+4. **For CI**: never the file. Upload the `.jks` base64-encoded as a GitHub Actions secret, decode
+   it in a step, and pass the passwords as separate secrets.
+5. **The build already degrades gracefully**: without `keystore.properties`, `hasReleaseSigning`
+   is false and the release builds unsigned (`android/app/build.gradle.kts:20`, signing branch).
+   That keeps `bundleRelease` verifiable in CI without exposing anything.

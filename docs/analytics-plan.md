@@ -1,372 +1,363 @@
-# 📊 Plan de analítica — dónde se pierden los usuarios
+# 📊 Analytics plan — where users drop off
 
-> Snapshot al 2026-08-24. Pedido explícito del developer, así que **es una excepción
-> consciente al "cero features"** del modo calidad de código: esto es instrumentación,
-> no producto. No cambia ninguna pantalla.
+> Snapshot as of 2026-08-24. An explicit request from the developer, and at the time a
+> **conscious exception to the "zero features"** of code-quality mode: this is
+> instrumentation, not product. It doesn't change any screen.
 >
-> Este doc es la **fuente única** de nombres de eventos para iOS y Android. Se define
-> una vez acá, se implementa dos veces. Mismo criterio que la paridad de test suites.
+> This doc is the **single source** of event names for iOS and Android. Defined once here,
+> implemented twice. Same principle as test-suite parity.
 
 ---
 
-## 0. La pregunta
+## 0. The question
 
-**¿En qué momento la gente deja de usar MuscleCheck, y por qué?**
+**At what point do people stop using MuscleCheck, and why?**
 
-Todo lo que sigue existe para responder eso. La regla que gobierna el doc entero:
+Everything that follows exists to answer that. The rule that governs the whole doc:
 
-> **Si un evento no responde una pregunta que ya nos estamos haciendo, no va.**
+> **If an event doesn't answer a question we're already asking, it doesn't go in.**
 
-No se trackean "los clicks". Trackear clicks produce un lago de eventos que nadie
-mira y que envejece mal. Se trackea un **funnel**, que es una hipótesis sobre dónde
-se rompe la experiencia.
+We don't track "the clicks". Tracking clicks produces a lake of events nobody looks at and
+that ages badly. We track a **funnel**, which is a hypothesis about where the experience
+breaks.
 
 ---
 
-## 1. Estado actual (auditoría)
+## 1. Current state (audit)
 
-| | Estado |
+| | State |
 |---|---|
-| **iOS** | `FirebaseApp.configure()` en `MuscleCheckApp.swift:34` y **nada más**. Cero eventos propios. Solo llegan los automáticos: `first_open`, `session_start`, `screen_view`, `user_engagement`, `in_app_purchase` |
-| **Android** | **Firebase no existe.** Ni dependencia, ni plugin de Google Services, ni `google-services.json`. La mitad de los usuarios es invisible |
-| **Monetización** | RevenueCat ya da el funnel completo (paywall → compra → churn) en su dashboard. **No duplicar** |
-| **Config** | `ios/MuscleCheck/GoogleService-Info.plist` está **commiteado** (los patrones del `.gitignore` no matchean después de la mudanza a monorepo). El `google-services.json` de Android debería seguir la misma política: si se ignora, el plugin **rompe el build** y CI se cae |
+| **iOS** | `FirebaseApp.configure()` in `MuscleCheckApp.swift:34` and **nothing else**. Zero custom events. Only the automatic ones arrive: `first_open`, `session_start`, `screen_view`, `user_engagement`, `in_app_purchase` |
+| **Android** | **Firebase doesn't exist.** No dependency, no Google Services plugin, no `google-services.json`. Half the users are invisible |
+| **Monetization** | RevenueCat already gives the full funnel (paywall → purchase → churn) in its dashboard. **Don't duplicate** |
+| **Config** | `ios/MuscleCheck/GoogleService-Info.plist` is **committed** (the `.gitignore` patterns stopped matching after the move to a monorepo). Android's `google-services.json` should follow the same policy: if it's ignored, the plugin **breaks the build** and CI goes down |
 
 ---
 
-## 2. La trampa de medición específica de esta app
+## 2. The measurement trap specific to this app
 
-Esto es lo que un plan genérico se pierde, y es lo más importante del doc.
+This is what a generic plan misses, and it's the most important part of the doc.
 
-### 2.1 El éxito del producto es que el usuario abra menos la app
+### 2.1 Product success means the user opens the app less
 
-El posicionamiento es *"trackeá tu entrenamiento en 2 segundos"*. Hay widget, App
-Intents/Siri y detección por HealthKit: **parte del uso ocurre fuera de la app**. Un
-usuario que mira el widget, le dicta a Siri "entrené pecho" y nunca abre la app es un
-usuario de **éxito máximo** — y en un dashboard de aperturas se lee como abandono.
+The positioning is *"track your workout in 2 seconds"*. There's a widget, App Intents/Siri and
+HealthKit detection: **part of the usage happens outside the app**. A user who glances at the
+widget, tells Siri "I trained chest" and never opens the app is a **maximum-success** user —
+and on an opens dashboard they read as churn.
 
-Consecuencias de diseño, no negociables:
+Design consequences, non-negotiable:
 
-- La métrica de engagement es **"semanas con al menos un check registrado por
-  cualquier vía"**, no aperturas ni sesiones.
-- Todo evento de registro lleva un parámetro **`source`** (`app` / `siri` / `healthkit`)
-  para poder separar "no lo usa" de "lo usa sin abrirlo".
-- El widget hoy es read-only: el tap abre la app, así que no emite eventos propios.
-  El App Intent sí puede emitirlos, y **tiene que hacerlo** o Siri queda como un
-  agujero negro.
+- The engagement metric is **"weeks with at least one check logged by any path"**, not opens or
+  sessions.
+- Every logging event carries a **`source`** parameter (`app` / `siri` / `healthkit`) to tell
+  "doesn't use it" apart from "uses it without opening it".
+- The widget is read-only today: tapping it opens the app, so it emits no events of its own.
+  The App Intent can emit them, and **has to**, or Siri becomes a black hole.
 
-### 2.2 La retención diaria es la métrica equivocada
+### 2.2 Daily retention is the wrong metric
 
-El modelo mental de la app es un **checklist semanal**. Medir D1/D7 la va a hacer ver
-muerta, porque nadie *debería* entrar todos los días. La unidad natural es la **semana
-ISO** — que además es la que el dominio ya usa (`MuscleEntry.isTrained(inWeekOf:)`).
+The app's mental model is a **weekly checklist**. Measuring D1/D7 will make it look dead,
+because nobody *should* come in every day. The natural unit is the **ISO week** — which is also
+what the domain already uses (`MuscleEntry.isTrained(inWeekOf:)`).
 
-Los benchmarks públicos de la industria son diarios (§5). No se comparan de forma
-naive contra una app semanal.
+The public industry benchmarks are daily (§5). They are not compared naively against a weekly
+app.
 
-### 2.3 Sin cuentas, el identificador es por instalación
+### 2.3 Without accounts, the identifier is per install
 
-No hay login. El id es el app-instance de Firebase: **reinstalar = usuario nuevo**.
-Eso infla "nuevos usuarios" y rompe las curvas de retención larga. Se acepta como
-límite conocido; **no se construye auth para arreglar la analítica**.
+There's no login. The id is Firebase's app instance: **reinstall = new user**. That inflates
+"new users" and breaks long retention curves. Accepted as a known limit; **we don't build auth
+to fix the analytics**.
 
-### 2.4 Los denominadores están sesgados
+### 2.4 The denominators are biased
 
-El coach de IA está gateado por iOS 26 + Apple Intelligence: para una porción de los
-usuarios **el botón ni existe**. Medir `coach_opened / usuarios` y concluir "nadie usa
-la IA" sería un error de lectura, no un hallazgo. Por eso la elegibilidad va como
-**user property** (§9) y todos los ratios se calculan sobre la población elegible.
+The AI coach is gated by iOS 26 + Apple Intelligence: for a share of users **the button doesn't
+even exist**. Measuring `coach_opened / users` and concluding "nobody uses the AI" would be a
+reading error, not a finding. That's why eligibility goes in as a **user property** (§9) and
+every ratio is computed over the eligible population.
 
 ---
 
-## 3. Marco: Goals → Signals → Metrics (HEART)
+## 3. Framework: Goals → Signals → Metrics (HEART)
 
-Se usa HEART (Google) porque separa lo que se puede inferir de los logs de lo que hay
-que preguntar. Aplicado a MuscleCheck:
+We use HEART (Google) because it separates what can be inferred from logs from what has to be
+asked. Applied to MuscleCheck:
 
-| | Goal | Signal | Métrica | ¿De logs? |
+| | Goal | Signal | Metric | From logs? |
 |---|---|---|---|---|
-| **H**appiness | Que sienta que registrar no cuesta | Reviews, respuestas de testers | Rating, feedback cualitativo | ❌ Hay que preguntar |
-| **E**ngagement | Que registre lo que entrena | Checks por semana activa | Mediana de checks/semana | ✅ |
-| **A**doption | Que llegue al primer check | Install → primer tilde | % que tilda dentro de 24h | ✅ |
-| **R**etention | Que vuelva la semana siguiente | Semanas consecutivas | % con ≥1 check en la semana 2 | ✅ |
-| **T**ask success | Que encuentre cómo agregar | Alta abierta → alta guardada | % de altas completadas, tiempo hasta el check | ✅ |
+| **H**appiness | Logging feels effortless | Reviews, tester answers | Rating, qualitative feedback | ❌ Has to be asked |
+| **E**ngagement | They log what they train | Checks per active week | Median checks/week | ✅ |
+| **A**doption | They reach the first check | Install → first check | % checking within 24 h | ✅ |
+| **R**etention | They come back next week | Consecutive weeks | % with ≥1 check in week 2 | ✅ |
+| **T**ask success | They find how to add | Add opened → add saved | % of adds completed, time to the check | ✅ |
 
-**Happiness es la única que no se puede inferir de los logs.** Si el plan no incluye
-hablar con usuarios (§13), esa fila queda vacía para siempre.
-
----
-
-## 4. North Star y la unidad de tiempo correcta
-
-> **North Star: semanas activas por usuario.**
-> Una semana es activa si el usuario registró ≥1 entrenamiento en ella, por cualquier vía.
-
-Lo lindo: **el producto ya calcula su propia North Star**. La racha semanal de
-`StreakCalculator` es exactamente esta métrica vista desde adentro. La analítica solo
-la mira desde afuera y agregada.
-
-Métrica de calidad del hábito: **distribución de rachas** (cuánta gente llega a 2, 4,
-8, 12 semanas). Es más honesta que un promedio, que va a estar dominado por la cola de
-gente que probó una vez.
+**Happiness is the only one that can't be inferred from logs.** If the plan doesn't include
+talking to users (§13), that row stays empty forever.
 
 ---
 
-## 5. Benchmarks (y por qué casi no aplican todavía)
+## 4. North Star and the right unit of time
 
-Rangos publicados para health & fitness, útiles como orden de magnitud:
+> **North Star: active weeks per user.**
+> A week is active if the user logged ≥1 workout in it, by any path.
 
-- Retención **D1** entre ~20% y ~30-35%; los mejores llegan a ~45%.
-- Retención **D7** entre ~7-8% y ~15-20%; top-tier ~30%.
-- Retención **D30** entre ~3% y ~8-12%; los mejores ~25%.
-- La activación en fitness cae de ~26% el día 1 a ~10% al día 28.
+The nice part: **the product already computes its own North Star**. `StreakCalculator`'s weekly
+streak is exactly this metric seen from the inside. Analytics just looks at it from the outside,
+aggregated.
 
-Tres advertencias, en orden de importancia:
-
-1. **Son diarios.** Nuestro modelo es semanal (§2.2). Comparar directo lleva a
-   conclusiones falsas.
-2. **La dispersión entre fuentes es enorme** (D1 de 20% a 35% según quién mida). Sirven
-   para saber si estamos en otro orden de magnitud, no para fijar un objetivo.
-3. **Con la base de usuarios actual no aplican en absoluto.** Cinco usuarios no hacen
-   un porcentaje.
+Habit-quality metric: the **streak distribution** (how many people reach 2, 4, 8, 12 weeks).
+More honest than an average, which will be dominated by the tail of people who tried once.
 
 ---
 
-## 6. El funnel de activación
+## 5. Benchmarks (and why they barely apply yet)
 
-El camino crítico, con **ventana temporal explícita** — un funnel sin ventana se
-completa "eventualmente" y no mide nada:
+Published ranges for health & fitness, useful as an order of magnitude:
+
+- **D1** retention between ~20% and ~30–35%; the best reach ~45%.
+- **D7** retention between ~7–8% and ~15–20%; top tier ~30%.
+- **D30** retention between ~3% and ~8–12%; the best ~25%.
+- Activation in fitness drops from ~26% on day 1 to ~10% by day 28.
+
+Three caveats, in order of importance:
+
+1. **They're daily.** Our model is weekly (§2.2). Comparing directly leads to false conclusions.
+2. **The spread between sources is huge** (D1 from 20% to 35% depending on who measures). They
+   tell us whether we're in a different order of magnitude, not what target to set.
+3. **With the current user base they don't apply at all.** Five users don't make a percentage.
+
+---
+
+## 6. The activation funnel
+
+The critical path, with an **explicit time window** — a funnel without a window completes
+"eventually" and measures nothing:
 
 ```
 install
   └→ onboarding_started
-       └→ onboarding_completed            (o abandonado, con el paso)
-            └→ activity_checked  #1        ← ACTIVACIÓN (ventana: 24 h)
-                 └→ ≥1 check en la semana 2 ← HÁBITO (ventana: 14 días)
+       └→ onboarding_completed            (or abandoned, with the step)
+            └→ activity_checked  #1        ← ACTIVATION (window: 24 h)
+                 └→ ≥1 check in week 2     ← HABIT (window: 14 days)
 ```
 
-Además, **el tiempo hasta el valor es parte del producto**: la promesa es "2 segundos".
-Por eso `activity_checked` lleva `seconds_since_open`. Si la mediana está en 8
-segundos, el tagline es mentira y eso es un bug de producto, no un número feo.
+Also, **time to value is part of the product**: the promise is "2 seconds". That's why
+`activity_checked` carries `seconds_since_open`. If the median is 8 seconds, the tagline is a
+lie and that's a product bug, not an ugly number.
 
 ---
 
-## 7. Los cinco momentos de pérdida
+## 7. The five drop-off moments
 
-Cada uno con su hipótesis, el par de eventos que la mide, y **qué se haría con la
-respuesta**. Si la última columna está vacía, el evento no se instrumenta.
+Each with its hypothesis, the pair of events that measures it, and **what we'd do with the
+answer**. If the last part is empty, the event isn't instrumented.
 
-### 7.1 Onboarding → primer check
-- **Hipótesis:** el usuario elige sus grupos en el onboarding y sale a una lista que no
-  entiende que hay que tildar.
-- **Mide:** `onboarding_completed` → `activity_checked` (primero).
-- **Decisión:** si la caída es alta, el onboarding necesita terminar *dentro* del primer
-  check (que el último paso sea tildar algo), no antes.
+### 7.1 Onboarding → first check
+- **Hypothesis:** the user picks their groups in onboarding and lands on a list they don't
+  understand they're supposed to check.
+- **Measures:** `onboarding_completed` → `activity_checked` (first).
+- **Decision:** if the drop is high, onboarding needs to end *inside* the first check (the last
+  step is checking something), not before it.
 
-### 7.2 El alta de ejercicios
-- **Hipótesis:** ya fue un problema real ("no encuentro cómo agregar") y se arregló con
-  el FAB en la Feature 18. **No hay ninguna medición de si funcionó.**
-- **Mide:** `exercise_add_started` (con `source`: fab / empty_state) → `exercise_add_completed`.
-- **Decisión:** si el abandono sigue alto, el problema no era el descubrimiento sino el
-  formulario. Si `source=empty_state` domina, el FAB sigue sin verse.
+### 7.2 Adding exercises
+- **Hypothesis:** it was already a real problem ("I can't find how to add") and it was fixed with
+  the FAB in Feature 18. **There's no measurement of whether it worked.**
+- **Measures:** `exercise_add_started` (with `source`: fab / empty_state) →
+  `exercise_add_completed`.
+- **Decision:** if abandonment is still high, the problem wasn't discovery but the form. If
+  `source=empty_state` dominates, the FAB still isn't being seen.
 
-### 7.3 La profundidad (Feature 19)
-- **Hipótesis:** los ejercicios dentro del grupo fueron caros de construir; puede que
-  casi nadie descubra que tocando el nombre se entra.
-- **Mide:** `group_detail_opened` sobre usuarios con ≥1 grupo de métrica ≠ `none`.
-- **Decisión:** si es marginal, la pregunta no es "cómo lo promocionamos" sino si la
-  feature merece seguir existiendo. Un dato así **justifica borrar código**.
+### 7.3 Depth (Feature 19)
+- **Hypothesis:** exercises inside a group were expensive to build; almost nobody may discover
+  that tapping the name opens them.
+- **Measures:** `group_detail_opened` over users with ≥1 group whose metric ≠ `none`.
+- **Decision:** if it's marginal, the question isn't "how do we promote it" but whether the
+  feature deserves to keep existing. A number like that **justifies deleting code**.
 
-### 7.4 La segunda semana
-- **Hipótesis:** es la caída grande y estructural de toda app de hábitos.
-- **Mide:** cohorte de instalación → ≥1 check en la semana 2.
-- **Decisión:** es lo que le da sentido (o se lo quita) a la notificación de
-  recordatorio y a la racha como mecánica de retención.
+### 7.4 The second week
+- **Hypothesis:** it's the big, structural drop of every habit app.
+- **Measures:** install cohort → ≥1 check in week 2.
+- **Decision:** it's what gives (or takes away) meaning from the reminder notification and the
+  streak as a retention mechanic.
 
-### 7.5 El coach de IA
-- **Hipótesis:** se abre una vez por curiosidad y no vuelve.
-- **Mide:** `coach_opened` / `coach_regenerated`, **sobre la población elegible** (§2.4).
-- **Decisión:** si se usa una vez y nunca más, el problema es que sugiere sin poder
-  actuar. Si se regenera mucho, la primera sugerencia es mala.
+### 7.5 The AI coach
+- **Hypothesis:** opened once out of curiosity and never again.
+- **Measures:** `coach_opened` / `coach_regenerated`, **over the eligible population** (§2.4).
+- **Decision:** if it's used once and never again, the problem is that it suggests without being
+  able to act. If it's regenerated a lot, the first suggestion is bad.
 
-### 7.6 El paywall — **no se instrumenta**
-RevenueCat ya tiene todo el funnel de monetización. Duplicarlo es trabajo con riesgo de
-dos números que no coinciden y nadie sabe cuál creer.
+### 7.6 The paywall — **not instrumented**
+RevenueCat already has the whole monetization funnel. Duplicating it is work with the risk of
+two numbers that don't match and nobody knows which to believe.
 
 ---
 
-## 8. Taxonomía de eventos
+## 8. Event taxonomy
 
-**Convención:** `objeto_acción`, en **pasado**, `snake_case`. Los **eventos** dicen
-*qué pasó*; las **propiedades** dicen *quién / dónde / cómo*. Esa separación es lo que
-evita la explosión de nombres (`add_from_fab`, `add_from_empty`… son un solo evento con
-un parámetro).
+**Convention:** `object_action`, **past tense**, `snake_case`. **Events** say *what happened*;
+**properties** say *who / where / how*. That separation is what prevents name explosion
+(`add_from_fab`, `add_from_empty`… are one event with a parameter).
 
-| Evento | Cuándo | Parámetros |
+| Event | When | Parameters |
 |---|---|---|
-| `onboarding_started` | Primera pantalla del first-run | — |
-| `onboarding_completed` | Termina el flujo (continuar o saltear) | `seed_count` (disciplinas), `skipped` |
-| ~~`onboarding_abandoned`~~ | *Descartado:* el onboarding es un cover que no se puede cerrar, así que abandonar = matar la app. `started` sin `completed` ya lo mide | — |
-| `activity_checked` | La semana de un grupo pasa de "no entrenada" a "entrenada", por cualquier vía. Re-registrar en la misma semana no cuenta | `category` (built-in o `custom`), `metric`, `source`, `seconds_since_open` (solo `source=app`) |
-| `activity_unchecked` | Se destilda | `category` |
-| `exercise_add_started` | Se abre el alta | `source` (`fab`/`empty_state`/`category`) |
-| `exercise_add_completed` | Se cierra el alta habiendo agregado algo (una vez por presentación) | `category` y `metric` del último agregado, `from_preset`, `count` |
-| `category_created` | Se crea una categoría custom | `metric` |
-| `group_detail_opened` | Se abre el detalle de un grupo | `exercise_count_bucket` |
-| `session_logged` | Se guardan valores | `metric`, `target` (`group`/`exercise`), `source` |
-| `coach_opened` | Se abre el modal del coach | `cached` |
-| `coach_regenerated` | "Dame otra" | — |
-| `permission_result` | Respuesta a un permiso | `type` (`notifications`/`healthkit`/`photos`), `granted` |
-| `history_opened` | Se abre el historial | — |
+| `onboarding_started` | First screen of the first run | — |
+| `onboarding_completed` | The flow ends (continue or skip) | `seed_count` (disciplines), `skipped` |
+| ~~`onboarding_abandoned`~~ | *Dropped:* onboarding is a cover that can't be dismissed, so abandoning = killing the app. `started` without `completed` already measures it | — |
+| `activity_checked` | A group's week goes from "not trained" to "trained", by any path. Re-logging in the same week doesn't count | `category` (built-in or `custom`), `metric`, `source`, `seconds_since_open` (only `source=app`) |
+| `activity_unchecked` | Unchecked | `category` |
+| `exercise_add_started` | The add screen opens | `source` (`fab`/`empty_state`/`category`) |
+| `exercise_add_completed` | The add screen closes having added something (once per presentation) | `category` and `metric` of the last added, `from_preset`, `count` |
+| `category_created` | A custom category is created | `metric` |
+| `group_detail_opened` | A group's detail opens | `exercise_count_bucket` |
+| `session_logged` | Values are saved | `metric`, `target` (`group`/`exercise`), `source` |
+| `coach_opened` | The coach modal opens | `cached` |
+| `coach_regenerated` | "Give me another" | — |
+| `permission_result` | Answer to a permission | `type` (`notifications`/`healthkit`/`photos`), `granted` |
+| `history_opened` | History opens | — |
 
-**Catorce.** Si esta lista llega a treinta antes de tener usuarios, algo salió mal.
+**Fourteen.** If this list reaches thirty before there are users, something went wrong.
 
-Regla de vida: **el evento se borra junto con la feature que lo emite.** Los eventos
-huérfanos son la forma en que una taxonomía se pudre.
+Lifecycle rule: **the event is deleted together with the feature that emits it.** Orphaned
+events are how a taxonomy rots.
 
 ---
 
-## 9. User properties (los denominadores)
+## 9. User properties (the denominators)
 
-No son eventos: son los ejes con los que se segmenta cualquier funnel.
+Not events: they're the axes any funnel gets segmented by.
 
-| Property | Valores | Para qué |
+| Property | Values | What for |
 |---|---|---|
-| `ai_available` | bool | El denominador honesto del coach (§2.4) |
-| `is_pro` | bool | Separar comportamiento free/pago |
-| `entries_bucket` | `0` / `1-5` / `6-10` / `11+` | Un usuario con 3 grupos no se compara con uno de 15 |
-| `has_custom_categories` | bool | ¿La Feature 17 llegó a alguien? |
-| `notifications_enabled` | bool | Denominador del efecto de los recordatorios |
-| `healthkit_enabled` | bool | Ídem, y explica registros sin apertura |
-| `weeks_since_install` | int | Cohortes |
-| `app_language` | `es`/`en`/`fr`/`it` | Si una localización rinde distinto, suele ser un bug de copy |
+| `ai_available` | bool | The coach's honest denominator (§2.4) |
+| `is_pro` | bool | Separate free/paid behavior |
+| `entries_bucket` | `0` / `1-5` / `6-10` / `11+` | A user with 3 groups isn't comparable to one with 15 |
+| `has_custom_categories` | bool | Did Feature 17 reach anyone? |
+| `notifications_enabled` | bool | Denominator for the effect of reminders |
+| `healthkit_enabled` | bool | Same, and it explains logs without an open |
+| `weeks_since_install` | int | Cohorts |
+| `app_language` | `es`/`en`/`fr`/`it` | If a localization performs differently, it's usually a copy bug |
 
 ---
 
-## 10. Qué NO se instrumenta
+## 10. What is NOT instrumented
 
-- **Texto libre del usuario.** Nombres de ejercicios y de categorías custom pueden
-  contener datos personales y además hacen explotar la cardinalidad. Va la **categoría**
-  y el **`MetricType`**, que son enums cerrados.
-- **Cualquier contenido de HealthKit.** Ver §12: no es una preferencia, es una regla de
-  Apple.
-- **`screen_view` de todas las pantallas.** Ruido con forma de dato.
-- **Taps genéricos.** No responden ninguna pregunta de §7.
-- **El funnel de compra.** Ya está en RevenueCat.
+- **User free text.** Exercise and custom category names can contain personal data and also blow
+  up cardinality. The **category** and the **`MetricType`** go in, which are closed enums.
+- **Any HealthKit content.** See §12: it's not a preference, it's an Apple rule.
+- **`screen_view` for every screen.** Noise shaped like data.
+- **Generic taps.** They don't answer any question from §7.
+- **The purchase funnel.** It's already in RevenueCat.
 
 ---
 
-## 11. Arquitectura
+## 11. Architecture
 
-- **Un seam propio**: `AnalyticsTracking` (protocolo), con la misma forma que
-  `NotificationManagerProtocol` / `HealthKitManagerProtocol`. Firebase es *una*
-  implementación. Hay además una NoOp (tests y UI tests — los UI tests **no deben
-  ensuciar los datos**, y ya pasan `-uiTesting` para desactivar TipKit: mismo hook) y
-  una que loguea a consola en debug.
-  Implementado en `AnalyticsService.make`: `-uiTesting YES` → NoOp; Debug → consola;
-  Debug con `-analyticsDebug YES -FIRDebugEnabled` → Firebase + DebugView; Release → Firebase.
-- **Eventos tipados, nunca strings sueltos en las vistas.** Es la lección del
-  `WidgetBridge`: un literal duplicado en dos lados es un typo esperando ocurrir, y en
-  analítica el typo **no rompe nada** — el dato simplemente no existe, y te enterás tres
-  semanas después mirando un dashboard vacío. El enum es además el único lugar donde se
-  mapea evento → nombre + params, que es donde se aplican los límites de la plataforma.
-- **Se dispara desde los ViewModels**, no desde las vistas. Los VMs ya tienen los verbos
-  del dominio (`toggleActivity`, `addExercise`, `logExercise`, `generateRoutine`), así
-  que el evento sobrevive a rediseños de UI y es testeable con un spy del protocolo.
-  Excepciones legítimas: "abrí esta pantalla" y "abandoné este sheet", que son hechos de
-  la vista.
+- **Our own seam**: `AnalyticsTracking` (protocol), shaped like `NotificationManagerProtocol` /
+  `HealthKitManagerProtocol`. Firebase is *one* implementation. There's also a NoOp (tests and UI
+  tests — UI tests **must not pollute the data**, and they already pass `-uiTesting` to disable
+  TipKit: same hook) and one that logs to the console in debug.
+  Implemented in `AnalyticsService.make`: `-uiTesting YES` → NoOp; Debug → console; Debug with
+  `-analyticsDebug YES -FIRDebugEnabled` → Firebase + DebugView; Release → Firebase.
+- **Typed events, never loose strings in views.** It's the `WidgetBridge` lesson: a literal
+  duplicated in two places is a typo waiting to happen, and in analytics the typo **breaks
+  nothing** — the data simply doesn't exist, and you find out three weeks later staring at an
+  empty dashboard. The enum is also the only place that maps event → name + params, which is
+  where the platform limits are enforced.
+- **Fired from ViewModels**, not views. The VMs already have the domain verbs (`toggleActivity`,
+  `addExercise`, `logExercise`, `generateRoutine`), so the event survives UI redesigns and is
+  testable with a spy of the protocol. Legitimate exceptions: "I opened this screen" and "I
+  abandoned this sheet", which are view facts.
 
-**Límites de Firebase/GA4 que hay que conocer antes de diseñar params:**
+**Firebase/GA4 limits to know before designing params:**
 
-- 25 parámetros por evento **incluyendo los automáticos** (quedan ~20 útiles).
-- Nombre de evento ≤ 40 caracteres; nombres de parámetro de 1 a 40, empezando con letra.
-- Los parámetros custom **no aparecen en los reportes hasta registrarlos como custom
-  dimensions** (50 disponibles), y hay que registrarlos **antes** de que el evento se
-  dispare. Trampa clásica: mandás el param, no lo ves, asumís que no llega.
-- Los reportes tardan ~24 h. Para desarrollo se usa **DebugView**, que es tiempo real.
-  No confundir "no llegó" con "todavía no se procesó".
+- 25 parameters per event **including the automatic ones** (~20 usable).
+- Event name ≤ 40 characters; parameter names 1 to 40, starting with a letter.
+- Custom parameters **don't show up in reports until registered as custom dimensions** (50
+  available), and they must be registered **before** the event fires. Classic trap: you send the
+  param, don't see it, and assume it isn't arriving.
+- Reports take ~24 h. For development, use **DebugView**, which is real time. Don't confuse
+  "didn't arrive" with "not processed yet".
 
-**Android** necesita: dependencia `firebase-analytics`, plugin de Google Services y
-`google-services.json` (ver la nota de política en §1).
+**Android** needs: the `firebase-analytics` dependency, the Google Services plugin and
+`google-services.json` (see the policy note in §1).
 
 ---
 
-## 12. Privacidad y compliance
+## 12. Privacy and compliance
 
-- **HealthKit es innegociable.** Apple prohíbe expresamente enviar datos de HealthKit a
-  terceros, y usarlos para publicidad o data mining. Mandar contenido de workouts a
-  Firebase sería una violación de las guidelines y un rechazo en review. Se registra el
-  **hecho** (`source=healthkit`), nunca el **payload**.
-- **ATT/IDFA**: Firebase Analytics sin IDFA no requiere el prompt de ATT. Conviene
-  desactivar explícitamente la recolección de ad_id y evitarse el prompt entero.
-  **Hecho:** el target linkea solo `FirebaseAnalyticsCore`, el producto sin soporte de
-  IDFA. `FirebaseAnalytics` estaba linkeado a la par y se sacó.
-- **App Store privacy labels**: hay que declarar Usage Data → Product Interaction, no
-  vinculado a identidad.
-- **Play Data safety**: ídem del lado de Android. Recordatorio fresco: la app acaba de
-  salir de una violación de política; declarar mal la recolección de datos es la forma
-  más barata de conseguir otra.
+- **HealthKit is non-negotiable.** Apple explicitly forbids sending HealthKit data to third
+  parties, and using it for advertising or data mining. Sending workout content to Firebase would
+  violate the guidelines and get rejected in review. We log the **fact** (`source=healthkit`),
+  never the **payload**.
+- **ATT/IDFA**: Firebase Analytics without IDFA doesn't require the ATT prompt. Explicitly
+  disabling ad_id collection avoids the prompt entirely.
+  **Done:** the target links only `FirebaseAnalyticsCore`, the product without IDFA support.
+  `FirebaseAnalytics` was linked alongside it and was removed.
+- **App Store privacy labels**: declare Usage Data → Product Interaction, not linked to identity.
+- **Play Data safety**: same on the Android side. Fresh reminder: the app just came out of a
+  policy violation; misdeclaring data collection is the cheapest way to get another one.
 
 ---
 
-## 13. El complemento cualitativo (no es opcional)
+## 13. The qualitative complement (not optional)
 
-Con la base de usuarios actual, **ningún dashboard va a decir nada estadísticamente**.
-Lo que se puede hacer con n chico:
+With the current user base, **no dashboard will say anything statistically**. What you can do
+with a small n:
 
-- **Buscar acantilados, no diferencias.** Una caída de 100% a 20% se ve con 5 usuarios.
-  Una mejora del 5% no se ve ni con 500. **Nada de A/B tests.**
-- **Cinco usuarios en una sesión moderada descubren la gran mayoría de los problemas de
-  usabilidad** (Nielsen). Veinte minutos con una tester dan más señal que el dashboard
-  entero durante un mes.
-- El funnel sirve como **disparador de la conversación**: "vi que abriste el alta tres
-  veces y no guardaste ninguna, ¿qué pasó ahí?".
+- **Look for cliffs, not differences.** A drop from 100% to 20% shows with 5 users. A 5%
+  improvement doesn't show even with 500. **No A/B tests.**
+- **Five users in a moderated session uncover the vast majority of usability problems**
+  (Nielsen). Twenty minutes with a tester give more signal than the whole dashboard for a month.
+- The funnel works as a **conversation starter**: "I saw you opened the add screen three times
+  and didn't save any — what happened there?".
 
-Guion mínimo, atado a §7: instalar delante tuyo sin ayuda, llegar al primer check,
-agregar un ejercicio, encontrar lo de ayer. Callarse y mirar.
+Minimal script, tied to §7: install in front of you without help, reach the first check, add an
+exercise, find yesterday's workout. Stay quiet and watch.
 
-**La analítica no reemplaza esto. Le dice dónde mirar.**
+**Analytics doesn't replace this. It tells it where to look.**
 
 ---
 
-## 14. Fases
+## 14. Phases
 
-- [x] **Fase 0 — este doc.** Nombres y params congelados antes de escribir código.
-- [ ] **Fase 1 — iOS, solo activación.** El seam + `onboarding_*`, `activity_checked`,
-      `exercise_add_started/completed`. Registrar las custom dimensions en la consola
-      **antes** de shipear. Verificar con DebugView.
-      *Código hecho* (con `source` app/siri/healthkit). **Falta, manual:** registrar las
+- [x] **Phase 0 — this doc.** Names and params frozen before writing code.
+- [x] **Phase 1 — iOS, activation only.** The seam + `onboarding_*`, `activity_checked`,
+      `exercise_add_started/completed` (with `source` app/siri/healthkit). Shipped in 2.2.2;
       custom dimensions (`category`, `metric`, `source`, `seconds_since_open`, `seed_count`,
-      `skipped`, `from_preset`, `count`) y verificar en DebugView antes de shipear.
-- [ ] **Fase 2 — Android.** Firebase + los mismos eventos, verificados contra este doc.
-- [ ] **Fase 3 — el resto** de la tabla de §8 y las user properties de §9.
-- [ ] **Fase 4 — lectura.** Un funnel armado en la consola por cada momento de §7.
-      BigQuery export solo si hace falta SQL (es gratis en el tier diario).
+      `skipped`, `from_preset`, `count`) registered in the console.
+- [ ] **Phase 2 — Android.** Firebase + the same events, verified against this doc.
+      *Code done* in PR #44 (Analytics + Crashlytics, no ad ID; `source` is always `app`:
+      Android has no Siri or HealthKit). **Pending, manual:** verify in DebugView (build with
+      `-PanalyticsDebug` + `adb shell setprop debug.firebase.analytics.app com.zadkiel.musclecheck`),
+      force a crash to see Crashlytics receive it, and fill in Play Data safety.
+- [ ] **Phase 3 — the rest** of the §8 table and the §9 user properties.
+- [ ] **Phase 4 — reading.** One funnel built in the console per §7 moment.
+      BigQuery export only if SQL is needed (free on the daily tier).
 
 ---
 
-## 15. Cómo se lee
+## 15. How to read it
 
-- **Un funnel por semana**, no un dashboard entero. Rotar entre los cinco de §7.
-- **Escribir la regla de decisión ANTES de mirar el número.** "Si menos del X% completa
-  el alta, rediseñamos el formulario." Sin pre-registro, el dato se racionaliza solo.
-- **La cohorte manda.** Métricas absolutas con una base que crece son ilegibles.
+- **One funnel per week**, not a whole dashboard. Rotate among the five in §7.
+- **Write the decision rule BEFORE looking at the number.** "If fewer than X% complete the add
+  flow, we redesign the form." Without pre-registration, the number rationalizes itself.
+- **The cohort rules.** Absolute metrics over a growing base are unreadable.
 
 ---
 
-## 16. Riesgos
+## 16. Risks
 
-| Riesgo | Mitigación |
+| Risk | Mitigation |
 |---|---|
-| La analítica como procrastinación: instrumentar en vez de hablar con usuarios | Fase 1 es chica a propósito; §13 no es opcional |
-| Vanity metrics (aperturas, sesiones) | §2.1 — la unidad es la semana activa, no la apertura |
-| Drift entre plataformas | Este doc como fuente única; los nombres se revisan en el PR |
-| Instrumentation rot | El evento se borra con la feature que lo emite (§8) |
-| Sobreleer números con n chico | §13 — acantilados sí, diferencias no |
+| Analytics as procrastination: instrumenting instead of talking to users | Phase 1 is small on purpose; §13 is not optional |
+| Vanity metrics (opens, sessions) | §2.1 — the unit is the active week, not the open |
+| Drift between platforms | This doc as the single source; names are reviewed in the PR |
+| Instrumentation rot | The event is deleted with the feature that emits it (§8) |
+| Over-reading numbers with a small n | §13 — cliffs yes, differences no |
 
 ---
 
-## Fuentes
+## Sources
 
 - [Health & Fitness App Benchmarks (2026) — Business of Apps](https://www.businessofapps.com/data/health-fitness-app-benchmarks/)
 - [Mobile App Retention Benchmarks by Industry (2026) — UXCam](https://uxcam.com/blog/mobile-app-retention-benchmarks/)
