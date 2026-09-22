@@ -2,7 +2,7 @@
 
 > Branch: `refactor/tech-debt` (desde `main`). Snapshot del review al 2026-08-18, sobre
 > `ios/` (~8.000 LOC) + setup de `android/`.
-> Modo calidad de código: **cero features**. Ver foco actual en `CLAUDE.md`.
+> Priorities in `CLAUDE.md` → Current focus.
 >
 > Orden pensado para que cada paso deje el terreno más limpio para el siguiente.
 > Los ítems 1–6 son mecánicos y **no tocan datos persistidos**. El 7 es el único con
