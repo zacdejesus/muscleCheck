@@ -99,9 +99,11 @@ private fun WelcomeStep(onContinue: () -> Unit) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            DemoRow(stringResource(R.string.group_chest), checked = true, success = accents.success)
-            DemoRow(stringResource(R.string.group_back), checked = true, success = accents.success)
-            DemoRow(stringResource(R.string.group_legs), checked = false, success = accents.success)
+            // Three DISCIPLINES, not three gym muscles: the point of this screen is that the
+            // app isn't gym-only, so muscle groups would teach exactly the wrong model.
+            DemoRow(ActivityCategory.GYM, checked = true, success = accents.success)
+            DemoRow(ActivityCategory.YOGA, checked = false, success = accents.success)
+            DemoRow(ActivityCategory.RUNNING, checked = false, success = accents.success)
         }
 
         Spacer(Modifier.height(40.dp))
@@ -128,7 +130,11 @@ private fun WelcomeStep(onContinue: () -> Unit) {
 }
 
 @Composable
-private fun DemoRow(name: String, checked: Boolean, success: androidx.compose.ui.graphics.Color) {
+private fun DemoRow(
+    category: ActivityCategory,
+    checked: Boolean,
+    success: androidx.compose.ui.graphics.Color,
+) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
@@ -137,14 +143,14 @@ private fun DemoRow(name: String, checked: Boolean, success: androidx.compose.ui
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = AppIcons.forKey("figure.strengthtraining.traditional"),
+                imageVector = AppIcons.forKey(category.defaultIcon),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(18.dp),
             )
         }
         Spacer(Modifier.width(12.dp))
-        Text(name, modifier = Modifier.weight(1f))
+        Text(stringResource(category.displayNameRes), modifier = Modifier.weight(1f))
         Icon(
             imageVector = if (checked) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
             contentDescription = null,

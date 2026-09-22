@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+      windowBackground is what shows before Compose draws and behind anything it doesn't
+      paint, so it must follow the system's light/dark config — values-night overrides it.
+      Hardcoding white here made the whole onboarding read as a light screen on a dark phone.
+    -->
     <style name="Theme.MuscleCheck" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/white</item>
     </style>
