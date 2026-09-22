@@ -3,6 +3,7 @@
 [![iOS](https://github.com/zacdejesus/muscleCheck/actions/workflows/ios.yml/badge.svg)](https://github.com/zacdejesus/muscleCheck/actions/workflows/ios.yml)
 [![Android](https://github.com/zacdejesus/muscleCheck/actions/workflows/android.yml/badge.svg)](https://github.com/zacdejesus/muscleCheck/actions/workflows/android.yml)
 [![App Store](https://img.shields.io/badge/App_Store-live-0EA5E9)](https://apps.apple.com/app/id6748917084)
+[![Google Play](https://img.shields.io/badge/Google_Play-live-34A853)](https://play.google.com/store/apps/details?id=com.zadkiel.musclecheck)
 
 **Track your training in 2 seconds. The AI does the rest.**
 
@@ -31,8 +32,8 @@ language, and a set of ported domain semantics — but no code (Swift vs Kotlin)
 ```
 ios/        Xcode project (app + widget + tests)
 android/    Gradle project (Kotlin + Compose)
-docs/       Shared plan & design decisions (incl. the Android port plan)
-CLAUDE.md   Product context, architecture, roadmap (paths under ios/ are relative to ios/)
+docs/       Design docs, roadmap and current tasks (see "Design docs" below)
+CLAUDE.md   Context for Claude Code: product, architecture, conventions
 ```
 
 ## Architecture
@@ -53,6 +54,32 @@ Selected decisions worth a look:
   streak/stats/notifications keep working untouched (minimal blast radius).
 - **Additive persistence migrations.** New Codable-nested fields with defaults on
   both platforms, so app updates never wipe existing data.
+
+## Design docs
+
+The reasoning behind the code lives in `docs/`. If you have 15 minutes, read in this order:
+
+1. **[Roadmap](docs/roadmap.md)** — where the product stands (pre-PMF), the funnel it's
+   measured against, and the bets per stage. The appendix has every feature's design.
+2. **[Analytics plan](docs/analytics-plan.md)** — a full design doc for one subsystem:
+   the question it answers, the measurement traps specific to a weekly-habit app, the event
+   taxonomy, architecture, privacy constraints and risks.
+3. **[AI coach tuning](docs/feature12-prompt-tuning.md)** — experiments against Apple's
+   on-device model, and why rotation moved out of the prompt and into code.
+4. **[Android port plan](docs/android-plan.md)** — the iOS → Android stack mapping and the
+   decisions behind a native rewrite over KMP.
+5. **[Tech debt](docs/tech-debt.md)** — known debt with its reasoning, including a production
+   crash traced back to a double source of truth.
+
+| Doc | Kind |
+|---|---|
+| `docs/roadmap.md` | Product strategy + feature designs |
+| `docs/analytics-plan.md` | Subsystem design doc |
+| `docs/feature12-prompt-tuning.md` | Experiment log |
+| `docs/feature12-implementation-guide.md` | Implementation guide |
+| `docs/android-plan.md` | Port design + phases |
+| `docs/tech-debt.md` | Architecture decisions and debt |
+| `docs/PENDING.md` | Current task list |
 
 ## Build
 

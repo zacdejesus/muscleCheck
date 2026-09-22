@@ -1,189 +1,225 @@
-# Feature 12 — Guía de implementación (AI Coach: día sugerido)
+# Feature 12 — Implementation guide (AI Coach: suggested day)
 
-Guía de los cambios de código pendientes para cerrar Feature 12. Diseño en `CLAUDE.md`,
-hallazgos del tuning en `docs/feature12-prompt-tuning.md`. **Esta guía explica QUÉ hacer y POR QUÉ;
-los snippets son esquemas/firmas, no implementación.**
-           
+Guide to the code changes still needed to close Feature 12. Design in `docs/roadmap.md` →
+appendix C, tuning findings in `docs/feature12-prompt-tuning.md`. **This guide explains WHAT to
+do and WHY; the snippets are sketches/signatures, not the implementation.**
 
-## Principio rector (de los experimentos)
-El modelo on-device **no razona** sobre el historial. Entonces:
-- **La rotación la hace el CÓDIGO** (filtrar grupos elegibles).
-- **El modelo solo** elige 2 grupos coherentes de los que le pasamos + 3 ejercicios c/u.
-- Todo lo de FoundationModels va detrás de `@available(iOS 26, *)` (mismo patrón ya usado).
+## Guiding principle (from the experiments)
+The on-device model **doesn't reason** over history. So:
+- **Rotation is done by CODE** (filtering eligible groups).
+- **The model only** picks 2 coherent groups from the ones we pass + 3 exercises each.
+- Everything FoundationModels goes behind `@available(iOS 26, *)` (same pattern already used).
 
-## Documentación Apple
+## Apple documentation
 - Framework: https://developer.apple.com/documentation/FoundationModels
 - `LanguageModelSession`: https://developer.apple.com/documentation/foundationmodels/languagemodelsession
-- Generar contenido / tareas: https://developer.apple.com/documentation/FoundationModels/generating-content-and-performing-tasks-with-foundation-models
-- Guided generation (`@Generable`/`@Guide`, ejemplo completo): https://developer.apple.com/documentation/FoundationModels/generate-dynamic-game-content-with-guided-generation-and-tools
+- Generating content / tasks: https://developer.apple.com/documentation/FoundationModels/generating-content-and-performing-tasks-with-foundation-models
+- Guided generation (`@Generable`/`@Guide`, full example): https://developer.apple.com/documentation/FoundationModels/generate-dynamic-game-content-with-guided-generation-and-tools
 - WWDC25 "Meet the Foundation Models framework": https://developer.apple.com/videos/play/wwdc2025/286/
 - WWDC25 "Deep dive into the Foundation Models framework" (streaming/PartiallyGenerated): https://developer.apple.com/videos/play/wwdc2025/301/
 
 ---
 
-## Paso 1 — Elegibilidad / rotación (en código) ⭐ el cambio clave
+## Step 1 — Eligibility / rotation (in code) ⭐ the key change
 
-**Por qué:** el modelo re-sugería lo entrenado ayer y se fijaba en "Piernas". Filtrando nosotros, eso desaparece.
+**Why:** the model re-suggested what was trained yesterday and fixated on "Legs". Filtering on
+our side makes that go away.
 
-**Qué:** una función pura que, dado el array de `MuscleEntry`, devuelve los grupos de **gym** elegibles para hoy = los que NO se entrenaron en los últimos ~1 día (excluye hoy y ayer). Cada `MuscleEntry` tiene `sessions: [WorkoutSession]`; la última fecha es `sessions.map(\.date).max()`.
+**What:** a pure function that, given the `MuscleEntry` array, returns the **gym** groups
+eligible today = those NOT trained in the last ~1 day (excludes today and yesterday). Each
+`MuscleEntry` has `sessions: [WorkoutSession]`; the last date is `sessions.map(\.date).max()`.
 
-**Dónde:** archivo nuevo **`MuscleCheck/managers/WorkoutEligibility.swift`**, siguiendo el patrón de calculators puros que ya existe (`StreakCalculator`, `StatsCalculator`): un `struct` con `static func`. Es **lógica pura**, **NO va gateada a iOS 26** (no toca FoundationModels). Lo llama `ContentViewModel.generateRoutine()` y le pasa el resultado a `MuscleCheckAI.suggestWorkout(eligible:)`.
+**Where:** new file **`MuscleCheck/managers/WorkoutEligibility.swift`**, following the existing
+pure-calculator pattern (`StreakCalculator`, `StatsCalculator`): a `struct` with `static func`.
+It's **pure logic** and is **NOT gated to iOS 26** (it doesn't touch FoundationModels).
+`ContentViewModel.generateRoutine()` calls it and passes the result to
+`MuscleCheckAI.suggestWorkout(eligible:)`.
 
 ```swift
-// Esquema — implementalo vos. Va en MuscleCheck/managers/WorkoutEligibility.swift
+// Sketch — you implement it. Goes in MuscleCheck/managers/WorkoutEligibility.swift
 struct WorkoutEligibility {
     static func eligibleGymGroups(from entries: [MuscleEntry],
-                                  excluding excluded: Set<String> = [],   // para "dame otra"
+                                  excluding excluded: Set<String> = [],   // for "give me another"
                                   restDays: Int = 1) -> [MuscleEntry] {
         return entries.filter { e in
             e.category == ActivityCategory.gym.rawValue && !e.isDeleted
             && !excluded.contains(e.name)
-            // elegible si nunca se entrenó o su última sesión fue hace > restDays
-            // (usá Date.appCalendar para comparar por día)
+            // eligible if never trained or its last session was more than restDays ago
+            // (use Date.appCalendar to compare by day)
         }
     }
 }
 ```
 
-Flujo end-to-end:
+End-to-end flow:
 ```
 ContentViewModel.generateRoutine()
    → WorkoutEligibility.eligibleGymGroups(from: entries, excluding: ...)
    → MuscleCheckAI.suggestWorkout(eligible:)   // iOS 26 gated
-   → RoutineSuggestion                         // se cachea + se muestra
+   → RoutineSuggestion                         // cached + shown
 ```
 
-**Fallback (importante):** si quedan **menos de 2** elegibles (entrenaste casi todo), NO filtres —
-usá todos los grupos de gym (o los 2 más descansados). Si no, el modelo no tiene de dónde elegir.
+**Fallback (important):** if **fewer than 2** remain eligible (you trained almost everything),
+DON'T filter — use all gym groups (or the 2 most rested). Otherwise the model has nothing to pick
+from.
 
 ---
 
-## Paso 2 — `MuscleCheckAI.suggestWorkout` (ajustar lo que ya está)
+## Step 2 — `MuscleCheckAI.suggestWorkout` (adjust what's there)
 
-Hoy pasa **todos** los grupos + historial. Cambiarlo para que reciba **solo los elegibles** y soporte exclusión.
+Today it passes **all** groups + history. Change it to receive **only the eligible ones** and
+support exclusion.
 
 ```swift
-// Firma sugerida (RoutineSuggestion es el struct plano que ya existe).
+// Suggested signature (RoutineSuggestion is the flat struct that already exists).
 func suggestWorkout(eligible: [MuscleEntry]) async throws -> RoutineSuggestion
 ```
 
-Dentro:
-1. Numerar SOLO los elegibles (`0=Espalda, 1=Bíceps, ...`).
-2. Prompt = esa lista (sin historial — la rotación ya está resuelta).
-3. `streamResponse(...)` (ver Paso 4) con `WorkoutSuggestion.self`.
-4. Mapear `groupIndex → eligible[i].name`, descartar fuera de rango, **recortar a 2**.
-5. Devolver `RoutineSuggestion`.
+Inside:
+1. Number ONLY the eligible groups (`0=Back, 1=Biceps, ...`).
+2. Prompt = that list (no history — rotation is already solved).
+3. `streamResponse(...)` (see Step 4) with `WorkoutSuggestion.self`.
+4. Map `groupIndex → eligible[i].name`, drop out-of-range, **trim to 2**.
+5. Return `RoutineSuggestion`.
 
-**Tip de esquema (`@Guide` con `.count`):** en vez de confiar en el prompt para los conteos, fijalos en el schema. `@Guide` soporta restricciones de cantidad para arrays:
+**Schema tip (`@Guide` with `.count`):** instead of trusting the prompt for counts, pin them in
+the schema. `@Guide` supports count constraints for arrays:
 ```swift
 @Generable struct WorkoutSuggestion {
     @Guide(description: "...") var focus: String
-    @Guide(description: "Exactamente 2 grupos coherentes", .count(2)) var blocks: [WorkoutBlock]
+    @Guide(description: "Exactly 2 coherent groups", .count(2)) var blocks: [WorkoutBlock]
     @Guide(description: "...") var rationale: String
 }
 @Generable struct WorkoutBlock {
-    @Guide(description: "Índice de la lista provista") var groupIndex: Int
-    @Guide(description: "3 ejercicios específicos de ese grupo", .count(3)) var exercises: [String]
+    @Guide(description: "Index into the provided list") var groupIndex: Int
+    @Guide(description: "3 exercises specific to that group", .count(3)) var exercises: [String]
 }
 ```
-Esto reduce la dependencia del prompt (el prompt solo no garantizaba el conteo). Verificá la sintaxis exacta de `.count` en la doc de guided generation linkeada.
+This reduces the dependence on the prompt (the prompt alone didn't guarantee the count). Check
+the exact `.count` syntax in the guided-generation doc linked above.
 
-**Derivar `focus` en código (opcional, recomendado):** el modelo a veces puso un focus raro ("Piernas" para bíceps+tríceps). Mapeá vos los 2 grupos elegidos → "Empuje"/"Tirón"/"Piernas" y descartá el `focus` del modelo.
-
----
-
-## Paso 3 — `LocalizedInstructions` (simplificar a la versión ganadora)
-
-Reemplazar `coachInstructions` por la **instrucción ganadora** (Round 4) y `coachPrompt` por una versión **sin historial** (solo lista numerada). Texto exacto ES/EN/FR en `docs/feature12-prompt-tuning.md`. La instrucción ya NO debe pedir rotación (eso es código ahora).
+**Derive `focus` in code (optional, recommended):** the model sometimes returned an odd focus
+("Legs" for biceps + triceps). Map the 2 chosen groups → "Push"/"Pull"/"Legs" yourself and
+discard the model's `focus`.
 
 ---
 
-## Paso 4 — Streaming para UX (`streamResponse`)
+## Step 3 — `LocalizedInstructions` (simplify to the winning version)
 
-**Por qué:** mostrar la sugerencia llenándose progresivamente (focus → grupos → ejercicios) se siente más rápido que un spinner.
+Replace `coachInstructions` with the **winning instruction** (Round 4) and `coachPrompt` with a
+version **without history** (numbered list only). Exact text in
+`docs/feature12-prompt-tuning.md`. The instruction must NO longer ask for rotation (that's code
+now).
 
-**Cómo:** `streamResponse(to:generating:)` devuelve un **AsyncSequence de snapshots**. El macro `@Generable` genera `WorkoutSuggestion.PartiallyGenerated` (mismo struct pero con todas las props **opcionales**). Cada snapshot es el estado parcial.
+---
+
+## Step 4 — Streaming for UX (`streamResponse`)
+
+**Why:** showing the suggestion filling in progressively (focus → groups → exercises) feels
+faster than a spinner.
+
+**How:** `streamResponse(to:generating:)` returns an **AsyncSequence of snapshots**. The
+`@Generable` macro generates `WorkoutSuggestion.PartiallyGenerated` (the same struct with every
+property **optional**). Each snapshot is the partial state.
 
 ```swift
-// Esquema.
+// Sketch.
 let stream = session.streamResponse(to: prompt, generating: WorkoutSuggestion.self, options: opts)
 for try await partial in stream {
-    // partial.content: WorkoutSuggestion.PartiallyGenerated (props opcionales)
-    // publicá lo que ya llegó para ir pintando la UI
+    // partial.content: WorkoutSuggestion.PartiallyGenerated (optional properties)
+    // publish what has arrived so the UI can paint it
 }
-// al terminar el loop tenés el resultado completo → recién ahí mapeás índices + validás
+// when the loop ends you have the full result → only then map indices + validate
 ```
 
-**Decisión de diseño:** el **mapeo índice→entry + validación** hacelo sobre el snapshot **final/completo** (los índices necesitan datos completos). Durante el stream, podés ir mostrando `focus`/`rationale`/nombres a medida que aparecen, pero la `RoutineSuggestion` definitiva (la que cacheás) se arma al final.
+**Design decision:** do the **index→entry mapping + validation** on the **final/complete**
+snapshot (indices need complete data). During the stream you can show `focus`/`rationale`/names
+as they appear, but the definitive `RoutineSuggestion` (the one you cache) is built at the end.
 
-Doc: ver WWDC "Deep dive" (sección streaming) y la doc de `LanguageModelSession`.
+Docs: see WWDC "Deep dive" (streaming section) and the `LanguageModelSession` doc.
 
 ---
 
-## Paso 5 — `ContentViewModel`
+## Step 5 — `ContentViewModel`
 
-- **Estado nuevo:**
+- **New state:**
   ```swift
-  @Published var routineSuggestion: RoutineSuggestion?   // RoutineSuggestion ya es Codable
+  @Published var routineSuggestion: RoutineSuggestion?   // RoutineSuggestion is already Codable
   @Published var isGeneratingRoutine = false
-  private var lastSuggestedGroups: Set<String> = []      // para "dame otra"
+  private var lastSuggestedGroups: Set<String> = []      // for "give me another"
   ```
 - **`generateRoutine(regenerate: Bool = false) async`** (gated `#available(iOS 26)`):
-  1. `WorkoutEligibility.eligibleGymGroups(from: entries, excluding: regenerate ? lastSuggestedGroups : [])` (Paso 1).
-  2. `try await muscleCheckAI.suggestWorkout(eligible:)` (consumiendo el stream).
-  3. Guardar en `routineSuggestion`, actualizar `lastSuggestedGroups`, **cachear** (Paso 6).
-  4. Manejar error → estado de error (string localizado).
-- **Sacar el path viejo:** `reviewLastMonthWorkouts()` y `workoutSuggested`. El `import`/uso ya están gateados; al borrarlos, actualizá `ContentView` (Paso 7).
-- Recordá que `muscleCheckAI` se accede por el accessor lazy gateado que ya existe.
+  1. `WorkoutEligibility.eligibleGymGroups(from: entries, excluding: regenerate ? lastSuggestedGroups : [])` (Step 1).
+  2. `try await muscleCheckAI.suggestWorkout(eligible:)` (consuming the stream).
+  3. Store in `routineSuggestion`, update `lastSuggestedGroups`, **cache** (Step 6).
+  4. Handle errors → error state (localized string).
+- **Remove the old path:** `reviewLastMonthWorkouts()` and `workoutSuggested`. The `import`/usage
+  are already gated; when you delete them, update `ContentView` (Step 7).
+- Remember `muscleCheckAI` is reached through the existing gated lazy accessor.
 
 ---
 
-## Paso 6 — Cache por día (`UserDefaultsManager`)
+## Step 6 — Per-day cache (`UserDefaultsManager`)
 
-**Por qué:** reabrir la sugerencia en el gym sin regenerar.
+**Why:** reopen the suggestion at the gym without regenerating.
 
-- `RoutineSuggestion` ya es `Codable`. Guardá: los `Data` (JSON) + la fecha.
+- `RoutineSuggestion` is already `Codable`. Store the `Data` (JSON) + the date.
   ```swift
   var cachedRoutineData: Data?    // JSONEncoder().encode(routineSuggestion)
   var cachedRoutineDate: Date?
   ```
-- En `setup()` del ViewModel: si `cachedRoutineDate` es **hoy** (`Date.appCalendar.isDate(_:inSameDayAs:)`), decodificá y poné `routineSuggestion`; si no, queda nil.
-- No necesitás App Group salvo que después quieras la sugerencia en el widget.
-- Doc UserDefaults: https://developer.apple.com/documentation/foundation/userdefaults
+- In the ViewModel's `setup()`: if `cachedRoutineDate` is **today**
+  (`Date.appCalendar.isDate(_:inSameDayAs:)`), decode it into `routineSuggestion`; otherwise it
+  stays nil.
+- No App Group needed unless you later want the suggestion in the widget.
+- UserDefaults doc: https://developer.apple.com/documentation/foundation/userdefaults
 
 ---
 
-## Paso 7 — UI (`RoutineSuggestionView` + `ContentView`)
+## Step 7 — UI (`RoutineSuggestionView` + `ContentView`)
 
-**`RoutineSuggestionView` (nuevo, modal):**
-- `focus` (título) + `rationale` + lista de `blocks` (nombre del grupo + sus 3 ejercicios) + botón **"Dame otra"** (llama `generateRoutine(regenerate: true)`) + cerrar.
-- Estado de carga mientras `isGeneratingRoutine` (o el llenado progresivo del streaming).
-- **Sin botón "Agregar"** — es solo guía (el user tilda en la lista principal como siempre).
+**`RoutineSuggestionView` (new, modal):**
+- `focus` (title) + `rationale` + list of `blocks` (group name + its 3 exercises) + a **"Give me
+  another"** button (calls `generateRoutine(regenerate: true)`) + close.
+- Loading state while `isGeneratingRoutine` (or the progressive fill from streaming).
+- **No "Add" button** — it's guidance only (the user checks in the main list as always).
 
 **`ContentView`:**
-- Reemplazar el botón/sheet viejo de "review" por el nuevo.
-- **Sacar el Pro gate** (la feature es **free**): el bloque queda solo `if viewModel.isAppleIntelligenceAvailable() { boton }` — sin el `if storeManager.isPro { ... } else { ProFeatureGate }`.
+- Replace the old "review" button/sheet with the new one.
+- **Remove the Pro gate** (the feature is **free**): the block becomes just
+  `if viewModel.isAppleIntelligenceAvailable() { button }` — without the
+  `if storeManager.isPro { ... } else { ProFeatureGate }`.
 
 ---
 
-## Paso 8 — Strings (`Localizable.xcstrings`)
-Agregar ES/EN/FR para: título/acciones del modal ("Dame otra", cerrar), estado de carga, y mensaje de error de generación. (Los textos del prompt/instrucciones ya viven en `LocalizedInstructions`, no en xcstrings.)
+## Step 8 — Strings (`Localizable.xcstrings`)
+Add ES/EN/FR for: the modal's title/actions ("Give me another", close), the loading state, and the
+generation error message. (The prompt/instruction texts already live in `LocalizedInstructions`,
+not in xcstrings.)
 
 ---
 
-## Paso 9 — Limpieza
-- **Borrar `MuscleCheckTests/PromptExperiment.swift`** (harness temporal).
+## Step 9 — Cleanup
+- **Delete `MuscleCheckTests/PromptExperiment.swift`** (temporary harness).
 
 ---
 
 ## Edge cases / gotchas
-- **<2 elegibles** → fallback a todos los de gym (Paso 1). Probalo entrenando "todo ayer".
-- **Modelo no disponible** (iOS <26, hardware no apto, AI apagado) → el botón ya se oculta vía `isAppleIntelligenceAvailable()`. No toques eso.
-- **Mislabel de ejercicios** (bíceps↔tríceps): residuo conocido del modelo, read-only, tolerable. No intentes "arreglarlo" con más reglas en el prompt (empeora).
-- **Cold start**: la 1ra llamada puede tirar un error transitorio. El `prewarm` que ya existe ayuda; consideralo al entrar a la pantalla.
-- **Grupos custom raros**: el modelo tiende a ignorarlos y elegir los familiares. Limitación conocida (ver findings); aceptable para v1.
-- **Variedad**: garantizada por el `exclude` de "dame otra" (Paso 1/5), no por temperature sola.
+- **Fewer than 2 eligible** → fall back to all gym groups (Step 1). Test it by training
+  "everything yesterday".
+- **Model unavailable** (iOS < 26, unsupported hardware, AI off) → the button is already hidden
+  via `isAppleIntelligenceAvailable()`. Don't touch that.
+- **Exercise mislabeling** (biceps↔triceps): a known model residue, read-only, tolerable. Don't
+  try to "fix" it with more prompt rules (it gets worse).
+- **Cold start**: the first call can throw a transient error. The existing `prewarm` helps;
+  consider calling it when the screen opens.
+- **Unusual custom groups**: the model tends to ignore them and pick familiar ones. Known
+  limitation (see findings); acceptable for v1.
+- **Variety**: guaranteed by the "give me another" `exclude` (Steps 1/5), not by temperature
+  alone.
 
 ## Testing
-- El output real **solo se valida en device** iOS 26 + Apple Intelligence (no en simulador).
-- La lógica pura (Paso 1: `eligibleGymGroups`, fallback, mapeo de índices) **sí es testeable** en simulador con Swift Testing → vale la pena cubrirla (es donde vive la inteligencia real).
+- The real output **can only be validated on device** (iOS 26 + Apple Intelligence), not in the
+  simulator.
+- The pure logic (Step 1: `eligibleGymGroups`, fallback, index mapping) **is testable** in the
+  simulator with Swift Testing → worth covering (that's where the real intelligence lives).

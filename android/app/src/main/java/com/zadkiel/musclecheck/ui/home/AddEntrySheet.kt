@@ -52,6 +52,7 @@ import com.zadkiel.musclecheck.domain.model.CategoryResolver
 import com.zadkiel.musclecheck.domain.model.CustomCategory
 import com.zadkiel.musclecheck.domain.model.MetricType
 import com.zadkiel.musclecheck.domain.model.MuscleEntry
+import com.zadkiel.musclecheck.domain.model.TargetMuscle
 import com.zadkiel.musclecheck.ui.icons.AppIcons
 
 /**
@@ -151,13 +152,19 @@ fun AddEntrySheet(
             val presets = builtIn?.presetEntries.orEmpty()
             val ownEntries = entries.filter { it.category == selectedCategoryId }
             val presetNames = presets.map { context.getString(it.nameRes) }.toSet()
-            val rows = presets.map { preset ->
+            val rows = presets.mapNotNull { preset ->
                 val name = context.getString(preset.nameRes)
+                val existing = ownEntries.firstOrNull { it.name.equals(name, ignoreCase = true) }
+                // Same muscle already in this category under another name (a preset added in
+                // another language): don't offer it again — the existing row is listed below.
+                if (existing == null && TargetMuscle.repeatsMuscle(name, ownEntries)) {
+                    return@mapNotNull null
+                }
                 PickerRow(
                     key = "preset-$name",
                     name = name,
                     icon = preset.icon,
-                    existing = ownEntries.firstOrNull { it.name.equals(name, ignoreCase = true) },
+                    existing = existing,
                     preset = preset.nameRes to preset.icon,
                 )
             } + ownEntries.filterNot { presetNames.any { p -> p.equals(it.name, ignoreCase = true) } }
