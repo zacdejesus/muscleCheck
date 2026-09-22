@@ -1,80 +1,84 @@
-# MuscleCheck Android — Plan de migración
+# MuscleCheck Android — Migration plan
 
-**Decisión:** rewrite nativo en Kotlin + Jetpack Compose (opción elegida sobre KMP y Skip).
-Repo separado: `~/Desktop/sideProjects/musclecheck-android`. Package `com.zadkiel.musclecheck`
-(mismo que el bundle ID iOS → mismo proyecto RevenueCat y Firebase).
+**Decision:** native rewrite in Kotlin + Jetpack Compose (chosen over KMP and Skip).
+Separate repo: `~/Desktop/sideProjects/musclecheck-android`. Package `com.zadkiel.musclecheck`
+(same as the iOS bundle ID → same RevenueCat and Firebase project).
 
-## Mapeo de stack
+## Stack mapping
 
 | iOS | Android |
 |---|---|
 | SwiftUI | Jetpack Compose (Material 3) |
-| SwiftData | Room (entities + DAOs con Flow) |
+| SwiftData | Room (entities + DAOs with Flow) |
 | UserDefaults / App Group | DataStore Preferences |
 | WidgetKit | Glance |
 | ObservableObject + @Published | ViewModel + StateFlow |
-| Manager + protocolo + .shared | Repository + interface + Hilt |
-| Swift Charts | Charts hand-rolled en Compose (2 charts simples, sin dependencia) |
+| Manager + protocol + .shared | Repository + interface + Hilt |
+| Swift Charts | Hand-rolled Compose charts (2 simple charts, no dependency) |
 | UNUserNotificationCenter | WorkManager + POST_NOTIFICATIONS |
 | RevenueCat iOS | RevenueCat Android (purchases-android) |
-| HealthKit | Health Connect (**diferido a v2**) |
-| FoundationModels (AI Coach) | **Sin equivalente — diferido** (Gemini Nano no cubre toda la base) |
-| AppIntents / Siri | Diferido |
+| HealthKit | Health Connect (**deferred to v2**) |
+| FoundationModels (AI Coach) | **No equivalent — deferred** (Gemini Nano doesn't cover the whole install base) |
+| AppIntents / Siri | Deferred |
 | Localizable.xcstrings | strings.xml ES/EN/FR/IT |
 
-## Decisiones técnicas
+## Technical decisions
 
 - **minSdk 26, target/compile 35.** Single module.
-- **Semántica de semana:** `WeekFields(MONDAY, minimalDays=1)` — NO `WeekFields.ISO`
-  (Apple usa `minimumDaysInFirstWeek = 1`; ISO usa 4 y numeraría distinto algunas semanas de borde de año).
-- **Íconos:** la DB guarda los mismos IDs de SF Symbols que iOS (`figure.yoga`, …) para
-  portabilidad de datos; la UI los mapea a Material Symbols. Ícono desconocido → fallback estrella.
-- **Pesos siempre en kg** en storage; conversión kg/lbs en el borde de display (igual que iOS).
-- **Sessions:** tabla propia con FK a entry (relacional idiomático), no JSON embebido como SwiftData.
-- **Tests del dominio portados de las suites Swift** — son la spec de las semánticas finas
-  (racha semanal con gracia, degradación de categoría huérfana, grid 6×7 lunes-first).
+- **Week semantics:** `WeekFields(MONDAY, minimalDays=1)` — NOT `WeekFields.ISO`
+  (Apple uses `minimumDaysInFirstWeek = 1`; ISO uses 4 and would number some year-boundary weeks
+  differently).
+- **Icons:** the DB stores the same SF Symbol IDs as iOS (`figure.yoga`, …) for data
+  portability; the UI maps them to Material Symbols. Unknown icon → star fallback.
+- **Weights always in kg** in storage; kg/lbs conversion at the display edge (same as iOS).
+- **Sessions:** their own table with an FK to the entry (idiomatic relational), not embedded JSON
+  like SwiftData.
+- **Domain tests ported from the Swift suites** — they are the spec for the subtle semantics
+  (weekly streak with grace, orphaned-category degradation, Monday-first 6×7 grid).
 
-## Fases
+## Phases
 
-1. ✅ Toolchain (JDK 21 brew, Android cmdline-tools, platform 35)
-2. ✅ Scaffold Gradle + dominio puro con tests (JVM)
+1. ✅ Toolchain (JDK 21 via brew, Android cmdline-tools, platform 35)
+2. ✅ Gradle scaffold + pure domain with tests (JVM)
 3. ✅ Data layer: Room + DataStore + repositories
-4. ✅ UI core loop: checklist semanal + add group + modal de peso
-5. ✅ Historial + stats + streak card
+4. ✅ Core UI loop: weekly checklist + add group + weight modal
+5. ✅ History + stats + streak card
 6. ✅ Settings (units, theme, custom categories, presets) + onboarding
-7. ✅ Notificaciones (WorkManager) · widget Glance · progress photos
-   - Notificaciones: `InactivityCalculator` (dominio puro, 11 tests portados de la suite iOS),
-     `ReminderScheduler` (periodic daily + one-shot inactividad mañana 10:00, re-encolado
-     al ir a background vía ProcessLifecycleOwner), workers con @HiltWorker, toggle + time
-     picker en Settings con permiso POST_NOTIFICATIONS (API 33+). El resumen de inactividad
-     se computa al momento de disparar (no al agendar, como iOS) → nunca queda stale.
-   - Widget: Glance 2×2 con racha (🔥 actual / 🏆 máx) + checklist de la semana (hasta 5).
-     Lee Room directo vía Hilt EntryPoint (sin App Group). `MuscleRepository` refresca el
-     widget tras cada mutación (espejo del reloadTimelines de iOS). Sin íconos por actividad
-     en v1 (Glance no renderiza ImageVectors; evaluar drawables por categoría).
-   - Progress photos: `ProgressPhotoEntity` (Room, metadata) + imagen en internal storage
-     (`filesDir/progress_photos/`, no en DB — como iOS). `ProgressPhotoRepository` (CRUD +
-     file I/O), Coil para thumbnails, Android Photo Picker (`PickVisualMedia`, sin permisos),
-     galería `LazyVerticalGrid` agrupada por mes, visor con borrar, y slider before/after
-     (más viejo vs más nuevo, divisor arrastrable con `clipRect`). Ícono cámara en el Home.
-     DB a v2 con `fallbackToDestructiveMigration` (cero usuarios). **Sin gate Pro** todavía
-     (RevenueCat llega en fase 8).
-8. RevenueCat + paywall, localización FR/IT, build final
-   - **Localización FR/IT ✅** — `values-fr` y `values-it` completos (116 keys c/u, verificado
-     vs EN). Ahora ES/EN/FR/IT como iOS.
-   - **Arquitectura Pro ✅** — seam `ProAccessManager` (interface) + `LocalProAccessManager`
-     (stub DataStore-backed: `purchase()` prende el flag local; punto de swap a RevenueCat
-     documentado en el archivo), `PaywallScreen`/`PaywallViewModel` (tabla Free-vs-Pro, 3
-     packages, subscribe/restore), `ProLockedCard`, gate en progress photos, sección
-     Subscription en Settings, ruta `PAYWALL`, strings ES/EN/FR/IT (27 keys) y
-     `PaywallViewModelTest` (4 tests). Build + tests verdes.
-   - **Pendiente (bloqueado por setup externo):** swappear el stub por el SDK real de
-     RevenueCat (purchases-android) — con el seam ya armado es un cambio de una sola clase.
-     Blockers: cuenta Play Console (USD 25 + closed test), productos en Play Billing, API key
-     pública Android, app Android en el proyecto RevenueCat. Sin eso el SDK no fetchea ofertas.
+7. ✅ Notifications (WorkManager) · Glance widget · progress photos
+   - Notifications: `InactivityCalculator` (pure domain, 11 tests ported from the iOS suite),
+     `ReminderScheduler` (periodic daily + one-shot inactivity tomorrow at 10:00, re-enqueued
+     when going to background via ProcessLifecycleOwner), workers with @HiltWorker, toggle + time
+     picker in Settings with the POST_NOTIFICATIONS permission (API 33+). The inactivity summary
+     is computed when it fires (not when scheduled, as on iOS) → it's never stale.
+   - Widget: Glance 2×2 with the streak (🔥 current / 🏆 max) + the week's checklist (up to 5).
+     Reads Room directly via a Hilt EntryPoint (no App Group). `MuscleRepository` refreshes the
+     widget after every mutation (mirror of iOS's reloadTimelines). No per-activity icons in v1
+     (Glance doesn't render ImageVectors; consider per-category drawables).
+   - Progress photos: `ProgressPhotoEntity` (Room, metadata) + the image in internal storage
+     (`filesDir/progress_photos/`, not in the DB — like iOS). `ProgressPhotoRepository` (CRUD +
+     file I/O), Coil for thumbnails, Android Photo Picker (`PickVisualMedia`, no permissions),
+     `LazyVerticalGrid` gallery grouped by month, viewer with delete, and a before/after slider
+     (oldest vs newest, draggable divider with `clipRect`). Camera icon on Home.
+     DB at v2 with `fallbackToDestructiveMigration` (zero users). **No Pro gate** yet
+     (RevenueCat arrives in phase 8).
+8. RevenueCat + paywall, FR/IT localization, final build
+   - **FR/IT localization ✅** — `values-fr` and `values-it` complete (116 keys each, checked
+     against EN). Now ES/EN/FR/IT like iOS.
+   - **Pro architecture ✅** — `ProAccessManager` seam (interface) + `LocalProAccessManager`
+     (DataStore-backed stub: `purchase()` turns on the local flag; the RevenueCat swap point is
+     documented in the file), `PaywallScreen`/`PaywallViewModel` (Free-vs-Pro table, 3
+     packages, subscribe/restore), `ProLockedCard`, gate on progress photos, Subscription section
+     in Settings, `PAYWALL` route, ES/EN/FR/IT strings (27 keys) and `PaywallViewModelTest`
+     (4 tests). Build + tests green.
+   - **Pending (blocked on external setup):** swap the stub for the real RevenueCat SDK
+     (purchases-android) — with the seam in place it's a one-class change.
+     Blockers: Play Console account (USD 25 + closed test), Play Billing products, Android public
+     API key, Android app in the RevenueCat project. Without them the SDK can't fetch offerings.
 
-## Blockers externos (requieren acción del developer)
+## External blockers (need action from the developer)
 
-- **Play Console:** cuenta (USD 25) + closed test de 14 días con ~12 testers antes de producción.
-- **Firebase:** agregar app Android al proyecto existente → `google-services.json` (el código queda listo con Analytics/Crashlytics opcionales hasta tenerlo).
-- **RevenueCat:** agregar app Android al proyecto + API key pública Android + productos en Play Billing.
+- **Play Console:** account (USD 25) + a 14-day closed test with ~12 testers before production.
+- **Firebase:** add the Android app to the existing project → `google-services.json` (the code
+  stays ready with Analytics/Crashlytics optional until then).
+- **RevenueCat:** add the Android app to the project + Android public API key + Play Billing
+  products.
