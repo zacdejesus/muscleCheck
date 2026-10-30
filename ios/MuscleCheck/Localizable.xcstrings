@@ -611,6 +611,35 @@
         }
       }
     },
+    "ai_coach_no_other_option" : {
+      "comment" : "Shown in the AI coach when \"give me another\" has no other pair of muscle groups to suggest today.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No other combination for today."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay otra combinación para hoy."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas d'autre combinaison pour aujourd'hui."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun'altra combinazione per oggi."
+          }
+        }
+      }
+    },
     "ai_coach_suggest_day" : {
       "comment" : "Button that opens the AI coach suggested training day.",
       "localizations" : {

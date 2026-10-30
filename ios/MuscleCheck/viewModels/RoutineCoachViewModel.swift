@@ -25,6 +25,8 @@ final class RoutineCoachViewModel: ObservableObject {
     /// language mismatch) — the modal shows a hint instead of silently answering
     /// in English on a Spanish phone.
     @Published private(set) var aiLanguageMismatch = false
+    /// "Give me another" found no other pair for today; the current suggestion stays.
+    @Published private(set) var noOtherOption = false
 
     /// Groups from the last suggestion, excluded on "dame otra" to force a different day.
     private var lastSuggestedGroups: Set<String> = []
@@ -59,17 +61,24 @@ final class RoutineCoachViewModel: ObservableObject {
 
     /// Generates (or regenerates) a suggested training day from the eligible gym groups.
     /// Rotation/variety is resolved in code (`WorkoutEligibility`); the model only picks
-    /// a coherent pair + example exercises. Free, on-device — no Pro gate.
+    /// a coherent pair + example exercises. Free — no Pro gate.
     func generateRoutine(from entries: [MuscleEntry], regenerate: Bool = false) async {
         guard let coach else { return }
+
+        let excluded = regenerate ? lastSuggestedGroups : []
+        let eligible = WorkoutEligibility.eligibleGymGroups(from: entries, excluding: excluded)
+
+        // "Give me another" with nothing else to offer: when the exclusion leaves fewer
+        // than 2 groups, eligibleGymGroups falls back to every gym group, the excluded
+        // ones included, and the model could only repeat the same day. Say so instead.
+        noOtherOption = regenerate && routineSuggestion != nil
+            && eligible.contains { excluded.contains($0.name) }
+        guard !noOtherOption else { return }
 
         let previous = routineSuggestion
         isGeneratingRoutine = true
         routineError = nil
         aiLanguageMismatch = !coach.supportsAppLanguage
-
-        let excluded = regenerate ? lastSuggestedGroups : []
-        let eligible = WorkoutEligibility.eligibleGymGroups(from: entries, excluding: excluded)
 
         // Nothing to suggest from (no gym groups at all).
         guard eligible.count >= 2 else {

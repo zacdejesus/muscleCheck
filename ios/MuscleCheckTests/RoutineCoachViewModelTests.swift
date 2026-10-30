@@ -69,6 +69,38 @@ struct RoutineCoachViewModelTests {
     }
 
     @Test
+    func giveMeAnotherWithNoOtherPairKeepsTheDayWithoutAskingTheModel() async {
+        // Excluding Back + Biceps leaves only Legs, trained yesterday: nothing else today.
+        let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
+        let viewModel = RoutineCoachViewModel(coach: coach)
+        let entries = [gymEntry("Back"), gymEntry("Biceps"), gymEntry("Legs", daysAgo: [1])]
+        await viewModel.generateRoutine(from: entries)
+
+        await viewModel.generateRoutine(from: entries, regenerate: true)
+
+        #expect(viewModel.noOtherOption)
+        #expect(viewModel.routineSuggestion == suggestion("Back", "Biceps"))
+        #expect(coach.receivedEligible.count == 1)
+    }
+
+    @Test
+    func giveMeAnotherWithAnotherPairClearsTheNotice() async {
+        let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
+        let viewModel = RoutineCoachViewModel(coach: coach)
+        let few = [gymEntry("Back"), gymEntry("Biceps"), gymEntry("Legs", daysAgo: [1])]
+        await viewModel.generateRoutine(from: few)
+        await viewModel.generateRoutine(from: few, regenerate: true)
+        #expect(viewModel.noOtherOption)
+
+        // A new group shows up (e.g. Legs is now rested): another pair exists again.
+        let more = few + [gymEntry("Chest"), gymEntry("Triceps")]
+        await viewModel.generateRoutine(from: more, regenerate: true)
+
+        #expect(!viewModel.noOtherOption)
+        #expect(coach.receivedEligible.count == 2)
+    }
+
+    @Test
     func aFailedRequestKeepsThePreviousSuggestion() async {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
         let viewModel = RoutineCoachViewModel(coach: coach)
