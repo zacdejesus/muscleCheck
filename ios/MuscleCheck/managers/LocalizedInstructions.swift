@@ -133,7 +133,7 @@ struct LocalizedStrings {
                 "De la lista de grupos DISPONIBLES, elegí EXACTAMENTE 2 que formen un día coherente que se entrene junto (empuje: pecho/hombros/tríceps; tirón: espalda/bíceps; piernas: piernas/abdomen)."
                 "Elegí por índice."
                 "Primero elegí un par coherente. Solo si hay varios pares coherentes, usá el historial para decidir entre ellos (preferí los menos entrenados). Nunca sacrifiques la coherencia por el historial."
-                "El foco tiene que describir los grupos elegidos. La justificación menciona el historial."
+                "El foco tiene que describir los grupos elegidos. La justificación menciona el historial y nombra los grupos por su nombre, nunca por su índice."
                 "Para CADA grupo dá 3 ejercicios que trabajen ESPECÍFICAMENTE ese músculo; nunca pongas ejercicios de otro grupo (ej: no pongas sentadillas en bíceps, ni curls en tríceps)."
                 "Respondé en español."
             }
@@ -143,7 +143,7 @@ struct LocalizedStrings {
                 "Dans la liste des groupes DISPONIBLES, choisis EXACTEMENT 2 qui forment une journée cohérente entraînée ensemble (poussée : pectoraux/épaules/triceps ; tirage : dos/biceps ; jambes : jambes/abdos)."
                 "Choisis par index."
                 "Choisis d'abord une paire cohérente. Seulement s'il y a plusieurs paires cohérentes, utilise l'historique pour choisir entre elles (préfère les moins entraînés). Ne sacrifie jamais la cohérence pour l'historique."
-                "Le focus doit décrire les groupes choisis. La justification mentionne l'historique."
+                "Le focus doit décrire les groupes choisis. La justification mentionne l'historique et désigne les groupes par leur nom, jamais par leur index."
                 "Pour CHAQUE groupe, donne 3 exercices qui ciblent SPÉCIFIQUEMENT ce muscle ; ne mets jamais d'exercices d'un autre groupe (ex : pas de squats pour les biceps, ni de curls pour les triceps)."
                 "Réponds en français."
             }
@@ -153,7 +153,7 @@ struct LocalizedStrings {
                 "Dalla lista dei gruppi DISPONIBILI, scegli ESATTAMENTE 2 che formino una giornata coerente da allenare insieme (spinta: petto/spalle/tricipiti; trazione: schiena/bicipiti; gambe: gambe/addome)."
                 "Scegli per indice."
                 "Prima scegli una coppia coerente. Solo se ci sono più coppie coerenti, usa lo storico per decidere tra loro (preferisci i meno allenati). Non sacrificare mai la coerenza per lo storico."
-                "Il focus deve descrivere i gruppi scelti. La motivazione menziona lo storico."
+                "Il focus deve descrivere i gruppi scelti. La motivazione menziona lo storico e indica i gruppi per nome, mai per indice."
                 "Per OGNI gruppo dai 3 esercizi che lavorino SPECIFICAMENTE quel muscolo; non mettere mai esercizi di un altro gruppo (es: niente squat nei bicipiti, né curl nei tricipiti)."
                 "Rispondi in italiano."
             }
@@ -163,7 +163,7 @@ struct LocalizedStrings {
                 "From the list of AVAILABLE groups, pick EXACTLY 2 that make a coherent day trained together (push: chest/shoulders/triceps; pull: back/biceps; legs: legs/abs)."
                 "Pick by index."
                 "First pick a coherent pair. Only when several coherent pairs are available, use the history to choose between them (prefer the least trained). Never trade coherence for history."
-                "The focus label must describe the chosen groups. The rationale mentions the history."
+                "The focus label must describe the chosen groups. The rationale mentions the history and names the groups, never their index."
                 "For EACH group give 3 exercises that work SPECIFICALLY that muscle; never put exercises from another group (e.g. no squats under biceps, no curls under triceps)."
                 "Answer in English."
             }
