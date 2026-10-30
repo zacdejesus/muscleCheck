@@ -7,9 +7,9 @@
 //  per-day cache. Entries are passed in per call rather than held, so there is no
 //  second copy of the list to keep in sync.
 //
-//  Targets iOS 18: FoundationModels (iOS 26+) is reached only through the availability
-//  -gated `muscleCheckAI` accessor, and the suggestion is kept as a version-agnostic
-//  `RoutineSuggestion`.
+//  Targets iOS 18: the model layer is reached through `RoutineSuggesting`, created in
+//  `init` only on iOS 26+ (nil before, which hides the coach), and the suggestion is
+//  kept as a version-agnostic `RoutineSuggestion`.
 //
 
 import Foundation
@@ -29,31 +29,30 @@ final class RoutineCoachViewModel: ObservableObject {
     /// Groups from the last suggestion, excluded on "dame otra" to force a different day.
     private var lastSuggestedGroups: Set<String> = []
 
-    /// Backing storage for the on-device AI. Held as `Any?` because `MuscleCheckAI`
-    /// (FoundationModels) is only available on iOS 26+, while this view model targets iOS 18.
-    private var aiStorage: Any?
+    /// nil below iOS 26, where FoundationModels doesn't exist.
+    private let coach: RoutineSuggesting?
 
-    @available(iOS 26, *)
-    private var muscleCheckAI: MuscleCheckAI {
-        if let existing = aiStorage as? MuscleCheckAI { return existing }
-        let new = MuscleCheckAI()
-        aiStorage = new
-        return new
+    /// - Parameter coach: injected by tests; defaults to `MuscleCheckAI` on iOS 26+.
+    init(coach: RoutineSuggesting? = nil) {
+        if let coach {
+            self.coach = coach
+        } else if #available(iOS 26, *) {
+            self.coach = MuscleCheckAI()
+        } else {
+            self.coach = nil
+        }
     }
 
     // MARK: - Lifecycle
 
     /// Warms the on-device model and restores today's cached suggestion, if any.
     func start() {
-        if #available(iOS 26, *) {
-            muscleCheckAI.prewarmModel()
-        }
+        coach?.prewarm()
         loadCachedRoutineIfToday()
     }
 
     func isAppleIntelligenceAvailable() -> Bool {
-        guard #available(iOS 26, *) else { return false }
-        return muscleCheckAI.isAppleIntelligenceAvailable()
+        coach?.isAppleIntelligenceAvailable ?? false
     }
 
     // MARK: - Generation
@@ -62,12 +61,12 @@ final class RoutineCoachViewModel: ObservableObject {
     /// Rotation/variety is resolved in code (`WorkoutEligibility`); the model only picks
     /// a coherent pair + example exercises. Free, on-device — no Pro gate.
     func generateRoutine(from entries: [MuscleEntry], regenerate: Bool = false) async {
-        guard #available(iOS 26, *) else { return }
+        guard let coach else { return }
 
         let previous = routineSuggestion
         isGeneratingRoutine = true
         routineError = nil
-        aiLanguageMismatch = !MuscleCheckAI.modelSupportsAppLanguage()
+        aiLanguageMismatch = !coach.supportsAppLanguage
 
         let excluded = regenerate ? lastSuggestedGroups : []
         let eligible = WorkoutEligibility.eligibleGymGroups(from: entries, excluding: excluded)
@@ -80,7 +79,7 @@ final class RoutineCoachViewModel: ObservableObject {
         }
 
         do {
-            let suggestion = try await muscleCheckAI.suggestWorkout(eligible: eligible) { [weak self] partial in
+            let suggestion = try await coach.suggestWorkout(eligible: eligible) { [weak self] partial in
                 self?.routineSuggestion = partial
             }
             routineSuggestion = suggestion

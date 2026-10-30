@@ -8,7 +8,6 @@
 //  pair + 3 example exercises each. See docs/feature12-prompt-tuning.md.
 //
 
-import Observation
 import FoundationModels
 import Foundation
 
@@ -45,9 +44,8 @@ enum RoutineSuggestionError: Error {
 }
 
 @available(iOS 26, *)
-@Observable
 @MainActor
-final class MuscleCheckAI {
+final class MuscleCheckAI: RoutineSuggesting {
 
     /// A fresh session per suggestion. One long-lived session kept every request and
     /// answer in its transcript: each "give me another" grew it toward the on-device
@@ -122,25 +120,23 @@ final class MuscleCheckAI {
     /// Loads the on-device model ahead of the first request. It prewarms a throwaway
     /// session: the expensive part is loading the model, which the per-request
     /// sessions reuse.
-    func prewarmModel() {
-        makeSession().prewarm(promptPrefix: LocalizedStrings.promtPrefix)
+    func prewarm() {
+        makeSession().prewarm(promptPrefix: LocalizedStrings.promptPrefix)
     }
 
     /// Whether the on-device model can answer in the app's UI language. Apple
     /// Intelligence follows the SIRI language, not the device language — a phone in
     /// Spanish with Siri in English answers in English no matter what the prompt
     /// says. When this is false the coach modal shows a hint pointing at Settings.
-    static func modelSupportsAppLanguage() -> Bool {
+    var supportsAppLanguage: Bool {
         guard let appLang = LocalizedStrings.appLanguage else { return true }
         return SystemLanguageModel.default.supportedLanguages.contains {
             $0.languageCode?.identifier == appLang
         }
     }
 
-    func isAppleIntelligenceAvailable() -> Bool {
-        let model = SystemLanguageModel.default
-
-        switch model.availability {
+    var isAppleIntelligenceAvailable: Bool {
+        switch SystemLanguageModel.default.availability {
         case .available: return true
         case .unavailable(.deviceNotEligible): return false
         case .unavailable(.appleIntelligenceNotEnabled): return false

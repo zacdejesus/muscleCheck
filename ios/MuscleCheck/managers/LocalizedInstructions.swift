@@ -103,7 +103,7 @@ struct LocalizedStrings {
 
     /// Warmup prompt prefix to reduce cold-start latency on first real call.
     @available(iOS 26, *)
-    static var promtPrefix: Prompt {
+    static var promptPrefix: Prompt {
         let lang = appLanguage
         switch lang {
         case "es":

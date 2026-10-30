@@ -1,0 +1,140 @@
+//
+//  RoutineCoachViewModelTests.swift
+//  MuscleCheckTests
+//
+//  The coach view model's rules, with a fake model layer: what it hands the model,
+//  what it keeps when the model fails, and when it doesn't call it at all.
+//
+
+import Testing
+@testable import MuscleCheck
+import Foundation
+
+// Serialized: generation writes the per-day cache in the shared UserDefaults.
+@MainActor
+@Suite(.serialized)
+struct RoutineCoachViewModelTests {
+
+    init() {
+        UserDefaultsManager.shared.cachedRoutineData = nil
+        UserDefaultsManager.shared.cachedRoutineDate = nil
+    }
+
+    // MARK: - Fixtures
+
+    private func gymEntry(_ name: String, daysAgo: [Int] = []) -> MuscleEntry {
+        let entry = MuscleEntry(name: name, category: ActivityCategory.gym.rawValue)
+        for day in daysAgo {
+            if let date = Date.appCalendar.date(byAdding: .day, value: -day, to: Date()) {
+                entry.addSession(date)
+            }
+        }
+        return entry
+    }
+
+    private func suggestion(_ first: String, _ second: String) -> RoutineSuggestion {
+        RoutineSuggestion(
+            focus: "Pull",
+            blocks: [.init(groupName: first, exercises: ["A"]), .init(groupName: second, exercises: ["B"])],
+            rationale: "Because."
+        )
+    }
+
+    // MARK: - Tests
+
+    @Test
+    func generatesFromTheEligibleGroupsAndKeepsTheResult() async {
+        let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
+        let viewModel = RoutineCoachViewModel(coach: coach)
+        let entries = [gymEntry("Chest", daysAgo: [1]), gymEntry("Back"), gymEntry("Biceps")]
+
+        await viewModel.generateRoutine(from: entries)
+
+        #expect(coach.receivedEligible == [["Back", "Biceps"]])
+        #expect(viewModel.routineSuggestion == suggestion("Back", "Biceps"))
+        #expect(viewModel.routineError == nil)
+        #expect(!viewModel.isGeneratingRoutine)
+    }
+
+    @Test
+    func giveMeAnotherExcludesTheLastSuggestedGroups() async {
+        let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
+        let viewModel = RoutineCoachViewModel(coach: coach)
+        let entries = ["Back", "Biceps", "Legs", "Abs"].map { gymEntry($0) }
+
+        await viewModel.generateRoutine(from: entries)
+        await viewModel.generateRoutine(from: entries, regenerate: true)
+
+        #expect(coach.receivedEligible.last == ["Legs", "Abs"])
+    }
+
+    @Test
+    func aFailedRequestKeepsThePreviousSuggestion() async {
+        let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
+        let viewModel = RoutineCoachViewModel(coach: coach)
+        let entries = ["Back", "Biceps", "Legs", "Abs"].map { gymEntry($0) }
+        await viewModel.generateRoutine(from: entries)
+
+        coach.result = .failure(FakeCoach.Failure())
+        await viewModel.generateRoutine(from: entries, regenerate: true)
+
+        #expect(viewModel.routineSuggestion == suggestion("Back", "Biceps"))
+        #expect(viewModel.routineError != nil)
+    }
+
+    @Test
+    func doesNotCallTheModelWithFewerThanTwoGymGroups() async {
+        let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
+        let viewModel = RoutineCoachViewModel(coach: coach)
+
+        await viewModel.generateRoutine(from: [gymEntry("Back")])
+
+        #expect(coach.receivedEligible.isEmpty)
+        #expect(viewModel.routineError != nil)
+    }
+
+    @Test
+    func flagsALanguageTheModelCannotAnswerIn() async {
+        let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
+        coach.supportsAppLanguage = false
+        let viewModel = RoutineCoachViewModel(coach: coach)
+
+        await viewModel.generateRoutine(from: ["Back", "Biceps"].map { gymEntry($0) })
+
+        #expect(viewModel.aiLanguageMismatch)
+    }
+
+    @Test
+    func availabilityComesFromTheModelLayer() {
+        let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
+        coach.isAppleIntelligenceAvailable = false
+        #expect(!RoutineCoachViewModel(coach: coach).isAppleIntelligenceAvailable())
+    }
+}
+
+// MARK: - Fake
+
+@MainActor
+private final class FakeCoach: RoutineSuggesting {
+    struct Failure: Error {}
+
+    var result: Result<RoutineSuggestion, Error>
+    var isAppleIntelligenceAvailable = true
+    var supportsAppLanguage = true
+    /// Names of the eligible groups handed over on each call, in order.
+    private(set) var receivedEligible: [[String]] = []
+
+    init(result: Result<RoutineSuggestion, Error>) {
+        self.result = result
+    }
+
+    func prewarm() {}
+
+    func suggestWorkout(
+        eligible: [MuscleEntry],
+        onPartial: ((RoutineSuggestion) -> Void)?
+    ) async throws -> RoutineSuggestion {
+        receivedEligible.append(eligible.map(\.name))
+        return try result.get()
+    }
+}
