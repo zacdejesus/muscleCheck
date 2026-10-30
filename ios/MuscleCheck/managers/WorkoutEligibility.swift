@@ -68,6 +68,38 @@ struct WorkoutEligibility {
         return result
     }
 
+    /// Whether the group name the model copied into its answer matches the group at
+    /// the index it picked. The Private Cloud Compute coach writes the name right
+    /// before the exercises so they're written for that group; this catches the
+    /// answers where index and name disagree.
+    ///
+    /// Tolerant of case, accents, spacing and trailing noise ("Legs: legs/abs" for
+    /// "Legs"), but the copied name must not be a better match for another group:
+    /// "Chest & triceps" under the index of "Chest" fails when both are listed.
+    static func echoedNameMatches(_ echoed: String, index: Int, eligibleNames: [String]) -> Bool {
+        guard eligibleNames.indices.contains(index) else { return false }
+        let echo = normalized(echoed)
+        // Every listed group the echo could be naming; the longest one is what it names.
+        let named = eligibleNames.indices
+            .filter { isPrefixName(normalized(eligibleNames[$0]), of: echo) }
+            .max { normalized(eligibleNames[$0]).count < normalized(eligibleNames[$1]).count }
+        return named.map { normalized(eligibleNames[$0]) == normalized(eligibleNames[index]) } ?? false
+    }
+
+    /// `name` equals `echo`, or starts it and is followed by a non-alphanumeric
+    /// character — so "Legs" matches "Legs: legs/abs" but "Arm" doesn't match "Arms".
+    private static func isPrefixName(_ name: String, of echo: String) -> Bool {
+        guard !name.isEmpty, echo.hasPrefix(name) else { return false }
+        guard let next = echo.dropFirst(name.count).first else { return true }
+        return !(next.isLetter || next.isNumber)
+    }
+
+    private static func normalized(_ name: String) -> String {
+        name.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+            .split(whereSeparator: \.isWhitespace)
+            .joined(separator: " ")
+    }
+
     /// Calendar-day distance from the group's most recent session to `today`.
     /// `nil` when the group was never trained. Shared with `CoachHistory`.
     static func restDaysSinceLastSession(_ entry: MuscleEntry, today: Date) -> Int? {
