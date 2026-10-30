@@ -45,7 +45,7 @@ struct RoutineCoachViewModelTests {
     @Test
     func generatesFromTheEligibleGroupsAndKeepsTheResult() async {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
-        let viewModel = RoutineCoachViewModel(coach: coach)
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
         let entries = [gymEntry("Chest", daysAgo: [1]), gymEntry("Back"), gymEntry("Biceps")]
 
         await viewModel.generateRoutine(from: entries)
@@ -59,7 +59,7 @@ struct RoutineCoachViewModelTests {
     @Test
     func giveMeAnotherExcludesTheLastSuggestedGroups() async {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
-        let viewModel = RoutineCoachViewModel(coach: coach)
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
         let entries = ["Back", "Biceps", "Legs", "Abs"].map { gymEntry($0) }
 
         await viewModel.generateRoutine(from: entries)
@@ -72,7 +72,7 @@ struct RoutineCoachViewModelTests {
     func giveMeAnotherWithNoOtherPairKeepsTheDayWithoutAskingTheModel() async {
         // Excluding Back + Biceps leaves only Legs, trained yesterday: nothing else today.
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
-        let viewModel = RoutineCoachViewModel(coach: coach)
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
         let entries = [gymEntry("Back"), gymEntry("Biceps"), gymEntry("Legs", daysAgo: [1])]
         await viewModel.generateRoutine(from: entries)
 
@@ -86,7 +86,7 @@ struct RoutineCoachViewModelTests {
     @Test
     func giveMeAnotherWithAnotherPairClearsTheNotice() async {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
-        let viewModel = RoutineCoachViewModel(coach: coach)
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
         let few = [gymEntry("Back"), gymEntry("Biceps"), gymEntry("Legs", daysAgo: [1])]
         await viewModel.generateRoutine(from: few)
         await viewModel.generateRoutine(from: few, regenerate: true)
@@ -103,7 +103,7 @@ struct RoutineCoachViewModelTests {
     @Test
     func aFailedRequestKeepsThePreviousSuggestion() async {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
-        let viewModel = RoutineCoachViewModel(coach: coach)
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
         let entries = ["Back", "Biceps", "Legs", "Abs"].map { gymEntry($0) }
         await viewModel.generateRoutine(from: entries)
 
@@ -117,7 +117,7 @@ struct RoutineCoachViewModelTests {
     @Test
     func doesNotCallTheModelWithFewerThanTwoGymGroups() async {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
-        let viewModel = RoutineCoachViewModel(coach: coach)
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
 
         await viewModel.generateRoutine(from: [gymEntry("Back")])
 
@@ -129,7 +129,7 @@ struct RoutineCoachViewModelTests {
     func flagsALanguageTheModelCannotAnswerIn() async {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
         coach.supportsAppLanguage = false
-        let viewModel = RoutineCoachViewModel(coach: coach)
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
 
         await viewModel.generateRoutine(from: ["Back", "Biceps"].map { gymEntry($0) })
 
@@ -142,7 +142,7 @@ struct RoutineCoachViewModelTests {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
         coach.supportsAppLanguage = false
         coach.engine = .privateCloud
-        let viewModel = RoutineCoachViewModel(coach: coach)
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
 
         await viewModel.generateRoutine(from: ["Back", "Biceps"].map { gymEntry($0) })
 
@@ -150,10 +150,38 @@ struct RoutineCoachViewModelTests {
     }
 
     @Test
+    func tracksWhichModelGeneratedTheSuggestion() async {
+        let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
+        coach.engine = .privateCloud
+        let analytics = SpyAnalytics()
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: analytics)
+
+        await viewModel.generateRoutine(from: ["Back", "Biceps"].map { gymEntry($0) })
+
+        guard case let .coachGenerated(engine, fallbackReason, _)? = analytics.events.last else {
+            Issue.record("expected coach_generated, got \(analytics.events)")
+            return
+        }
+        #expect(engine == .privateCloud)
+        #expect(fallbackReason == nil)
+    }
+
+    @Test
+    func tracksNothingWhenNoSuggestionCameOut() async {
+        let coach = FakeCoach(result: .failure(FakeCoach.Failure()))
+        let analytics = SpyAnalytics()
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: analytics)
+
+        await viewModel.generateRoutine(from: ["Back", "Biceps"].map { gymEntry($0) })
+
+        #expect(analytics.events.isEmpty)
+    }
+
+    @Test
     func availabilityComesFromTheModelLayer() {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
         coach.isAppleIntelligenceAvailable = false
-        #expect(!RoutineCoachViewModel(coach: coach).isAppleIntelligenceAvailable())
+        #expect(!RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics()).isAppleIntelligenceAvailable())
     }
 }
 

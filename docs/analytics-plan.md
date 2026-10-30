@@ -185,6 +185,10 @@ answer**. If the last part is empty, the event isn't instrumented.
 - **Measures:** `coach_opened` / `coach_regenerated`, **over the eligible population** (§2.4).
 - **Decision:** if it's used once and never again, the problem is that it suggests without being
   able to act. If it's regenerated a lot, the first suggestion is bad.
+- **Engine health:** share of `coach_generated` with `engine=pcc` on iOS 27+, and the
+  `fallback_reason` mix. A rising `quota` or `timeout` share means PCC isn't holding up for
+  real users.
+- **iOS only.** Android has no equivalent model; the event doesn't exist there.
 
 ### 7.6 The paywall — **not instrumented**
 RevenueCat already has the whole monetization funnel. Duplicating it is work with the risk of
@@ -212,10 +216,11 @@ two numbers that don't match and nobody knows which to believe.
 | `session_logged` | Values are saved | `metric`, `target` (`group`/`exercise`), `source` |
 | `coach_opened` | The coach modal opens | `cached` |
 | `coach_regenerated` | "Give me another" | — |
+| `coach_generated` | The coach produced a suggestion (first or "another") | `engine` (`pcc`/`on_device`), `fallback_reason` (`unavailable`/`quota`/`network`/`service`/`timeout`/`invalid`/`rejected`/`other`; only when `engine=on_device` on iOS 27+), `latency_bucket` (`<2s`/`2-4s`/`4-6s`/`>6s`) |
 | `permission_result` | Answer to a permission | `type` (`notifications`/`healthkit`/`photos`), `granted` |
 | `history_opened` | History opens | — |
 
-**Fourteen.** If this list reaches thirty before there are users, something went wrong.
+**Fifteen.** If this list reaches thirty before there are users, something went wrong.
 
 Lifecycle rule: **the event is deleted together with the feature that emits it.** Orphaned
 events are how a taxonomy rots.

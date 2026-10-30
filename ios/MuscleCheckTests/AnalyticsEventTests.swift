@@ -17,7 +17,9 @@ struct AnalyticsEventTests {
         .onboardingCompleted(seedCount: 2, skipped: false),
         .activityChecked(category: ActivityCategory.gym.rawValue, metric: .strength, source: .app, secondsSinceOpen: 3),
         .exerciseAddStarted(source: .fab),
-        .exerciseAddCompleted(category: ActivityCategory.yoga.rawValue, metric: .duration, fromPreset: true, count: 2)
+        .exerciseAddCompleted(category: ActivityCategory.yoga.rawValue, metric: .duration, fromPreset: true, count: 2),
+        .coachGenerated(engine: .privateCloud, fallbackReason: nil, latencyMilliseconds: 2_100),
+        .coachGenerated(engine: .onDevice, fallbackReason: .timeout, latencyMilliseconds: 8_900)
     ]
 
     @Test(arguments: allEvents)
@@ -41,6 +43,7 @@ struct AnalyticsEventTests {
         #expect(AnalyticsEvent.activityChecked(category: "gym", metric: .none, source: .siri, secondsSinceOpen: nil).name == "activity_checked")
         #expect(AnalyticsEvent.exerciseAddStarted(source: .emptyState).name == "exercise_add_started")
         #expect(AnalyticsEvent.exerciseAddCompleted(category: "gym", metric: .none, fromPreset: false, count: 1).name == "exercise_add_completed")
+        #expect(AnalyticsEvent.coachGenerated(engine: .onDevice, fallbackReason: nil, latencyMilliseconds: 0).name == "coach_generated")
     }
 
     @Test
@@ -82,5 +85,23 @@ struct AnalyticsEventTests {
         defaults.set(true, forKey: "uiTesting")
 
         #expect(AnalyticsService.make(defaults: defaults) is NoOpAnalytics)
+    }
+
+    // MARK: - coach_generated
+
+    @Test
+    func coachGeneratedSendsTheFallbackReasonOnlyWhenThereIsOne() {
+        let pcc = AnalyticsEvent.coachGenerated(engine: .privateCloud, fallbackReason: nil, latencyMilliseconds: 2_100)
+        #expect(pcc.parameters["engine"] as? String == "pcc")
+        #expect(pcc.parameters["fallback_reason"] == nil)
+
+        let fallback = AnalyticsEvent.coachGenerated(engine: .onDevice, fallbackReason: .quota, latencyMilliseconds: 3_000)
+        #expect(fallback.parameters["engine"] as? String == "on_device")
+        #expect(fallback.parameters["fallback_reason"] as? String == "quota")
+    }
+
+    @Test(arguments: [(0, "<2s"), (1_999, "<2s"), (2_000, "2-4s"), (5_999, "4-6s"), (6_000, ">6s"), (30_000, ">6s")])
+    func coachLatencyIsBucketed(_ milliseconds: Int, _ bucket: String) {
+        #expect(AnalyticsEvent.latencyBucket(milliseconds: milliseconds) == bucket)
     }
 }

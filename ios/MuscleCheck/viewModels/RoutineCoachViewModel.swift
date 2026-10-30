@@ -33,9 +33,13 @@ final class RoutineCoachViewModel: ObservableObject {
 
     /// nil below iOS 26, where FoundationModels doesn't exist.
     private let coach: RoutineSuggesting?
+    private let analytics: any AnalyticsTracking
 
-    /// - Parameter coach: injected by tests; defaults to `MuscleCheckAI` on iOS 26+.
-    init(coach: RoutineSuggesting? = nil) {
+    /// - Parameters:
+    ///   - coach: injected by tests; defaults to `MuscleCheckAI` on iOS 26+.
+    ///   - analytics: injected by tests; defaults to the app's tracker.
+    init(coach: RoutineSuggesting? = nil, analytics: any AnalyticsTracking = AnalyticsService.shared) {
+        self.analytics = analytics
         if let coach {
             self.coach = coach
         } else if #available(iOS 26, *) {
@@ -88,9 +92,17 @@ final class RoutineCoachViewModel: ObservableObject {
         }
 
         do {
+            let clock = ContinuousClock()
+            let start = clock.now
             let result = try await coach.suggestWorkout(eligible: eligible) { [weak self] partial in
                 self?.routineSuggestion = partial
             }
+            let elapsed = (clock.now - start).components
+            analytics.track(.coachGenerated(
+                engine: result.engine,
+                fallbackReason: result.fallbackReason,
+                latencyMilliseconds: Int(elapsed.seconds * 1_000 + elapsed.attoseconds / 1_000_000_000_000_000)
+            ))
             let suggestion = result.suggestion
             // The Siri-language hint is about the on-device model; PCC follows the prompt.
             if result.engine == .privateCloud { aiLanguageMismatch = false }
