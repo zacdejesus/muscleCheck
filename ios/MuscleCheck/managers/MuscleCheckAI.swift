@@ -49,10 +49,13 @@ enum RoutineSuggestionError: Error {
 @MainActor
 final class MuscleCheckAI {
 
-    let session: LanguageModelSession
-
-    init() {
-        session = LanguageModelSession(instructions: LocalizedStrings.coachInstructions)
+    /// A fresh session per suggestion. One long-lived session kept every request and
+    /// answer in its transcript: each "give me another" grew it toward the on-device
+    /// context limit (4K tokens on most devices), and the instructions stayed in
+    /// whatever language the app had at launch. Nothing needs the transcript — rotation and exclusions are
+    /// resolved in code before each request.
+    private func makeSession() -> LanguageModelSession {
+        LanguageModelSession(instructions: LocalizedStrings.coachInstructions)
     }
 
     /// Suggests one coherent training day (exactly 2 gym muscle groups + example
@@ -78,7 +81,7 @@ final class MuscleCheckAI {
         options.temperature = 0.7
         options.maximumResponseTokens = 512
 
-        let stream = session.streamResponse(
+        let stream = makeSession().streamResponse(
             to: prompt,
             generating: WorkoutSuggestion.self,
             options: options
@@ -116,8 +119,11 @@ final class MuscleCheckAI {
         )
     }
 
+    /// Loads the on-device model ahead of the first request. It prewarms a throwaway
+    /// session: the expensive part is loading the model, which the per-request
+    /// sessions reuse.
     func prewarmModel() {
-        session.prewarm(promptPrefix: LocalizedStrings.promtPrefix)
+        makeSession().prewarm(promptPrefix: LocalizedStrings.promtPrefix)
     }
 
     /// Whether the on-device model can answer in the app's UI language. Apple
