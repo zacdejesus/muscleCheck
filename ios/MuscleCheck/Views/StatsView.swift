@@ -13,6 +13,13 @@ struct StatsView: View {
     @StateObject private var viewModel = StatsViewModel()
     @Query private var entries: [MuscleEntry]
 
+    /// Changes whenever a check adds or removes a session. `entries` alone doesn't: checking
+    /// only mutates an existing model, so the @Query array stays equal. Shown as a sheet
+    /// that went unnoticed (onAppear recomputes); side by side with the list it froze.
+    private var sessionCount: Int {
+        entries.reduce(0) { $0 + $1.sessions.count }
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -67,6 +74,9 @@ struct StatsView: View {
         }
         .onChange(of: entries) { _, newEntries in
             viewModel.update(with: newEntries)
+        }
+        .onChange(of: sessionCount) {
+            viewModel.update(with: entries)
         }
     }
 }
