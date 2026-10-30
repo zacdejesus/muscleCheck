@@ -247,6 +247,11 @@ Validate `groupIndex` in range and `blocks.count == 2`; drop or trim what's inva
 simple split + structured output); weak at deep reasoning — mitigated by the narrow task and
 "give me another".
 
+*Private Cloud Compute (iOS 27):* on iOS 27 the coach runs on Apple's server model, with each
+eligible group's last-4-weeks history to choose between coherent pairs and explain the choice;
+the on-device path above is the fallback (offline, over quota, slow or an invalid answer).
+Rotation stays in code. Results and the v4 prompt: `docs/feature12-prompt-tuning.md`.
+
 *Prompt tuning (done, on a real device):* see `docs/feature12-prompt-tuning.md`. Key finding:
 the model **can't rotate** (doesn't reason over history), so **rotation and variety live in
 code** — filter eligible groups and pass only those; exclude the last suggestion for "another".
