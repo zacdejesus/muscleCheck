@@ -69,8 +69,8 @@ struct WorkoutEligibility {
     }
 
     /// Calendar-day distance from the group's most recent session to `today`.
-    /// `nil` when the group was never trained.
-    private static func restDaysSinceLastSession(_ entry: MuscleEntry, today: Date) -> Int? {
+    /// `nil` when the group was never trained. Shared with `CoachHistory`.
+    static func restDaysSinceLastSession(_ entry: MuscleEntry, today: Date) -> Int? {
         guard let last = entry.sessions.map(\.date).max() else { return nil }
         let calendar = Date.appCalendar
         let from = calendar.startOfDay(for: last)
