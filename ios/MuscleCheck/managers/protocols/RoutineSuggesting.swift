@@ -16,10 +16,10 @@ protocol RoutineSuggesting: AnyObject {
     /// The model can answer in the app's UI language (see `MuscleCheckAI`).
     var supportsAppLanguage: Bool { get }
     func prewarm()
-    /// One suggested day from the already-eligible gym groups. `onPartial` receives
-    /// progressively-filled snapshots while it generates.
+    /// One suggested day from the already-eligible gym groups, and which model gave
+    /// it. `onPartial` may receive progressively-filled snapshots while it generates.
     func suggestWorkout(
         eligible: [MuscleEntry],
         onPartial: ((RoutineSuggestion) -> Void)?
-    ) async throws -> RoutineSuggestion
+    ) async throws -> CoachResult
 }

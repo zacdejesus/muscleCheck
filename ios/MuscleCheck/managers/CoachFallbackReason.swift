@@ -9,7 +9,8 @@
 import Foundation
 import FoundationModels
 
-enum CoachFallbackReason: String, CaseIterable {
+/// Also an `Error`: the PCC path throws `.unavailable` / `.quota` when it doesn't try.
+enum CoachFallbackReason: String, CaseIterable, Error {
     /// PCC isn't available on this device/OS right now, so it wasn't tried.
     case unavailable
     /// The user's daily PCC quota is used up (checked before the request, or thrown).
@@ -32,6 +33,8 @@ extension CoachFallbackReason {
 
     init(_ error: Error) {
         switch error {
+        case let reason as CoachFallbackReason:
+            self = reason
         case let error as PrivateCloudComputeLanguageModel.Error:
             switch error {
             case .networkFailure: self = .network

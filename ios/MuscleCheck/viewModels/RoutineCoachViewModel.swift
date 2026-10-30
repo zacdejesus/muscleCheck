@@ -79,9 +79,12 @@ final class RoutineCoachViewModel: ObservableObject {
         }
 
         do {
-            let suggestion = try await coach.suggestWorkout(eligible: eligible) { [weak self] partial in
+            let result = try await coach.suggestWorkout(eligible: eligible) { [weak self] partial in
                 self?.routineSuggestion = partial
             }
+            let suggestion = result.suggestion
+            // The Siri-language hint is about the on-device model; PCC follows the prompt.
+            if result.engine == .privateCloud { aiLanguageMismatch = false }
             routineSuggestion = suggestion
             lastSuggestedGroups = Set(suggestion.blocks.map(\.groupName))
             cacheRoutine(suggestion)

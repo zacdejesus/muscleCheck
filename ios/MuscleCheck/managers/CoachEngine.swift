@@ -16,3 +16,12 @@ enum CoachEngine: String {
     case privateCloud = "pcc"
     case onDevice = "on_device"
 }
+
+/// A coach suggestion and how it was produced.
+struct CoachResult: Equatable {
+    let suggestion: RoutineSuggestion
+    let engine: CoachEngine
+    /// Why it fell back to the on-device model; nil when PCC answered or wasn't an
+    /// option (iOS 26).
+    let fallbackReason: CoachFallbackReason?
+}

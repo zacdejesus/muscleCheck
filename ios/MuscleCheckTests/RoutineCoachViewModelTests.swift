@@ -105,6 +105,19 @@ struct RoutineCoachViewModelTests {
     }
 
     @Test
+    func noLanguageHintWhenPrivateCloudAnswered() async {
+        // The hint explains the on-device model following Siri's language; PCC follows the prompt.
+        let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
+        coach.supportsAppLanguage = false
+        coach.engine = .privateCloud
+        let viewModel = RoutineCoachViewModel(coach: coach)
+
+        await viewModel.generateRoutine(from: ["Back", "Biceps"].map { gymEntry($0) })
+
+        #expect(!viewModel.aiLanguageMismatch)
+    }
+
+    @Test
     func availabilityComesFromTheModelLayer() {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
         coach.isAppleIntelligenceAvailable = false
@@ -130,11 +143,13 @@ private final class FakeCoach: RoutineSuggesting {
 
     func prewarm() {}
 
+    var engine: CoachEngine = .onDevice
+
     func suggestWorkout(
         eligible: [MuscleEntry],
         onPartial: ((RoutineSuggestion) -> Void)?
-    ) async throws -> RoutineSuggestion {
+    ) async throws -> CoachResult {
         receivedEligible.append(eligible.map(\.name))
-        return try result.get()
+        return CoachResult(suggestion: try result.get(), engine: engine, fallbackReason: nil)
     }
 }
