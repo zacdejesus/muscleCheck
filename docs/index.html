@@ -4,15 +4,125 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MuscleCheck — Trackea tu entrenamiento en 2 segundos</title>
-<meta name="description" content="La app de entrenamiento para gente que odia loguear. Un checklist semanal simple para iPhone y Android, con un coach de IA on-device en iPhone. Gym, yoga, calistenia, cardio y más.">
+<meta name="description" content="MuscleCheck es una app gratuita para iPhone y Android que registra tu entrenamiento con un toque por grupo muscular o actividad, sin anotar series ni repeticiones. Gym, yoga, calistenia, cardio y más, con un coach de IA en iPhone.">
+<link rel="canonical" href="https://musclecheck.app/">
+<link rel="alternate" hreflang="es" href="https://musclecheck.app/">
+<link rel="alternate" hreflang="en" href="https://musclecheck.app/en/">
+<link rel="alternate" hreflang="x-default" href="https://musclecheck.app/en/">
 
 <!-- Open Graph / social preview -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="MuscleCheck — Trackea tu entrenamiento en 2 segundos">
 <meta property="og:description" content="La app de entrenamiento para gente que odia loguear. La IA se encarga del resto.">
-<meta property="og:image" content="https://zacdejesus.github.io/muscleCheck/icon.png">
-<meta property="og:url" content="https://zacdejesus.github.io/muscleCheck/">
+<meta property="og:image" content="https://musclecheck.app/social-preview.png">
+<meta property="og:url" content="https://musclecheck.app/">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MobileApplication",
+  "name": "MuscleCheck",
+  "url": "https://musclecheck.app/",
+  "description": "App gratuita para iPhone y Android que registra tu entrenamiento con un toque por grupo muscular o actividad, sin anotar series ni repeticiones.",
+  "applicationCategory": "HealthApplication",
+  "operatingSystem": "iOS 18+, Android 8+",
+  "inLanguage": [
+    "es",
+    "en",
+    "fr",
+    "it"
+  ],
+  "image": "https://musclecheck.app/icon.png",
+  "author": {
+    "@type": "Person",
+    "name": "Alejandro De Jesus"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "sameAs": [
+    "https://apps.apple.com/app/id6748917084",
+    "https://play.google.com/store/apps/details?id=com.zadkiel.musclecheck"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "¿MuscleCheck es gratis?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí. El checklist semanal, las rachas, el historial, las estadísticas, el widget, los recordatorios, las categorías y el coach de IA son gratis. MuscleCheck Pro (en iPhone) suma la detección automática de entrenamientos con Salud y las fotos de progreso, por $1.99/mes, $14.99/año o $29.99 de por vida."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Necesito crear una cuenta?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. No hace falta cuenta, nombre ni email: tus datos se guardan en tu dispositivo."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Sirve solo para el gimnasio?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Sirve para gym, yoga, pilates, calistenia, cardio, stretching o cualquier actividad, y podés crear tus propias categorías."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Qué hace el coach de IA?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "En iPhone con Apple Intelligence sugiere tu día de entrenamiento: dos grupos musculares que combinan bien, con tres ejercicios de ejemplo cada uno, según lo que ya entrenaste. Solo sugiere; nunca marca nada por vos."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿En qué se diferencia de apps como Strong o Hevy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Esas apps te piden anotar cada serie, repetición y peso. MuscleCheck registra la semana con un toque por grupo muscular o actividad; anotar pesos o ejercicios es opcional."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Funciona en Android?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí, en Android 8 o posterior: checklist, rachas, historial, estadísticas, widget y recordatorios. El coach de IA, los atajos de Siri, la integración con Salud y MuscleCheck Pro son de iPhone."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Funciona sin conexión?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí. Tu checklist y tu historial viven en el dispositivo, así que registrar un entrenamiento no necesita internet."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿En qué idiomas está?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "En español, inglés, francés e italiano."
+      }
+    }
+  ]
+}
+</script>
 
 <link rel="icon" href="icon.png">
 <link rel="apple-touch-icon" href="icon.png">
@@ -161,6 +271,17 @@
   footer { border-top: 1px solid var(--border); padding: 2.5rem 0; color: var(--text-soft); font-size: .9rem; }
   .footer-inner { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
   .footer-links { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+
+  /* ---------- FAQ ---------- */
+  .faq { max-width: 720px; margin: 0 auto; }
+  .faq details { border-bottom: 1px solid var(--border); padding: 1rem 0; }
+  .faq summary { cursor: pointer; font-weight: 600; font-size: 1.05rem; list-style: none; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; float: right; color: var(--accent); font-weight: 700; }
+  .faq details[open] summary::after { content: "−"; }
+  .faq p { margin: .7rem 0 0; color: var(--text-soft); }
+  .lang { color: var(--text-soft); font-size: .9rem; font-weight: 600; }
+  .hero .definition { max-width: 620px; margin: 1.2rem auto 0; }
 </style>
 </head>
 <body>
@@ -171,6 +292,7 @@
       <img src="icon.png" alt="MuscleCheck">
       MuscleCheck
     </a>
+    <a class="lang" href="en/" hreflang="en" lang="en">English</a>
   </div>
 </nav>
 
@@ -196,6 +318,7 @@
   </a>
   </div>
   <p class="sub">iPhone y iPad (iOS 18+) · Android 8+ · Gratis</p>
+  <p class="sub definition">MuscleCheck es una app gratuita para iPhone y Android que registra tu entrenamiento con un toque por grupo muscular o actividad, sin anotar series ni repeticiones.</p>
 </header>
 
 <section>
@@ -213,7 +336,7 @@
       <div class="card">
         <div class="emoji">🤖</div>
         <h3>Coach de IA personal</h3>
-        <p>Una IA on-device sugiere tu día de entrenamiento según tu historial real. Privada, sin nube, sin costos. En iPhone con Apple Intelligence.</p>
+        <p>Sugiere tu día de entrenamiento según tu historial real, con Apple Intelligence. Privada y sin costo. En iPhone.</p>
       </div>
       <div class="card">
         <div class="emoji">🔥</div>
@@ -233,7 +356,7 @@
       <div class="card">
         <div class="emoji">🔒</div>
         <h3>Tus datos, tuyos</h3>
-        <p>Todo vive en tu dispositivo. La IA corre on-device. Sin cuentas, sin publicidad, sin vender tus datos.</p>
+        <p>Tu historial vive en tu dispositivo. La IA usa Apple Intelligence, que no guarda tus datos. Sin cuentas, sin publicidad, sin vender tus datos.</p>
       </div>
     </div>
   </div>
@@ -292,6 +415,48 @@
           <li>Fotos de progreso con comparación antes/después</li>
         </ul>
       </div>
+    </div>
+  </div>
+</section>
+
+<section id="preguntas">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Preguntas frecuentes</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>¿MuscleCheck es gratis?</summary>
+        <p>Sí. El checklist semanal, las rachas, el historial, las estadísticas, el widget, los recordatorios, las categorías y el coach de IA son gratis. MuscleCheck Pro (en iPhone) suma la detección automática de entrenamientos con Salud y las fotos de progreso, por $1.99/mes, $14.99/año o $29.99 de por vida.</p>
+      </details>
+      <details>
+        <summary>¿Necesito crear una cuenta?</summary>
+        <p>No. No hace falta cuenta, nombre ni email: tus datos se guardan en tu dispositivo.</p>
+      </details>
+      <details>
+        <summary>¿Sirve solo para el gimnasio?</summary>
+        <p>No. Sirve para gym, yoga, pilates, calistenia, cardio, stretching o cualquier actividad, y podés crear tus propias categorías.</p>
+      </details>
+      <details>
+        <summary>¿Qué hace el coach de IA?</summary>
+        <p>En iPhone con Apple Intelligence sugiere tu día de entrenamiento: dos grupos musculares que combinan bien, con tres ejercicios de ejemplo cada uno, según lo que ya entrenaste. Solo sugiere; nunca marca nada por vos.</p>
+      </details>
+      <details>
+        <summary>¿En qué se diferencia de apps como Strong o Hevy?</summary>
+        <p>Esas apps te piden anotar cada serie, repetición y peso. MuscleCheck registra la semana con un toque por grupo muscular o actividad; anotar pesos o ejercicios es opcional.</p>
+      </details>
+      <details>
+        <summary>¿Funciona en Android?</summary>
+        <p>Sí, en Android 8 o posterior: checklist, rachas, historial, estadísticas, widget y recordatorios. El coach de IA, los atajos de Siri, la integración con Salud y MuscleCheck Pro son de iPhone.</p>
+      </details>
+      <details>
+        <summary>¿Funciona sin conexión?</summary>
+        <p>Sí. Tu checklist y tu historial viven en el dispositivo, así que registrar un entrenamiento no necesita internet.</p>
+      </details>
+      <details>
+        <summary>¿En qué idiomas está?</summary>
+        <p>En español, inglés, francés e italiano.</p>
+      </details>
     </div>
   </div>
 </section>
