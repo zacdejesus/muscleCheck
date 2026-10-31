@@ -179,4 +179,46 @@ struct WorkoutEligibilityTests {
         let blocks = WorkoutEligibility.resolveBlocks(rawBlocks: [], eligible: gymGroups(["A"]))
         #expect(blocks.isEmpty)
     }
+
+    // MARK: - echoedNameMatches
+
+    @Test
+    func echoMatchesTheIndexedNameIgnoringCaseAccentsAndSpacing() {
+        let names = ["Bíceps", "Tríceps"]
+        #expect(WorkoutEligibility.echoedNameMatches("Bíceps", index: 0, eligibleNames: names))
+        #expect(WorkoutEligibility.echoedNameMatches("  biceps ", index: 0, eligibleNames: names))
+        #expect(WorkoutEligibility.echoedNameMatches("TRICEPS", index: 1, eligibleNames: names))
+    }
+
+    @Test
+    func echoToleratesTrailingNoiseAfterTheName() {
+        // Seen on device: the model copied "Legs: legs/abs" for the group "Legs".
+        let names = ["Push", "Legs", "Core"]
+        #expect(WorkoutEligibility.echoedNameMatches("Legs: legs/abs", index: 1, eligibleNames: names))
+    }
+
+    @Test
+    func echoOfAnotherGroupFails() {
+        let names = ["Back", "Biceps"]
+        #expect(!WorkoutEligibility.echoedNameMatches("Biceps", index: 0, eligibleNames: names))
+    }
+
+    @Test
+    func echoNamingALongerListedGroupFails() {
+        // "Chest & triceps" starts with "Chest", but it names the other group.
+        let names = ["Chest", "Chest & triceps"]
+        #expect(!WorkoutEligibility.echoedNameMatches("Chest & triceps", index: 0, eligibleNames: names))
+        #expect(WorkoutEligibility.echoedNameMatches("Chest & triceps", index: 1, eligibleNames: names))
+    }
+
+    @Test
+    func aNameThatOnlyPrefixesAWordDoesNotMatch() {
+        #expect(!WorkoutEligibility.echoedNameMatches("Arms", index: 0, eligibleNames: ["Arm"]))
+    }
+
+    @Test
+    func outOfRangeIndexOrEmptyEchoFails() {
+        #expect(!WorkoutEligibility.echoedNameMatches("Back", index: 3, eligibleNames: ["Back"]))
+        #expect(!WorkoutEligibility.echoedNameMatches("", index: 0, eligibleNames: ["Back"]))
+    }
 }

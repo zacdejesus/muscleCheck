@@ -3,7 +3,7 @@
 //  MuscleCheck
 //
 //  AI Coach day-suggestion modal (Feature 12). Read-only guidance: it never checks
-//  anything — the user marks groups in the main list as always. Free, on-device.
+//  anything — the user marks groups in the main list as always. Free.
 //
 
 import SwiftUI
@@ -93,9 +93,16 @@ struct RoutineSuggestionView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .safeAreaInset(edge: .bottom) {
-            anotherButton
-                .padding(.horizontal)
-                .padding(.bottom, 8)
+            VStack(spacing: 8) {
+                if viewModel.noOtherOption {
+                    Label("ai_coach_no_other_option", systemImage: "info.circle")
+                        .font(.appFootnote)
+                        .foregroundStyle(.secondary)
+                }
+                anotherButton
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 8)
         }
     }
 

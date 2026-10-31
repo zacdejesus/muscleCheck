@@ -18,9 +18,11 @@ concurrency:
 jobs:
   test:
     name: Build & unit test
-    # Xcode 26 is required: the AI coach compiles against the iOS 26
-    # FoundationModels SDK, gated at runtime but resolved at build time.
-    runs-on: macos-26
+    # Xcode 27 is required: the AI coach compiles against the iOS 27
+    # FoundationModels SDK (Private Cloud Compute model), gated at runtime but
+    # resolved at build time. GitHub ships Xcode 27 as its own image label, not
+    # on macos-26.
+    runs-on: xcode-27
     timeout-minutes: 30
 
     steps:
