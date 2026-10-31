@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MuscleCheck — Track your workout in 2 seconds</title>
+<meta name="description" content="MuscleCheck is a free iPhone and Android app that tracks your training with one tap per muscle group or activity, without logging sets or reps. Gym, yoga, calisthenics, cardio and more, with an AI coach on iPhone.">
+<link rel="canonical" href="https://musclecheck.app/en/">
+<link rel="alternate" hreflang="es" href="https://musclecheck.app/">
+<link rel="alternate" hreflang="en" href="https://musclecheck.app/en/">
+<link rel="alternate" hreflang="x-default" href="https://musclecheck.app/en/">
+
+<!-- Open Graph / social preview -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="MuscleCheck — Track your workout in 2 seconds">
+<meta property="og:description" content="The workout app for people who hate logging. AI does the rest.">
+<meta property="og:image" content="https://musclecheck.app/social-preview.png">
+<meta property="og:url" content="https://musclecheck.app/en/">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MobileApplication",
+  "name": "MuscleCheck",
+  "url": "https://musclecheck.app/en/",
+  "description": "Free iPhone and Android app that tracks your training with one tap per muscle group or activity, without logging sets or reps.",
+  "applicationCategory": "HealthApplication",
+  "operatingSystem": "iOS 18+, Android 8+",
+  "inLanguage": [
+    "es",
+    "en",
+    "fr",
+    "it"
+  ],
+  "image": "https://musclecheck.app/icon.png",
+  "author": {
+    "@type": "Person",
+    "name": "Alejandro De Jesus"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "sameAs": [
+    "https://apps.apple.com/app/id6748917084",
+    "https://play.google.com/store/apps/details?id=com.zadkiel.musclecheck"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is MuscleCheck free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. The weekly checklist, streaks, history, statistics, widget, reminders, categories and the AI coach are free. MuscleCheck Pro (on iPhone) adds automatic workout detection with Apple Health and progress photos, for $1.99/month, $14.99/year or $29.99 lifetime."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need an account?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. No account, name or email needed: your data stays on your device."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it only for the gym?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. It works for the gym, yoga, pilates, calisthenics, cardio, stretching or any activity, and you can create your own categories."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does the AI coach do?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "On iPhone with Apple Intelligence it suggests your training day: two muscle groups that go well together, with three example exercises each, based on what you've already trained. It only suggests; it never checks anything for you."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How is it different from apps like Strong or Hevy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Those apps ask you to log every set, rep and weight. MuscleCheck tracks your week with one tap per muscle group or activity; logging weights or exercises is optional."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it work on Android?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, on Android 8 or later: checklist, streaks, history, statistics, widget and reminders. The AI coach, Siri shortcuts, Apple Health integration and MuscleCheck Pro are iPhone-only."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it work offline?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Your checklist and history live on your device, so logging a workout doesn't need the internet."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which languages is it in?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "English, Spanish, French and Italian."
+      }
+    }
+  ]
+}
+</script>
+
+<link rel="icon" href="../icon.png">
+<link rel="apple-touch-icon" href="../icon.png">
+
+<style>
+  :root {
+    color-scheme: light dark;
+    --accent: #6366F1;
+    --accent-hover: #4f52e0;
+    --bg: #ffffff;
+    --bg-soft: #f6f6f9;
+    --card: #ffffff;
+    --text: #1c1c1e;
+    --text-soft: #5f5f6b;
+    --border: #e7e7ee;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 12px 32px rgba(40,40,80,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --accent: #818CF8;
+      --accent-hover: #9aa3ff;
+      --bg: #0b0b0f;
+      --bg-soft: #121218;
+      --card: #16161d;
+      --text: #ececf1;
+      --text-soft: #a0a0ad;
+      --border: #25252e;
+      --shadow: 0 1px 3px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.4);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 1.5rem; }
+
+  /* ---------- Nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { display: flex; align-items: center; gap: .6rem; font-weight: 600; color: var(--text); }
+  .brand img { width: 30px; height: 30px; border-radius: 7px; }
+  .nav-cta {
+    font-size: .9rem; font-weight: 600; padding: .45rem .9rem;
+    border-radius: 980px; background: var(--accent); color: #fff !important;
+    transition: background .15s ease;
+  }
+  .nav-cta:hover { background: var(--accent-hover); color: #fff !important; }
+
+  /* ---------- Hero ---------- */
+  .hero { text-align: center; padding: 5rem 0 4rem; }
+  .hero .icon {
+    width: 116px; height: 116px; border-radius: 26px; box-shadow: var(--shadow);
+    margin-bottom: 1.6rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.1rem, 5vw, 3.2rem); line-height: 1.1; margin: 0 0 1rem;
+    letter-spacing: -.02em; font-weight: 700;
+  }
+  .hero .tagline { font-size: clamp(1.05rem, 2.5vw, 1.35rem); color: var(--text-soft); max-width: 620px; margin: 0 auto 2.2rem; }
+  .gradient { background: linear-gradient(120deg, var(--accent), #a855f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* ---------- App Store button ---------- */
+  .appstore {
+    display: inline-flex; align-items: center; gap: .7rem;
+    background: var(--text); color: var(--bg) !important;
+    padding: .8rem 1.5rem; border-radius: 14px; font-weight: 600;
+    transition: transform .15s ease, opacity .15s ease;
+  }
+  .appstore:hover { transform: translateY(-2px); color: var(--bg) !important; opacity: .92; }
+  .appstore svg { width: 26px; height: 26px; }
+  .appstore .lines { display: flex; flex-direction: column; line-height: 1.1; text-align: left; }
+  .appstore .small { font-size: .68rem; font-weight: 500; opacity: .8; }
+  .appstore .big { font-size: 1.15rem; }
+  .hero .sub { margin-top: 1rem; font-size: .85rem; color: var(--text-soft); }
+  .stores { display: flex; flex-wrap: wrap; gap: .8rem; justify-content: center; }
+
+  /* ---------- Sections ---------- */
+  section { padding: 4rem 0; }
+  .section-head { text-align: center; max-width: 640px; margin: 0 auto 3rem; }
+  .section-head h2 { font-size: clamp(1.6rem, 3.5vw, 2.2rem); letter-spacing: -.02em; margin: 0 0 .6rem; }
+  .section-head p { color: var(--text-soft); margin: 0; font-size: 1.05rem; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.6rem; box-shadow: var(--shadow);
+  }
+  .card .emoji {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 46px; height: 46px; border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    font-size: 1.4rem; margin-bottom: 1rem;
+  }
+  .card h3 { margin: 0 0 .5rem; font-size: 1.15rem; }
+  .card p { margin: 0; color: var(--text-soft); font-size: .96rem; }
+
+  /* ---------- Steps ---------- */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; counter-reset: step; }
+  .step { text-align: center; }
+  .step .num {
+    counter-increment: step; display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; border-radius: 50%; font-weight: 700; font-size: 1.1rem;
+    background: var(--accent); color: #fff; margin-bottom: 1rem;
+  }
+  .step .num::before { content: counter(step); }
+  .step h3 { margin: 0 0 .4rem; font-size: 1.1rem; }
+  .step p { margin: 0; color: var(--text-soft); font-size: .95rem; }
+
+  /* ---------- Pricing ---------- */
+  .pricing { background: var(--bg-soft); }
+  .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; max-width: 720px; margin: 0 auto; }
+  .plan { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 1.8rem; box-shadow: var(--shadow); }
+  .plan.pro { border-color: var(--accent); position: relative; }
+  .plan .badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #fff; font-size: .72rem; font-weight: 700;
+    padding: .25rem .8rem; border-radius: 980px; letter-spacing: .03em; text-transform: uppercase;
+  }
+  .plan h3 { margin: 0 0 .3rem; font-size: 1.3rem; }
+  .plan .price { font-size: 1.05rem; color: var(--text-soft); margin: 0 0 1.2rem; }
+  .plan ul { list-style: none; padding: 0; margin: 0; }
+  .plan li { padding: .4rem 0 .4rem 1.6rem; position: relative; font-size: .95rem; }
+  .plan li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+  /* ---------- CTA strip ---------- */
+  .cta-strip { text-align: center; padding: 5rem 0; }
+  .cta-strip h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); margin: 0 0 1.8rem; letter-spacing: -.02em; }
+
+  /* ---------- Footer ---------- */
+  footer { border-top: 1px solid var(--border); padding: 2.5rem 0; color: var(--text-soft); font-size: .9rem; }
+  .footer-inner { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
+  .footer-links { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+
+  /* ---------- FAQ ---------- */
+  .faq { max-width: 720px; margin: 0 auto; }
+  .faq details { border-bottom: 1px solid var(--border); padding: 1rem 0; }
+  .faq summary { cursor: pointer; font-weight: 600; font-size: 1.05rem; list-style: none; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; float: right; color: var(--accent); font-weight: 700; }
+  .faq details[open] summary::after { content: "−"; }
+  .faq p { margin: .7rem 0 0; color: var(--text-soft); }
+  .lang { color: var(--text-soft); font-size: .9rem; font-weight: 600; }
+  .hero .definition { max-width: 620px; margin: 1.2rem auto 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <img src="../icon.png" alt="MuscleCheck">
+      MuscleCheck
+    </a>
+    <a class="lang" href="../" hreflang="es" lang="es">Español</a>
+  </div>
+</nav>
+
+<header id="top" class="hero wrap">
+  <img class="icon" src="../icon.png" alt="MuscleCheck icon">
+  <h1>Track your workout<br><span class="gradient">in 2 seconds</span></h1>
+  <p class="tagline">The workout app for people who hate logging. A simple weekly checklist — and an AI coach that does the rest.</p>
+
+  <div class="stores" id="descargar">
+  <a class="appstore" href="https://apps.apple.com/app/id6748917084" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 12.04c-.03-2.7 2.2-4 2.3-4.06-1.25-1.84-3.2-2.09-3.9-2.12-1.66-.17-3.24.97-4.08.97-.84 0-2.14-.95-3.52-.92-1.81.03-3.48 1.05-4.41 2.67-1.88 3.27-.48 8.1 1.35 10.76.9 1.3 1.97 2.76 3.38 2.71 1.36-.06 1.87-.88 3.51-.88 1.64 0 2.1.88 3.53.85 1.46-.03 2.38-1.33 3.27-2.63 1.03-1.51 1.46-2.97 1.48-3.05-.03-.01-2.84-1.09-2.87-4.32zM14.5 4.1c.74-.9 1.24-2.15 1.1-3.4-1.07.04-2.36.71-3.13 1.61-.69.79-1.29 2.06-1.13 3.27 1.19.09 2.42-.6 3.16-1.48z"/></svg>
+    <span class="lines">
+      <span class="small">Download on the</span>
+      <span class="big">App Store</span>
+    </span>
+  </a>
+  <a class="appstore" href="https://play.google.com/store/apps/details?id=com.zadkiel.musclecheck" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z"/></svg>
+    <span class="lines">
+      <span class="small">Get it on</span>
+      <span class="big">Google Play</span>
+    </span>
+  </a>
+  </div>
+  <p class="sub">iPhone and iPad (iOS 18+) · Android 8+ · Free</p>
+  <p class="sub definition">MuscleCheck is a free iPhone and Android app that tracks your training with one tap per muscle group or activity, without logging sets or reps.</p>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Simple on the outside. Smart on the inside.</h2>
+      <p>It's not just the gym: yoga, pilates, calisthenics, cardio, stretching and any discipline you want to track.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="emoji">✅</div>
+        <h3>Zero-effort tracking</h3>
+        <p>Forget logging every set, rep and weight. One tap marks what you trained. That simple.</p>
+      </div>
+      <div class="card">
+        <div class="emoji">🤖</div>
+        <h3>Personal AI coach</h3>
+        <p>Suggests your training day from your real history, with Apple Intelligence. Private and free. On iPhone.</p>
+      </div>
+      <div class="card">
+        <div class="emoji">🔥</div>
+        <h3>Streaks and motivation</h3>
+        <p>Keep your weekly streak and celebrate your records. Small wins that bring you back.</p>
+      </div>
+      <div class="card">
+        <div class="emoji">📊</div>
+        <h3>Visible progress</h3>
+        <p>Weekly statistics, weight per exercise and progress photos with before/after comparison.</p>
+      </div>
+      <div class="card">
+        <div class="emoji">📱</div>
+        <h3>On your home screen</h3>
+        <p>Widget and reminders on iPhone and Android. On iPhone, also Siri shortcuts and Apple Health integration.</p>
+      </div>
+      <div class="card">
+        <div class="emoji">🔒</div>
+        <h3>Your data, yours</h3>
+        <p>Your history lives on your device. The AI uses Apple Intelligence, which doesn't keep your data. No accounts, no ads, no selling your data.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background: var(--bg-soft);">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>How it works</h2>
+      <p>From opening the app to logging your workout, in seconds.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="num"></div>
+        <h3>Pick your activities</h3>
+        <p>Build your checklist from presets per discipline, or create your own.</p>
+      </div>
+      <div class="step">
+        <div class="num"></div>
+        <h3>Check what you did</h3>
+        <p>One tap per muscle group or activity. Add the weight if you like.</p>
+      </div>
+      <div class="step">
+        <div class="num"></div>
+        <h3>Follow your progress</h3>
+        <p>Watch your streak week by week and, on iPhone, ask the AI for your next day.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Start free</h2>
+      <p>Everything essential is free. Pro adds what goes beyond the checklist.</p>
+    </div>
+    <div class="plans">
+      <div class="plan">
+        <h3>Free</h3>
+        <p class="price">Forever</p>
+        <ul>
+          <li>Weekly checklist</li>
+          <li>Streaks, history and statistics</li>
+          <li>Widget and reminders</li>
+          <li>Categories and presets</li>
+          <li>AI coach and Siri shortcuts (iPhone)</li>
+        </ul>
+      </div>
+      <div class="plan pro">
+        <span class="badge">Pro</span>
+        <h3>MuscleCheck Pro</h3>
+        <p class="price">On iPhone: $1.99/month · $14.99/year · $29.99 lifetime</p>
+        <ul>
+          <li>Automatic workout detection with Apple Health</li>
+          <li>Progress photos with before/after comparison</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Frequently asked questions</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Is MuscleCheck free?</summary>
+        <p>Yes. The weekly checklist, streaks, history, statistics, widget, reminders, categories and the AI coach are free. MuscleCheck Pro (on iPhone) adds automatic workout detection with Apple Health and progress photos, for $1.99/month, $14.99/year or $29.99 lifetime.</p>
+      </details>
+      <details>
+        <summary>Do I need an account?</summary>
+        <p>No. No account, name or email needed: your data stays on your device.</p>
+      </details>
+      <details>
+        <summary>Is it only for the gym?</summary>
+        <p>No. It works for the gym, yoga, pilates, calisthenics, cardio, stretching or any activity, and you can create your own categories.</p>
+      </details>
+      <details>
+        <summary>What does the AI coach do?</summary>
+        <p>On iPhone with Apple Intelligence it suggests your training day: two muscle groups that go well together, with three example exercises each, based on what you've already trained. It only suggests; it never checks anything for you.</p>
+      </details>
+      <details>
+        <summary>How is it different from apps like Strong or Hevy?</summary>
+        <p>Those apps ask you to log every set, rep and weight. MuscleCheck tracks your week with one tap per muscle group or activity; logging weights or exercises is optional.</p>
+      </details>
+      <details>
+        <summary>Does it work on Android?</summary>
+        <p>Yes, on Android 8 or later: checklist, streaks, history, statistics, widget and reminders. The AI coach, Siri shortcuts, Apple Health integration and MuscleCheck Pro are iPhone-only.</p>
+      </details>
+      <details>
+        <summary>Does it work offline?</summary>
+        <p>Yes. Your checklist and history live on your device, so logging a workout doesn't need the internet.</p>
+      </details>
+      <details>
+        <summary>Which languages is it in?</summary>
+        <p>English, Spanish, French and Italian.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-strip wrap">
+  <h2>The workout app<br>for people who hate logging.</h2>
+  <div class="stores">
+  <a class="appstore" href="https://apps.apple.com/app/id6748917084" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 12.04c-.03-2.7 2.2-4 2.3-4.06-1.25-1.84-3.2-2.09-3.9-2.12-1.66-.17-3.24.97-4.08.97-.84 0-2.14-.95-3.52-.92-1.81.03-3.48 1.05-4.41 2.67-1.88 3.27-.48 8.1 1.35 10.76.9 1.3 1.97 2.76 3.38 2.71 1.36-.06 1.87-.88 3.51-.88 1.64 0 2.1.88 3.53.85 1.46-.03 2.38-1.33 3.27-2.63 1.03-1.51 1.46-2.97 1.48-3.05-.03-.01-2.84-1.09-2.87-4.32zM14.5 4.1c.74-.9 1.24-2.15 1.1-3.4-1.07.04-2.36.71-3.13 1.61-.69.79-1.29 2.06-1.13 3.27 1.19.09 2.42-.6 3.16-1.48z"/></svg>
+    <span class="lines">
+      <span class="small">Download on the</span>
+      <span class="big">App Store</span>
+    </span>
+  </a>
+  <a class="appstore" href="https://play.google.com/store/apps/details?id=com.zadkiel.musclecheck" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z"/></svg>
+    <span class="lines">
+      <span class="small">Get it on</span>
+      <span class="big">Google Play</span>
+    </span>
+  </a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div>© 2026 Alejandro De Jesus · MuscleCheck</div>
+    <div class="footer-links">
+      <a href="../privacy.html">Privacy</a>
+      <a href="mailto:zadkielsi@outlook.com">Contact</a>
+      <a href="https://apps.apple.com/app/id6748917084" target="_blank" rel="noopener">App Store</a>
+      <a href="https://play.google.com/store/apps/details?id=com.zadkiel.musclecheck" target="_blank" rel="noopener">Google Play</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

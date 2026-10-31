@@ -1,0 +1,20 @@
+# MuscleCheck
+
+> MuscleCheck is a free iPhone and Android app that tracks your training with one tap per muscle group or activity, without logging sets or reps. "The workout app for people who hate logging."
+
+- Platforms: iPhone and iPad (iOS 18+), Android 8+.
+- Price: free. MuscleCheck Pro (iPhone only): automatic workout detection with Apple Health and progress photos — $1.99/month, $14.99/year or $29.99 lifetime.
+- No account, name or email required; your history stays on your device.
+- Any discipline: gym, yoga, pilates, calisthenics, cardio, stretching, or your own categories.
+- Weekly checklist, streaks, history, statistics, home-screen widget and reminders (iPhone and Android). Siri shortcuts and Apple Health integration on iPhone.
+- AI coach (iPhone with Apple Intelligence): suggests a training day — two muscle groups that go well together, with three example exercises each — based on what you've already trained. It only suggests; it never checks anything for you.
+- Unlike set-by-set loggers such as Strong or Hevy, logging weights or exercises is optional.
+- Languages: English, Spanish, French, Italian.
+
+## Links
+
+- [Website (English)](https://musclecheck.app/en/)
+- [Website (Spanish)](https://musclecheck.app/)
+- [App Store](https://apps.apple.com/app/id6748917084)
+- [Google Play](https://play.google.com/store/apps/details?id=com.zadkiel.musclecheck)
+- [Privacy policy](https://musclecheck.app/privacy.html)
