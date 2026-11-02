@@ -245,4 +245,9 @@ final class MuscleCheckAI: RoutineSuggesting {
         case .unavailable(_): return false
         }
     }
+
+    var isModelPreparing: Bool {
+        if case .unavailable(.modelNotReady) = SystemLanguageModel.default.availability { return true }
+        return false
+    }
 }

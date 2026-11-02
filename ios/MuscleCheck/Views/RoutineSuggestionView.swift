@@ -57,7 +57,8 @@ struct RoutineSuggestionView: View {
             Text(message)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
-            anotherButton
+            // Nothing was suggested yet, so "suggest another" would make no sense.
+            coachButton(title: "ai_coach_retry", systemImage: "arrow.clockwise", regenerate: false)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -99,7 +100,7 @@ struct RoutineSuggestionView: View {
                         .font(.appFootnote)
                         .foregroundStyle(.secondary)
                 }
-                anotherButton
+                coachButton(title: "ai_coach_another", systemImage: "sparkles", regenerate: true)
             }
             .padding(.horizontal)
             .padding(.bottom, 8)
@@ -123,17 +124,18 @@ struct RoutineSuggestionView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private var anotherButton: some View {
+    private func coachButton(title: LocalizedStringKey, systemImage: String,
+                             regenerate: Bool) -> some View {
         Button {
-            Task { await viewModel.generateRoutine(from: entries, regenerate: true) }
+            Task { await viewModel.generateRoutine(from: entries, regenerate: regenerate) }
         } label: {
             HStack {
                 if viewModel.isGeneratingRoutine {
                     ProgressView()
                 } else {
-                    Image(systemName: "sparkles")
+                    Image(systemName: systemImage)
                 }
-                Text("ai_coach_another").fontWeight(.medium)
+                Text(title).fontWeight(.medium)
             }
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)

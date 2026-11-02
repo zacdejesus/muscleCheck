@@ -13,6 +13,9 @@ import Foundation
 protocol RoutineSuggesting: AnyObject {
     /// Apple Intelligence is usable on this device (the coach button hides otherwise).
     var isAppleIntelligenceAvailable: Bool { get }
+    /// Apple Intelligence is on but its on-device model is still downloading or
+    /// updating (after an iOS update, a Siri language change, freed storage…).
+    var isModelPreparing: Bool { get }
     /// The model can answer in the app's UI language (see `MuscleCheckAI`).
     var supportsAppLanguage: Bool { get }
     func prewarm()

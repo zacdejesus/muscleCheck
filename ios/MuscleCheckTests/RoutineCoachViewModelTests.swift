@@ -115,6 +115,28 @@ struct RoutineCoachViewModelTests {
     }
 
     @Test
+    func aFailureWhileTheModelIsPreparingSaysSo() async {
+        let coach = FakeCoach(result: .failure(FakeCoach.Failure()))
+        coach.isModelPreparing = true
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
+
+        await viewModel.generateRoutine(from: ["Back", "Biceps"].map { gymEntry($0) })
+
+        #expect(viewModel.routineError == String(localized: "ai_coach_model_preparing"))
+        #expect(viewModel.routineSuggestion == nil)
+    }
+
+    @Test
+    func anyOtherFailureKeepsTheGenericError() async {
+        let coach = FakeCoach(result: .failure(FakeCoach.Failure()))
+        let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
+
+        await viewModel.generateRoutine(from: ["Back", "Biceps"].map { gymEntry($0) })
+
+        #expect(viewModel.routineError == String(localized: "ERROR_GENERATING_ROUTINE"))
+    }
+
+    @Test
     func doesNotCallTheModelWithFewerThanTwoGymGroups() async {
         let coach = FakeCoach(result: .success(suggestion("Back", "Biceps")))
         let viewModel = RoutineCoachViewModel(coach: coach, analytics: SpyAnalytics())
@@ -193,6 +215,7 @@ private final class FakeCoach: RoutineSuggesting {
 
     var result: Result<RoutineSuggestion, Error>
     var isAppleIntelligenceAvailable = true
+    var isModelPreparing = false
     var supportsAppLanguage = true
     /// Names of the eligible groups handed over on each call, in order.
     private(set) var receivedEligible: [[String]] = []

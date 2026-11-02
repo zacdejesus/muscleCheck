@@ -110,7 +110,11 @@ final class RoutineCoachViewModel: ObservableObject {
             lastSuggestedGroups = Set(suggestion.blocks.map(\.groupName))
             cacheRoutine(suggestion)
         } catch {
-            routineError = String(localized: "ERROR_GENERATING_ROUTINE")
+            // Both models down because Apple Intelligence is still setting up: say so,
+            // or the generic error reads like the app is broken.
+            routineError = coach.isModelPreparing
+                ? String(localized: "ai_coach_model_preparing")
+                : String(localized: "ERROR_GENERATING_ROUTINE")
             routineSuggestion = previous // restore prior suggestion (nil on first run)
         }
 
