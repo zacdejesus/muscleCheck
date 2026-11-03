@@ -49,6 +49,17 @@ Each bet: the stage it moves, the hypothesis, and what would kill it.
   you train most" (muscle frequency) at the bottom; drop the 8-week bar chart (the calendar
   tells the same story). Fewer destinations in the home toolbar. Touches the paywall copy
   ("Statistics" is a free item), the store listing and both platforms.
+- **Back up user data to iCloud** (4. Retention / trust): today every check, exercise and
+  progress photo lives only in the local SwiftData store, so deleting the app or moving to a
+  new iPhone wipes the user's whole history, with no way back short of restoring the entire
+  device from an iCloud backup. It happened to the developer on 2026-11-03. Plan: SwiftData
+  + CloudKit private database (`ModelConfiguration(cloudKitDatabase: .automatic)`), free for
+  everyone: losing data is not something to put behind a paywall. Preconditions: models
+  CloudKit can mirror (no `@Attribute(.unique)`, every property optional or with a default,
+  optional relationships), a migration for existing local stores, photos as
+  `.externalStorage`, and the iCloud + CloudKit capability on the app (the widget keeps
+  reading the App Group store). Android needs its own answer (Auto Backup / Drive) — out of
+  scope for this bet. Kill signal: none; this is table stakes, not an experiment.
 
 ### If the data points there
 - **Onboarding ends in a check** (2. Activation) — if the onboarding → first-check drop is
