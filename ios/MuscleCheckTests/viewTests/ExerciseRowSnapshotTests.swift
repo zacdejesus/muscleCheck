@@ -2,8 +2,8 @@
 //  ExerciseRowSnapshotTests.swift
 //  MuscleCheckTests
 //
-//  The AI coach card's exercise rows: a movement we draw gets its pictogram, anything
-//  else gets the group's icon in grey. Asserted against approved images, like the
+//  The AI coach card's exercise rows: a movement we draw gets its pictogram (side or
+//  front view), anything else gets the group's icon in grey. Asserted against approved images, like the
 //  calendar cell, because "looks right" isn't a property.
 //
 
@@ -24,7 +24,7 @@ struct ExerciseRowSnapshotTests {
         let rows = VStack(alignment: .leading, spacing: 8) {
             ExerciseRow(name: "Press de banca", groupIcon: "figure.strengthtraining.traditional")
             ExerciseRow(name: "Elevaciones laterales", groupIcon: "figure.strengthtraining.traditional")
-            ExerciseRow(name: "Fondos en paralelas", groupIcon: "figure.strengthtraining.traditional")
+            ExerciseRow(name: "Hack squat", groupIcon: "figure.strengthtraining.traditional")
         }
         .environment(\.animatesExercisePictograms, false)
         .background(Color(.secondarySystemBackground))

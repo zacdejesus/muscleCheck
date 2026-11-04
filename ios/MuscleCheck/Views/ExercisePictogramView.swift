@@ -2,7 +2,7 @@
 //  ExercisePictogramView.swift
 //  MuscleCheck
 //
-//  Draws an `ExercisePictogram` with Canvas: no image assets, and it follows the tint
+//  Draws an exercise pictogram (side or front view) with Canvas: no image assets, and it follows the tint
 //  and dark mode on its own. Animates on a loop; with Reduce Motion (or
 //  `animatesExercisePictograms` off, for snapshots) it holds the movement's end pose.
 //
@@ -10,7 +10,7 @@
 import SwiftUI
 
 struct ExercisePictogramView: View {
-    let pictogram: ExercisePictogram
+    let pictogram: PictogramDrawing
     var period: TimeInterval = 3
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -87,7 +87,7 @@ struct ExerciseRow: View {
     @ViewBuilder
     private var tile: some View {
         if let motion = ExerciseCatalog.motion(for: name) {
-            ExercisePictogramView(pictogram: motion.pictogram)
+            ExercisePictogramView(pictogram: motion.drawing)
                 .padding(3)
         } else {
             Image(systemName: groupIcon)

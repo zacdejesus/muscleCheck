@@ -21,10 +21,22 @@ struct ExercisePictogramTests {
     /// sin of ~1.7°: straight limbs land within this of zero from float noise.
     private static let straightTolerance: CGFloat = 0.03
     private static let samples = stride(from: 0.0, through: 1.0, by: 0.05).map { CGFloat($0) }
-    private static let ids = ExerciseMotion.allCases
+    /// The side-view motions; the front-view ones have their own checks below.
+    private static let ids = ExerciseMotion.allCases.filter {
+        if case .side = $0.drawing { true } else { false }
+    }
+    private static let frontIDs = ExerciseMotion.allCases.filter {
+        if case .front = $0.drawing { true } else { false }
+    }
 
     private static func pictogram(_ motion: ExerciseMotion) -> ExercisePictogram {
-        motion.pictogram
+        guard case .side(let pictogram) = motion.drawing else { fatalError("\(motion) is not a side view") }
+        return pictogram
+    }
+
+    private static func front(_ motion: ExerciseMotion) -> FrontPictogram {
+        guard case .front(let pictogram) = motion.drawing else { fatalError("\(motion) is not a front view") }
+        return pictogram
     }
 
     /// Normalized cross product of the two segments meeting at `joint`:
@@ -134,6 +146,61 @@ struct ExercisePictogramTests {
             #expect((radius...(100 - radius)).contains(head.x), "\(id) head cut off at \(p)")
         }
     }
+
+    // MARK: - Front view
+
+    @Test(arguments: frontIDs)
+    func frontLimbsKeepTheirLength(_ id: ExerciseMotion) {
+        let pictogram = Self.front(id)
+        for p in Self.samples {
+            let s = pictogram.skeleton(at: p)
+            for arm in [s.rightArm, s.leftArm] {
+                #expect(abs(Self.length(arm.root, arm.joint) - ExercisePictogram.upperArm) < 0.01, "\(id) upper arm at \(p)")
+                #expect(abs(Self.length(arm.joint, arm.end) - ExercisePictogram.forearm) < 0.01, "\(id) forearm at \(p)")
+            }
+            for leg in [s.rightLeg, s.leftLeg] where !(pictogram.start.seated || pictogram.end.seated) {
+                #expect(abs(Self.length(leg.root, leg.joint) - ExercisePictogram.thigh) < 0.01, "\(id) thigh at \(p)")
+                #expect(abs(Self.length(leg.joint, leg.end) - ExercisePictogram.shin) < 0.01, "\(id) shin at \(p)")
+            }
+        }
+    }
+
+    /// Elbows fold away from the body's midline: never closer to it than both the
+    /// shoulder and the hand.
+    @Test(arguments: frontIDs)
+    func frontElbowsPointOut(_ id: ExerciseMotion) {
+        let pictogram = Self.front(id)
+        for p in Self.samples {
+            let arm = pictogram.skeleton(at: p).rightArm
+            #expect(arm.joint.x >= min(arm.root.x, arm.end.x) - 0.5, "\(id) elbow folds inward at \(p)")
+        }
+    }
+
+    @Test(arguments: frontIDs)
+    func frontStaysInFrameAndOnTheFloor(_ id: ExerciseMotion) {
+        let pictogram = Self.front(id)
+        for p in Self.samples {
+            let s = pictogram.skeleton(at: p)
+            let points = [s.headCenter, s.shoulderCenter, s.hipCenter]
+                + [s.rightArm, s.leftArm, s.rightLeg, s.leftLeg].flatMap { [$0.root, $0.joint, $0.end] }
+            for point in points {
+                #expect((0...100).contains(point.x) && (0...100).contains(point.y), "\(id) leaves the frame at \(p)")
+            }
+            if pictogram.showsFloor {
+                let lowest = max(s.rightLeg.end.y, s.leftLeg.end.y)
+                #expect(abs(lowest - (FrontPictogram.floorY - 2)) < 0.5, "\(id) floats or sinks at \(p)")
+            }
+        }
+    }
+
+    @Test(arguments: frontIDs)
+    func frontIsMirrorSymmetric(_ id: ExerciseMotion) {
+        let s = Self.front(id).skeleton(at: 0.5)
+        #expect(abs((100 - s.leftArm.end.x) - s.rightArm.end.x) < 0.001)
+        #expect(abs(s.leftArm.end.y - s.rightArm.end.y) < 0.001)
+    }
+
+    private static func length(_ a: CGPoint, _ b: CGPoint) -> CGFloat { hypot(b.x - a.x, b.y - a.y) }
 
     // MARK: - Loop timing
 

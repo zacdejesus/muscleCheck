@@ -294,14 +294,14 @@ struct ExercisePictogram {
     /// A hand or foot target. Fixed in the world when it doesn't move (hands on a bar,
     /// feet on the floor); otherwise it sweeps around its root (shoulder or hip), so
     /// a straight arm or leg stays straight instead of cutting a chord.
-    private static func target(_ a: CGPoint, _ b: CGPoint, rootA: CGPoint, rootB: CGPoint,
+    static func target(_ a: CGPoint, _ b: CGPoint, rootA: CGPoint, rootB: CGPoint,
                                root: CGPoint, _ t: CGFloat) -> CGPoint {
         guard a != b else { return a }
         return root + polarLerp(a - rootA, b - rootB, t)
     }
 
     /// Interpolates two offsets by angle (the short way round) and length.
-    private static func polarLerp(_ a: CGPoint, _ b: CGPoint, _ t: CGFloat) -> CGPoint {
+    static func polarLerp(_ a: CGPoint, _ b: CGPoint, _ t: CGFloat) -> CGPoint {
         let ra = hypot(a.x, a.y), rb = hypot(b.x, b.y)
         let angleA = atan2(a.y, a.x)
         var delta = atan2(b.y, b.x) - angleA
@@ -319,7 +319,7 @@ struct ExercisePictogram {
     // MARK: - Geometry
 
     /// Two-bone IK: the middle joint for a limb reaching `target` (clamped to reach).
-    private static func solveIK(root: CGPoint, target: CGPoint, l1: CGFloat, l2: CGFloat,
+    static func solveIK(root: CGPoint, target: CGPoint, l1: CGFloat, l2: CGFloat,
                                 bend: CGFloat) -> (joint: CGPoint, end: CGPoint) {
         let delta = target - root
         let raw = max(hypot(delta.x, delta.y), 0.001)
@@ -333,7 +333,7 @@ struct ExercisePictogram {
     }
 
     /// A segment with round ends whose width goes from `w1` at `a` to `w2` at `b`.
-    private static func capsule(_ a: CGPoint, _ b: CGPoint, _ w1: CGFloat, _ w2: CGFloat) -> CGPath {
+    static func capsule(_ a: CGPoint, _ b: CGPoint, _ w1: CGFloat, _ w2: CGFloat) -> CGPath {
         let path = CGMutablePath()
         let n = unit(b - a)
         let normal = CGPoint(x: -n.y, y: n.x)
@@ -350,17 +350,17 @@ struct ExercisePictogram {
             .union(circle(b, r2))
     }
 
-    private static func circle(_ c: CGPoint, _ r: CGFloat) -> CGPath {
+    static func circle(_ c: CGPoint, _ r: CGFloat) -> CGPath {
         CGPath(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r), transform: nil)
     }
 
-    private static func polyline(_ points: [CGPoint]) -> CGPath {
+    static func polyline(_ points: [CGPoint]) -> CGPath {
         let path = CGMutablePath()
         path.addLines(between: points)
         return path
     }
 
-    private static func unit(_ p: CGPoint) -> CGPoint {
+    static func unit(_ p: CGPoint) -> CGPoint {
         let len = max(hypot(p.x, p.y), 0.001)
         return CGPoint(x: p.x / len, y: p.y / len)
     }
@@ -368,9 +368,9 @@ struct ExercisePictogram {
 
 // MARK: - Point math
 
-private func lerp(_ a: CGPoint, _ b: CGPoint, _ t: CGFloat) -> CGPoint {
+func lerp(_ a: CGPoint, _ b: CGPoint, _ t: CGFloat) -> CGPoint {
     CGPoint(x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t)
 }
-private func + (a: CGPoint, b: CGPoint) -> CGPoint { CGPoint(x: a.x + b.x, y: a.y + b.y) }
-private func - (a: CGPoint, b: CGPoint) -> CGPoint { CGPoint(x: a.x - b.x, y: a.y - b.y) }
-private func * (a: CGPoint, k: CGFloat) -> CGPoint { CGPoint(x: a.x * k, y: a.y * k) }
+func + (a: CGPoint, b: CGPoint) -> CGPoint { CGPoint(x: a.x + b.x, y: a.y + b.y) }
+func - (a: CGPoint, b: CGPoint) -> CGPoint { CGPoint(x: a.x - b.x, y: a.y - b.y) }
+func * (a: CGPoint, k: CGFloat) -> CGPoint { CGPoint(x: a.x * k, y: a.y * k) }

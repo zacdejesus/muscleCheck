@@ -537,3 +537,118 @@ extension ExercisePictogram {
         props: [.wheelAtHand(radius: 4)]
     )
 }
+
+// MARK: - More of each group
+
+extension ExercisePictogram {
+
+    /// Facing a cable at head height; the rope comes to the face, elbows high.
+    static let facePull = ExercisePictogram(
+        start: .init(hip: .init(x: 42, y: 54), torsoAngle: -93,
+                     hand: .init(x: 69, y: 21), foot: .init(x: 43, y: floorLine - 2)),
+        end: .init(hip: .init(x: 42, y: 54), torsoAngle: -93,
+                   hand: .init(x: 50, y: 17), foot: .init(x: 43, y: floorLine - 2)),
+        props: [
+            .beam(.init(x: 90, y: 8), .init(x: 90, y: floorLine), width: 7),
+            .cableToHand(pulley: .init(x: 86, y: 20)),
+        ]
+    )
+
+    /// Hinged slightly, arms straight: the bar sweeps from overhead down to the thighs.
+    static let straightArmPulldown = ExercisePictogram(
+        start: .init(hip: .init(x: 40, y: 54), torsoAngle: -75,
+                     hand: .init(x: 70, y: 6.4), foot: .init(x: 41, y: floorLine - 2)),
+        end: .init(hip: .init(x: 40, y: 54), torsoAngle: -75,
+                   hand: .init(x: 52.8, y: 53.6), foot: .init(x: 41, y: floorLine - 2)),
+        props: [
+            .beam(.init(x: 90, y: 2), .init(x: 90, y: floorLine), width: 7),
+            .cableToHand(pulley: .init(x: 86, y: 5)),
+        ]
+    )
+
+    /// Rear foot up on a bench, dumbbells at the sides; the back knee drops.
+    static let bulgarianSplitSquat = ExercisePictogram(
+        start: .init(hip: .init(x: 45, y: 58), torsoAngle: -88,
+                     hand: .init(x: 47, y: 57), foot: .init(x: 62, y: floorLine - 2),
+                     farFoot: .init(x: 22, y: 69.5)),
+        end: .init(hip: .init(x: 42, y: 72), torsoAngle: -84,
+                   hand: .init(x: 46, y: 70.5), foot: .init(x: 62, y: floorLine - 2),
+                   farFoot: .init(x: 22, y: 69.5)),
+        props: [
+            .dumbbellAtHand,
+            .beam(.init(x: 8, y: 74), .init(x: 30, y: 74), width: 5),
+            .line(.init(x: 19, y: 76), .init(x: 19, y: floorLine)),
+        ]
+    )
+
+    /// Upper back on a bench, bar across the hips; the hips drive up to level.
+    static let hipThrust = ExercisePictogram(
+        start: .init(hip: .init(x: 52, y: 86), torsoAngle: 217,
+                     hand: .init(x: 52, y: 81), foot: .init(x: 76, y: floorLine - 2)),
+        end: .init(hip: .init(x: 58, y: 66.5), torsoAngle: 177,
+                   hand: .init(x: 56, y: 61.5), foot: .init(x: 76, y: floorLine - 2)),
+        props: [.plateAtHand(radius: 7), .box(CGRect(x: 6, y: 70, width: 22, height: floorLine - 70))]
+    )
+
+    /// On the floor, knees up; the hips lift off into a straight line from the shoulders.
+    static let gluteBridge = ExercisePictogram(
+        start: .init(hip: .init(x: 54, y: 89), torsoAngle: 180,
+                     hand: .init(x: 52, y: 91.5), foot: .init(x: 72, y: floorLine - 2)),
+        end: .init(hip: .init(x: 50, y: 76), torsoAngle: 153.4,
+                   hand: .init(x: 52, y: 91.5), foot: .init(x: 72, y: floorLine - 2)),
+        props: []
+    )
+
+    /// Hips on the pad, heels hooked; the torso rises from hanging to level.
+    static let backExtension = ExercisePictogram(
+        start: .init(hip: .init(x: 48, y: 50), torsoAngle: 80,
+                     hand: .init(x: 58, y: 75), foot: .init(x: 12, y: 62)),
+        end: .init(hip: .init(x: 48, y: 50), torsoAngle: -10,
+                   hand: .init(x: 72, y: 50), foot: .init(x: 12, y: 62)),
+        props: [
+            .beam(.init(x: 40, y: 55), .init(x: 54, y: 55), width: 5),
+            .line(.init(x: 47, y: 57), .init(x: 47, y: floorLine)),
+            .padAtFoot(radius: 3),
+            .line(.init(x: 14, y: 66), .init(x: 14, y: floorLine)),
+        ]
+    )
+
+    /// One foot on a box; standing up onto it. Zoomed out to fit.
+    static let stepUp = ExercisePictogram(
+        start: .init(hip: .init(x: 50, y: 56), torsoAngle: -85,
+                     hand: .init(x: 51, y: 55), foot: .init(x: 66, y: 70),
+                     farFoot: .init(x: 42, y: floorLine - 2)),
+        end: .init(hip: .init(x: 63, y: 33), torsoAngle: -90,
+                   hand: .init(x: 64, y: 32), foot: .init(x: 66, y: 70),
+                   farFoot: .init(x: 61, y: 70)),
+        viewScale: 0.82,
+        props: [.box(CGRect(x: 54, y: 72, width: 26, height: floorLine - 72))]
+    )
+
+    /// Dumbbell held at the chest; hips back and down, chest up.
+    static let gobletSquat = ExercisePictogram(
+        start: .init(hip: .init(x: 48, y: 54), torsoAngle: -88,
+                     hand: .init(x: 56, y: 32), foot: .init(x: 50, y: floorLine - 2)),
+        end: .init(hip: .init(x: 34, y: 74), torsoAngle: -55,
+                   hand: .init(x: 58, y: 57), foot: .init(x: 50, y: floorLine - 2)),
+        props: [.hammerDumbbellAtHand]
+    )
+
+    /// From lying flat all the way up to the knees, arms reaching along the body.
+    static let sitUp = ExercisePictogram(
+        start: .init(hip: .init(x: 54, y: 87.5), torsoAngle: 180,
+                     hand: .init(x: 51, y: 86), foot: .init(x: 76, y: floorLine - 2)),
+        end: .init(hip: .init(x: 54, y: 87.5), torsoAngle: 285,
+                   hand: .init(x: 84, y: 70), foot: .init(x: 76, y: floorLine - 2)),
+        props: []
+    )
+
+    /// High plank; the near knee drives toward the chest.
+    static let mountainClimber = ExercisePictogram(
+        start: .init(hip: .init(x: 49.4, y: 75.2), torsoAngle: -21.3,
+                     hand: .init(x: 67, y: 91.2), foot: .init(x: 14, y: 89), farFoot: .init(x: 14, y: 89)),
+        end: .init(hip: .init(x: 49.4, y: 75.2), torsoAngle: -21.3,
+                   hand: .init(x: 67, y: 91.2), foot: .init(x: 40, y: 74), farFoot: .init(x: 14, y: 89)),
+        props: []
+    )
+}

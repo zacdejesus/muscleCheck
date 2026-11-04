@@ -12,89 +12,122 @@
 //  búlgara", "straight arm pulldown") are listed in ExerciseCatalog without a motion
 //  so they win the match and draw nothing. Generic names get one documented answer:
 //  "curl" → barbell curl, "extensión de tríceps" → overhead extension, "fondos" →
-//  triceps dip, "remo" → barbell row, "elevación de piernas" → hanging leg raise.
+//  triceps dip, "remo" → barbell row, "elevación de piernas" → hanging leg raise,
+//  "aperturas"/"flyes" → dumbbell fly, "abducción" → standing hip abduction, Arnold
+//  press → seated dumbbell press.
 //
 
+import CoreGraphics
 import Foundation
 
 enum ExerciseMotion: String, CaseIterable, Sendable {
     // Chest
     case benchPress, inclineDumbbellPress, pushUp, declineBenchPress, chestDip
+    case dumbbellFly, cableCrossover, pecDeck
     // Back
     case pullUp, latPulldown, barbellRow, oneArmDumbbellRow, seatedCableRow, deadlift, pullover
+    case straightArmPulldown, backExtension
     // Legs
     case squat, legPress, romanianDeadlift, lunge, legExtension, legCurl, calfRaise
+    case bulgarianSplitSquat, gobletSquat, stepUp
+    // Glutes
+    case hipThrust, gluteBridge, hipAbduction
     // Shoulders
     case militaryPress, seatedDumbbellPress, frontRaise, pikePushUp, landminePress
+    case lateralRaise, rearDeltFly, shrug, uprightRow, facePull
     // Biceps
     case barbellCurl, dumbbellCurl, hammerCurl, preacherCurl, cableCurl, concentrationCurl, inclineCurl
     // Triceps
     case cablePushdown, tricepsDip, skullCrusher, overheadTricepsExtension, closeGripBenchPress
     case tricepsKickback, benchDip
     // Core
-    case crunch, plank, hangingLegRaise, abWheel
+    case crunch, plank, hangingLegRaise, abWheel, sitUp, mountainClimber
 
     /// The muscle the movement is filed under. It must agree with ExerciseCatalog's
     /// documented answers, since these phrases also feed the routine scan.
     var muscle: TargetMuscle {
         switch self {
-        case .benchPress, .inclineDumbbellPress, .pushUp, .declineBenchPress, .chestDip: .chest
-        case .pullUp, .latPulldown, .barbellRow, .oneArmDumbbellRow, .seatedCableRow, .deadlift, .pullover: .back
-        case .squat, .legPress, .romanianDeadlift, .lunge, .legExtension, .legCurl: .legs
+        case .benchPress, .inclineDumbbellPress, .pushUp, .declineBenchPress, .chestDip, .dumbbellFly,
+             .cableCrossover, .pecDeck: .chest
+        case .pullUp, .latPulldown, .barbellRow, .oneArmDumbbellRow, .seatedCableRow, .deadlift, .pullover,
+             .straightArmPulldown, .backExtension: .back
+        case .squat, .legPress, .romanianDeadlift, .lunge, .legExtension, .legCurl, .bulgarianSplitSquat,
+             .gobletSquat, .stepUp: .legs
+        case .hipThrust, .gluteBridge, .hipAbduction: .glutes
         case .calfRaise: .calves
-        case .militaryPress, .seatedDumbbellPress, .frontRaise, .pikePushUp, .landminePress: .shoulders
+        case .militaryPress, .seatedDumbbellPress, .frontRaise, .pikePushUp, .landminePress, .lateralRaise,
+             .rearDeltFly, .shrug, .uprightRow, .facePull: .shoulders
         case .barbellCurl, .dumbbellCurl, .hammerCurl, .preacherCurl, .cableCurl, .concentrationCurl,
              .inclineCurl: .biceps
         case .cablePushdown, .tricepsDip, .skullCrusher, .overheadTricepsExtension, .closeGripBenchPress,
              .tricepsKickback, .benchDip: .triceps
-        case .crunch, .plank, .hangingLegRaise, .abWheel: .core
+        case .crunch, .plank, .hangingLegRaise, .abWheel, .sitUp, .mountainClimber: .core
         }
     }
 
-    var pictogram: ExercisePictogram {
+    /// The drawing: a side view, or the front view for movements that open sideways.
+    var drawing: PictogramDrawing {
         switch self {
-        case .benchPress: .benchPress
-        case .inclineDumbbellPress: .inclineDumbbellPress
-        case .pushUp: .pushUp
-        case .declineBenchPress: .declineBenchPress
-        case .chestDip: .chestDip
-        case .pullUp: .pullUp
-        case .latPulldown: .latPulldown
-        case .barbellRow: .barbellRow
-        case .oneArmDumbbellRow: .oneArmDumbbellRow
-        case .seatedCableRow: .seatedCableRow
-        case .deadlift: .deadlift
-        case .pullover: .pullover
-        case .squat: .squat
-        case .legPress: .legPress
-        case .romanianDeadlift: .romanianDeadlift
-        case .lunge: .lunge
-        case .legExtension: .legExtension
-        case .legCurl: .legCurl
-        case .calfRaise: .calfRaise
-        case .militaryPress: .militaryPress
-        case .seatedDumbbellPress: .seatedDumbbellPress
-        case .frontRaise: .frontRaise
-        case .pikePushUp: .pikePushUp
-        case .landminePress: .landminePress
-        case .barbellCurl: .barbellCurl
-        case .dumbbellCurl: .dumbbellCurl
-        case .hammerCurl: .hammerCurl
-        case .preacherCurl: .preacherCurl
-        case .cableCurl: .cableCurl
-        case .concentrationCurl: .concentrationCurl
-        case .inclineCurl: .inclineCurl
-        case .cablePushdown: .cablePushdown
-        case .tricepsDip: .tricepsDip
-        case .skullCrusher: .skullCrusher
-        case .overheadTricepsExtension: .overheadTricepsExtension
-        case .closeGripBenchPress: .closeGripBenchPress
-        case .tricepsKickback: .tricepsKickback
-        case .benchDip: .benchDip
-        case .crunch: .crunch
-        case .plank: .plank
-        case .hangingLegRaise: .hangingLegRaise
-        case .abWheel: .abWheel
+        case .benchPress: .side(.benchPress)
+        case .inclineDumbbellPress: .side(.inclineDumbbellPress)
+        case .pushUp: .side(.pushUp)
+        case .declineBenchPress: .side(.declineBenchPress)
+        case .chestDip: .side(.chestDip)
+        case .pullUp: .side(.pullUp)
+        case .latPulldown: .side(.latPulldown)
+        case .barbellRow: .side(.barbellRow)
+        case .oneArmDumbbellRow: .side(.oneArmDumbbellRow)
+        case .seatedCableRow: .side(.seatedCableRow)
+        case .deadlift: .side(.deadlift)
+        case .pullover: .side(.pullover)
+        case .squat: .side(.squat)
+        case .legPress: .side(.legPress)
+        case .romanianDeadlift: .side(.romanianDeadlift)
+        case .lunge: .side(.lunge)
+        case .legExtension: .side(.legExtension)
+        case .legCurl: .side(.legCurl)
+        case .calfRaise: .side(.calfRaise)
+        case .militaryPress: .side(.militaryPress)
+        case .seatedDumbbellPress: .side(.seatedDumbbellPress)
+        case .frontRaise: .side(.frontRaise)
+        case .pikePushUp: .side(.pikePushUp)
+        case .landminePress: .side(.landminePress)
+        case .barbellCurl: .side(.barbellCurl)
+        case .dumbbellCurl: .side(.dumbbellCurl)
+        case .hammerCurl: .side(.hammerCurl)
+        case .preacherCurl: .side(.preacherCurl)
+        case .cableCurl: .side(.cableCurl)
+        case .concentrationCurl: .side(.concentrationCurl)
+        case .inclineCurl: .side(.inclineCurl)
+        case .cablePushdown: .side(.cablePushdown)
+        case .tricepsDip: .side(.tricepsDip)
+        case .skullCrusher: .side(.skullCrusher)
+        case .overheadTricepsExtension: .side(.overheadTricepsExtension)
+        case .closeGripBenchPress: .side(.closeGripBenchPress)
+        case .tricepsKickback: .side(.tricepsKickback)
+        case .benchDip: .side(.benchDip)
+        case .crunch: .side(.crunch)
+        case .plank: .side(.plank)
+        case .hangingLegRaise: .side(.hangingLegRaise)
+        case .abWheel: .side(.abWheel)
+        case .straightArmPulldown: .side(.straightArmPulldown)
+        case .backExtension: .side(.backExtension)
+        case .bulgarianSplitSquat: .side(.bulgarianSplitSquat)
+        case .gobletSquat: .side(.gobletSquat)
+        case .stepUp: .side(.stepUp)
+        case .hipThrust: .side(.hipThrust)
+        case .gluteBridge: .side(.gluteBridge)
+        case .facePull: .side(.facePull)
+        case .sitUp: .side(.sitUp)
+        case .mountainClimber: .side(.mountainClimber)
+        case .cableCrossover: .front(.cableCrossover)
+        case .dumbbellFly: .front(.dumbbellFly)
+        case .hipAbduction: .front(.hipAbduction)
+        case .lateralRaise: .front(.lateralRaise)
+        case .pecDeck: .front(.pecDeck)
+        case .rearDeltFly: .front(.rearDeltFly)
+        case .shrug: .front(.shrug)
+        case .uprightRow: .front(.uprightRow)
         }
     }
 
@@ -175,7 +208,7 @@ enum ExerciseMotion: String, CaseIterable, Sendable {
         ]
         case .seatedDumbbellPress: [
             "press de hombros", "press de hombro", "press hombros", "shoulder press", "dumbbell shoulder press",
-            "développé épaules", "military press con manubri",
+            "développé épaules", "military press con manubri", "press arnold", "arnold press", "arnold",
         ]
         case .frontRaise: [
             "elevaciones frontales", "elevación frontal", "front raise", "front raises",
@@ -239,6 +272,98 @@ enum ExerciseMotion: String, CaseIterable, Sendable {
             "hanging leg raise", "relevés de jambes", "levés de jambes", "sollevamento gambe",
         ]
         case .abWheel: ["rueda abdominal", "ab wheel", "ab wheel rollout", "roue abdominale", "ruota addominale"]
+        case .dumbbellFly: [
+            "aperturas", "apertura", "aperturas con mancuernas", "aperturas planas", "aperturas en banco", "flyes",
+            "fly", "flys", "flies", "chest fly", "chest flyes", "chest flies", "dumbbell fly", "dumbbell flyes",
+            "dumbbell flies", "écarté", "écartés", "écarté couché", "écartés couché", "écartés avec haltères", "croci",
+            "croci con manubri", "croci su panca",
+        ]
+        case .cableCrossover: [
+            "cruce de poleas", "cruce de polea", "cruces de polea", "cruces de poleas", "cruces en polea",
+            "cruces en poleas", "aperturas en polea", "crossover", "cable crossover", "cable fly", "cable flyes",
+            "cable flies", "écarté à la poulie", "écartés à la poulie", "vis à vis poulie", "croci ai cavi",
+            "croci al cavo", "crossover ai cavi",
+        ]
+        case .pecDeck: [
+            "pec deck", "peck deck", "contractora", "máquina de aperturas", "aperturas en máquina", "butterfly",
+            "machine fly", "pec fly", "papillon", "pectoral machine", "croci alla macchina",
+        ]
+        case .straightArmPulldown: [
+            "straight arm pulldown", "straight arm pulldowns", "straight arm lat pulldown", "jalón con brazos rectos",
+            "jalón con brazos estirados", "pullover en polea", "pull over en polea", "tirage bras tendus",
+            "pull over à la poulie", "pulldown a braccia tese",
+        ]
+        case .backExtension: [
+            "hiperextensiones", "hiperextensión", "extensión lumbar", "extensiones lumbares", "back extension",
+            "back extensions", "hyperextension", "hyperextensions", "extension du dos", "extensions lombaires",
+            "iperestensioni",
+        ]
+        case .bulgarianSplitSquat: [
+            "sentadilla búlgara", "sentadillas búlgaras", "búlgaras", "búlgara", "bulgarian split squat",
+            "bulgarian split squats", "split squat", "split squats", "fentes bulgares", "bulgares", "squat bulgare",
+            "affondi bulgari", "squat bulgaro",
+        ]
+        case .gobletSquat: [
+            "goblet squat", "goblet squats", "sentadilla goblet", "sentadillas goblet", "sentadilla copa", "squat goblet",
+            "squat gobelet",
+        ]
+        case .stepUp: [
+            "step up", "step ups", "stepups", "subidas al cajón", "subida al cajón", "subidas al banco",
+            "montées sur banc", "montée sur banc", "step up su panca",
+        ]
+        case .hipThrust: [
+            "hip thrust", "hip thrusts", "empuje de cadera", "empujes de cadera", "hip thrust con barra",
+        ]
+        case .gluteBridge: [
+            "puente de glúteo", "puente de glúteos", "puente glúteo", "glute bridge", "glute bridges", "pont fessier",
+            "ponte glutei", "ponte per glutei",
+        ]
+        case .hipAbduction: [
+            "abducción de cadera", "abducciones de cadera", "abducción", "abducciones", "abductores", "abductor",
+            "hip abduction", "hip abductions", "abduction de hanche", "abductions", "abduttori", "abduzione",
+        ]
+        case .lateralRaise: [
+            "elevaciones laterales", "elevación lateral", "vuelos laterales", "laterales", "lateral raise",
+            "lateral raises", "side raise", "side raises", "side lateral raise", "élévations latérales",
+            "élévation latérale", "épaules latérales", "alzate laterali", "alzata laterale",
+        ]
+        case .rearDeltFly: [
+            "pájaros", "pájaro", "vuelos posteriores", "elevaciones posteriores", "aperturas invertidas", "rear delt",
+            "rear delt fly", "rear delt flyes", "rear delt flies", "reverse fly", "reverse flyes", "reverse flies",
+            "rear delt raise", "oiseau", "oiseaux", "élévations postérieures", "alzate posteriori",
+            "deltoide posteriore",
+        ]
+        case .shrug: [
+            "encogimientos", "encogimiento", "encogimientos de hombros", "encogimiento de hombros", "shrugs", "shrug",
+            "haussements d'épaules", "élévation des épaules", "scrollate", "scrollate di spalle",
+        ]
+        case .uprightRow: [
+            "remo al cuello", "remo al mentón", "upright row", "upright rows", "rowing menton", "tirate al mento",
+            "tirata al mento",
+        ]
+        case .facePull: [
+            "face pull", "face pulls", "jalón a la cara", "tirage visage", "tirage vers le visage",
+        ]
+        case .sitUp: [
+            "sit up", "sit ups", "situps", "abdominales completos", "redressements assis",
+        ]
+        case .mountainClimber: [
+            "mountain climbers", "mountain climber", "escaladores", "escalador", "grimpeur", "grimpeurs",
+        ]
+        }
+    }
+}
+
+/// What draws a motion: the side view, or the front view for movements that open
+/// sideways (FrontExercisePictogram).
+enum PictogramDrawing {
+    case side(ExercisePictogram)
+    case front(FrontPictogram)
+
+    func shapes(at progress: CGFloat) -> [PictogramShape] {
+        switch self {
+        case .side(let pictogram): pictogram.shapes(at: progress)
+        case .front(let pictogram): pictogram.shapes(at: progress)
         }
     }
 }

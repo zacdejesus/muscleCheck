@@ -55,8 +55,27 @@ enum ExerciseCatalog {
                 byPhrase[phrase] = (phrase, motion.muscle, motion)
             }
         }
+        // The coach often pluralizes ("Bent-over rows", "Seated cable rows"): each motion
+        // phrase also matches with its last word in the plural, unless that's already a
+        // phrase of its own.
+        for motion in ExerciseMotion.allCases {
+            for phrase in motion.phrases.map(NameMatching.fold) {
+                let plural = pluralized(phrase)
+                if byPhrase[plural] == nil { byPhrase[plural] = (plural, motion.muscle, motion) }
+            }
+        }
         return byPhrase.values.sorted(by: isMoreSpecific)
     }()
+
+    /// English-style plural of the last word: "row" → "rows", "press" → "presses",
+    /// "crunch" → "crunches", "dips" stays. Good enough for the other languages too, whose plurals are mostly listed.
+    static func pluralized(_ phrase: String) -> String {
+        if phrase.hasSuffix("ss") || phrase.hasSuffix("ch") || phrase.hasSuffix("sh") || phrase.hasSuffix("x") {
+            return phrase + "es"
+        }
+        if phrase.hasSuffix("s") { return phrase }
+        return phrase + "s"
+    }
 
     private static func isMoreSpecific(_ lhs: Entry, _ rhs: Entry) -> Bool {
         let lhsWords = lhs.phrase.split(separator: " ").count, rhsWords = rhs.phrase.split(separator: " ").count

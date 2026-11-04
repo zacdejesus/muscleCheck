@@ -193,8 +193,8 @@ struct RoutineCoachViewModelTests {
         let drawnAndNot = RoutineSuggestion(
             focus: "Pull",
             blocks: [
-                .init(groupName: "Back", exercises: ["Dominadas", "Remo con barra", "Straight arm pulldown"]),
-                .init(groupName: "Biceps", exercises: ["Curl martillo", "Face pull"])
+                .init(groupName: "Back", exercises: ["Dominadas", "Remo con barra", "Hack squat"]),
+                .init(groupName: "Biceps", exercises: ["Curl martillo", "Glute kickback"])
             ],
             rationale: "Because."
         )
