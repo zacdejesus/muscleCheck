@@ -258,11 +258,22 @@ struct ExercisePictogram {
         ]
     }
 
-    /// Ping-pong with an eased hold at both ends, for a looping animation.
+    /// One loop: up to the end pose, a hold there, back down, a short beat at the start.
+    /// The end pose is the one that tells the exercise (bar overhead, curl up); a
+    /// standing start pose, arms at the sides, reads as a bare pole at tile size. So
+    /// the loop spends most of its time near the end, the same frame Reduce Motion shows.
     static func progress(time: TimeInterval, period: TimeInterval) -> CGFloat {
         let u = time.truncatingRemainder(dividingBy: period) / period
-        let tri = CGFloat(u < 0.5 ? u * 2 : (1 - u) * 2)
-        return tri * tri * (3 - 2 * tri)
+        let rise = 0.35, hold = 0.3, fall = 0.3
+        let linear: Double
+        switch u {
+        case ..<rise: linear = u / rise
+        case ..<(rise + hold): linear = 1
+        case ..<(rise + hold + fall): linear = 1 - (u - rise - hold) / fall
+        default: linear = 0
+        }
+        let t = CGFloat(linear)
+        return t * t * (3 - 2 * t)
     }
 
     // MARK: - Interpolation

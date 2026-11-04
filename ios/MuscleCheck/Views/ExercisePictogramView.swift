@@ -11,7 +11,7 @@ import SwiftUI
 
 struct ExercisePictogramView: View {
     let pictogram: ExercisePictogram
-    var period: TimeInterval = 2.4
+    var period: TimeInterval = 3
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.animatesExercisePictograms) private var animates

@@ -134,4 +134,19 @@ struct ExercisePictogramTests {
             #expect((radius...(100 - radius)).contains(head.x), "\(id) head cut off at \(p)")
         }
     }
+
+    // MARK: - Loop timing
+
+    @Test(arguments: [(0.0, 0.0), (0.35, 1.0), (0.5, 1.0), (0.64, 1.0), (0.97, 0.0)])
+    func loopHoldsTheEndPose(_ fraction: Double, _ expected: CGFloat) {
+        let progress = ExercisePictogram.progress(time: fraction * 3, period: 3)
+        #expect(abs(progress - expected) < 0.001)
+    }
+
+    @Test
+    func loopMovesWithoutJumps() {
+        let steps = (0...600).map { ExercisePictogram.progress(time: Double($0) / 200, period: 3) }
+        let largest = zip(steps, steps.dropFirst()).map { abs($1 - $0) }.max() ?? 0
+        #expect(largest < 0.05)
+    }
 }

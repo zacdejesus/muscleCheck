@@ -290,7 +290,7 @@ extension ExercisePictogram {
                      hand: .init(x: 52, y: 26), foot: .init(x: 49, y: floorLine - 2)),
         end: .init(hip: .init(x: 48, y: 54), torsoAngle: -90,
                    hand: .init(x: 49, y: -4.9), foot: .init(x: 49, y: floorLine - 2)),
-        viewScale: 0.8,
+        viewScale: 0.85,
         props: [.plateAtHand(radius: 9)]
     )
 
@@ -306,10 +306,11 @@ extension ExercisePictogram {
         ] + seat(x: 45, top: 74.5)
     )
 
-    /// Straight arm from the thigh up to shoulder height.
+    /// Straight arm from the front of the thigh up to shoulder height. The start hand sits
+    /// a little forward so the arm doesn't merge with the torso.
     static let frontRaise = ExercisePictogram(
         start: .init(hip: .init(x: 48, y: 54), torsoAngle: -90,
-                     hand: .init(x: 49, y: 52.9), foot: .init(x: 49, y: floorLine - 2)),
+                     hand: .init(x: 57, y: 51.5), foot: .init(x: 49, y: floorLine - 2)),
         end: .init(hip: .init(x: 48, y: 54), torsoAngle: -90,
                    hand: .init(x: 76.9, y: 25), foot: .init(x: 49, y: floorLine - 2)),
         props: [.dumbbellAtHand]
