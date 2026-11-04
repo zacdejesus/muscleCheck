@@ -55,7 +55,7 @@ struct ExerciseMotionTests {
     /// drawing fits: names that don't describe a real exercise ("Press de bíceps con
     /// mancuernas"). A confused name still gets
     /// the drawing its words describe ("Press inclinado de bíceps" → incline press); shorthand
-    /// too vague to pin down ("Frontali con cavo basso", "Panca con manubri") gets none.
+    /// too vague to pin down ("Panca con manubri", "Épaules debout") gets none.
     @Test("Names the coach writes get the reviewed drawing", arguments: [
         // ES
         ("Press de pecho", .benchPress),
@@ -180,7 +180,7 @@ struct ExerciseMotionTests {
         ("crunchs", .crunch),
         ("levés de jambes suspendus", .hangingLegRaise),
         ("épaules debout", nil),
-        ("épaules frontales", nil),
+        ("épaules frontales", .frontRaise),
         ("épaulage barre", nil),
         ("flexion de la triceps avec haltère", nil),
         ("Élévations frontales", .frontRaise),
@@ -201,7 +201,7 @@ struct ExerciseMotionTests {
         ("Crossover con cavo basso", .cableCrossover),
         ("Pushdown con cavo alto", .cablePushdown),
         ("French press con manubrio", .overheadTricepsExtension),
-        ("Estensioni laterali con cavo alto", nil),
+        ("Estensioni laterali con cavo alto", .lateralRaise),
         ("Push-up con carico aggiuntivo", .pushUp),
         ("Rematore con barra", .barbellRow),
         ("Lat machine con presa larga", .latPulldown),
@@ -211,11 +211,11 @@ struct ExerciseMotionTests {
         ("French press", .skullCrusher),
         ("Pushdown con cavo", .cablePushdown),
         ("Push-down con cavo", .cablePushdown),
-        ("Estensioni laterali con cavo", nil),
+        ("Estensioni laterali con cavo", .lateralRaise),
         ("Skull crusher con bilanciere", .skullCrusher),
         ("Alzate frontali con manubri", .frontRaise),
         ("Military press con bilanciere", .militaryPress),
-        ("Frontali con cavo basso", nil),
+        ("Frontali con cavo basso", .frontRaise),
         ("alzate laterali", .lateralRaise),
         ("dip alle parallele", .tricepsDip),
         ("rematore con bilanciere", .barbellRow),
@@ -242,8 +242,8 @@ struct ExerciseMotionTests {
         ("Tricipiti alla corda", .cablePushdown),
         ("Affondi con bilanciere", .lunge),
         ("Crunch con sovraccarico", .crunch),
-        ("Frontale con manubri", nil),
-        ("Posterior deltoide con cavo", nil),
+        ("Frontale con manubri", .frontRaise),
+        ("Posterior deltoide con cavo", .rearDeltFly),
         ("Shrugs", .shrug),
         ("Military press con manubri", .seatedDumbbellPress),
         ("Rotazioni laterali con cavo", nil),

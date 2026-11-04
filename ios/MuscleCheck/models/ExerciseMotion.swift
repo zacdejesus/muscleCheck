@@ -212,7 +212,8 @@ enum ExerciseMotion: String, CaseIterable, Sendable {
         ]
         case .frontRaise: [
             "elevaciones frontales", "elevación frontal", "front raise", "front raises",
-            "élévations frontales", "élévation frontale", "alzate frontali",
+            "élévations frontales", "élévation frontale", "épaules frontales", "alzate frontali", "frontali",
+            "frontale con manubri",
         ]
         case .pikePushUp: ["pike push up", "pike push ups", "flexiones pica", "flexiones en pica"]
         case .landminePress: ["landmine press", "press landmine"]
@@ -325,13 +326,13 @@ enum ExerciseMotion: String, CaseIterable, Sendable {
         case .lateralRaise: [
             "elevaciones laterales", "elevación lateral", "vuelos laterales", "laterales", "lateral raise",
             "lateral raises", "side raise", "side raises", "side lateral raise", "élévations latérales",
-            "élévation latérale", "épaules latérales", "alzate laterali", "alzata laterale",
+            "élévation latérale", "épaules latérales", "alzate laterali", "alzata laterale", "estensioni laterali",
         ]
         case .rearDeltFly: [
             "pájaros", "pájaro", "vuelos posteriores", "elevaciones posteriores", "aperturas invertidas", "rear delt",
             "rear delt fly", "rear delt flyes", "rear delt flies", "reverse fly", "reverse flyes", "reverse flies",
             "rear delt raise", "oiseau", "oiseaux", "élévations postérieures", "alzate posteriori",
-            "deltoide posteriore",
+            "deltoide posteriore", "posterior deltoide",
         ]
         case .shrug: [
             "encogimientos", "encogimiento", "encogimientos de hombros", "encogimiento de hombros", "shrugs", "shrug",
