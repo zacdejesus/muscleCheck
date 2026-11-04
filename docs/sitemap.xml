@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://musclecheck.app/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="es" href="https://musclecheck.app/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://musclecheck.app/en/"/>
+  </url>
+  <url>
+    <loc>https://musclecheck.app/en/</loc>
+    <lastmod>2026-10-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="es" href="https://musclecheck.app/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://musclecheck.app/en/"/>
+  </url>
+  <url>
+    <loc>https://musclecheck.app/privacy.html</loc>
+    <lastmod>2026-06-06</lastmod>
+  </url>
+</urlset>

@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zadkiel.musclecheck.R
+import com.zadkiel.musclecheck.analytics.AnalyticsEvent
+import com.zadkiel.musclecheck.analytics.AnalyticsTracker
 import com.zadkiel.musclecheck.data.repository.MuscleRepository
 import com.zadkiel.musclecheck.domain.model.ActivityCategory
 import com.zadkiel.musclecheck.ui.icons.AppIcons
@@ -51,16 +54,28 @@ import javax.inject.Inject
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val repository: MuscleRepository,
+    private val analytics: AnalyticsTracker,
 ) : ViewModel() {
+
+    /** The screen can come back (rotation, process restore): the funnel start counts once. */
+    private var didTrackStart = false
+
+    fun trackStarted() {
+        if (didTrackStart) return
+        didTrackStart = true
+        analytics.track(AnalyticsEvent.OnboardingStarted)
+    }
 
     /** Seeds the picked categories' presets and completes onboarding. */
     fun complete(selected: Set<ActivityCategory>) {
         viewModelScope.launch { repository.completeOnboarding(selected.toList()) }
+        analytics.track(AnalyticsEvent.OnboardingCompleted(seedCount = selected.size, skipped = false))
     }
 
     /** Skip keeps the classic default: the gym seed. */
     fun skip() {
         viewModelScope.launch { repository.completeOnboarding(listOf(ActivityCategory.GYM)) }
+        analytics.track(AnalyticsEvent.OnboardingCompleted(seedCount = 1, skipped = true))
     }
 }
 
@@ -68,6 +83,7 @@ class OnboardingViewModel @Inject constructor(
 @Composable
 fun OnboardingScreen(viewModel: OnboardingViewModel = hiltViewModel()) {
     var step by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) { viewModel.trackStarted() }
 
     AnimatedContent(targetState = step, label = "onboarding") { current ->
         when (current) {
@@ -99,9 +115,11 @@ private fun WelcomeStep(onContinue: () -> Unit) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            DemoRow(stringResource(R.string.group_chest), checked = true, success = accents.success)
-            DemoRow(stringResource(R.string.group_back), checked = true, success = accents.success)
-            DemoRow(stringResource(R.string.group_legs), checked = false, success = accents.success)
+            // Three DISCIPLINES, not three gym muscles: the point of this screen is that the
+            // app isn't gym-only, so muscle groups would teach exactly the wrong model.
+            DemoRow(ActivityCategory.GYM, checked = true, success = accents.success)
+            DemoRow(ActivityCategory.YOGA, checked = false, success = accents.success)
+            DemoRow(ActivityCategory.RUNNING, checked = false, success = accents.success)
         }
 
         Spacer(Modifier.height(40.dp))
@@ -128,7 +146,11 @@ private fun WelcomeStep(onContinue: () -> Unit) {
 }
 
 @Composable
-private fun DemoRow(name: String, checked: Boolean, success: androidx.compose.ui.graphics.Color) {
+private fun DemoRow(
+    category: ActivityCategory,
+    checked: Boolean,
+    success: androidx.compose.ui.graphics.Color,
+) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
@@ -137,14 +159,14 @@ private fun DemoRow(name: String, checked: Boolean, success: androidx.compose.ui
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = AppIcons.forKey("figure.strengthtraining.traditional"),
+                imageVector = AppIcons.forKey(category.defaultIcon),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(18.dp),
             )
         }
         Spacer(Modifier.width(12.dp))
-        Text(name, modifier = Modifier.weight(1f))
+        Text(stringResource(category.displayNameRes), modifier = Modifier.weight(1f))
         Icon(
             imageVector = if (checked) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
             contentDescription = null,

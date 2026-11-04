@@ -1,12 +1,15 @@
 package com.zadkiel.musclecheck.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 /// Semantic accents that Material's ColorScheme has no slot for (checked state, streak flame).
@@ -55,7 +58,16 @@ fun MuscleCheckTheme(
     androidx.compose.runtime.CompositionLocalProvider(LocalAccents provides accents) {
         MaterialTheme(
             colorScheme = colorScheme,
-            content = content,
-        )
+        ) {
+            // Root Surface, not decoration: it paints the scheme's background AND provides
+            // LocalContentColor. MaterialTheme alone does neither, so a screen without its own
+            // Scaffold (the onboarding) drew black default text over the white windowBackground
+            // while its cards used the dark scheme — unreadable in dark mode.
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = colorScheme.background,
+                content = content,
+            )
+        }
     }
 }

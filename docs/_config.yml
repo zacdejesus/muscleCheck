@@ -1,0 +1,7 @@
+# GitHub Pages builds this folder for musclecheck.app. The site is only the landing
+# page (ES + EN) and the privacy policy; the Markdown files here are internal project
+# docs that live in the repo, so they're kept off the product's domain.
+exclude:
+  - "*.md"
+  - marketing
+  - iphone-duo-captures

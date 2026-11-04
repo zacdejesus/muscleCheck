@@ -6,6 +6,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
+import com.zadkiel.musclecheck.analytics.AppOpenClock
 import com.zadkiel.musclecheck.data.prefs.UserPreferencesRepository
 import com.zadkiel.musclecheck.notifications.ReminderScheduler
 import dagger.hilt.android.HiltAndroidApp
@@ -22,6 +23,7 @@ class MuscleCheckApplication : Application(), Configuration.Provider {
     @Inject lateinit var workerFactory: HiltWorkerFactory
     @Inject lateinit var prefs: UserPreferencesRepository
     @Inject lateinit var reminderScheduler: ReminderScheduler
+    @Inject lateinit var appOpenClock: AppOpenClock
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -33,6 +35,10 @@ class MuscleCheckApplication : Application(), Configuration.Provider {
         // Mirror of the iOS scenePhase-.background hook: (re)schedule tomorrow's
         // inactivity summary every time the app leaves the foreground.
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onStart(owner: LifecycleOwner) {
+                appOpenClock.markOpened()
+            }
+
             override fun onStop(owner: LifecycleOwner) {
                 appScope.launch {
                     if (prefs.notificationsEnabled.first()) {

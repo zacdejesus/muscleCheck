@@ -2,6 +2,10 @@ package com.zadkiel.musclecheck.di
 
 import android.content.Context
 import androidx.room.Room
+import com.zadkiel.musclecheck.BuildConfig
+import com.zadkiel.musclecheck.analytics.AnalyticsTracker
+import com.zadkiel.musclecheck.analytics.FirebaseAnalyticsTracker
+import com.zadkiel.musclecheck.analytics.LogcatAnalytics
 import com.zadkiel.musclecheck.data.local.AppDatabase
 import com.zadkiel.musclecheck.data.local.CategoryDao
 import com.zadkiel.musclecheck.data.local.MuscleDao
@@ -41,4 +45,13 @@ object AppModule {
     @Provides
     @Singleton
     fun provideProAccessManager(impl: LocalProAccessManager): ProAccessManager = impl
+
+    /** Release: Firebase. Debug: Logcat only, plus Firebase when built with `-PanalyticsDebug`. */
+    @Provides
+    @Singleton
+    fun provideAnalyticsTracker(@ApplicationContext context: Context): AnalyticsTracker = when {
+        !BuildConfig.DEBUG -> FirebaseAnalyticsTracker(context)
+        BuildConfig.ANALYTICS_DEBUG -> FirebaseAnalyticsTracker(context, echoToLogcat = true)
+        else -> LogcatAnalytics
+    }
 }
