@@ -48,7 +48,8 @@ struct CalendarDayCellSnapshotTests {
         let day = CalendarDay(date: Self.fixedDate, isInDisplayedMonth: true)
         let view = CalendarDayCell(day: day, isToday: false, isSelected: false, intensity: 0)
 
-        assertSnapshot(of: view, as: .image(layout: Self.cellLayout))
+        // Pinned to light: otherwise the image follows the simulator's appearance.
+        assertSnapshot(of: view, as: .image(layout: Self.cellLayout, traits: .init(userInterfaceStyle: .light)))
     }
 
     // MARK: - Helpers
