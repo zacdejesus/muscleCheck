@@ -180,12 +180,34 @@ struct RoutineCoachViewModelTests {
 
         await viewModel.generateRoutine(from: ["Back", "Biceps"].map { gymEntry($0) })
 
-        guard case let .coachGenerated(engine, fallbackReason, _)? = analytics.events.last else {
+        guard case let .coachGenerated(engine, fallbackReason, _, _)? = analytics.events.last else {
             Issue.record("expected coach_generated, got \(analytics.events)")
             return
         }
         #expect(engine == .privateCloud)
         #expect(fallbackReason == nil)
+    }
+
+    @Test
+    func tracksHowManyExercisesGotAPictogram() async {
+        let drawnAndNot = RoutineSuggestion(
+            focus: "Pull",
+            blocks: [
+                .init(groupName: "Back", exercises: ["Dominadas", "Remo con barra", "Straight arm pulldown"]),
+                .init(groupName: "Biceps", exercises: ["Curl martillo", "Face pull"])
+            ],
+            rationale: "Because."
+        )
+        let analytics = SpyAnalytics()
+        let viewModel = RoutineCoachViewModel(coach: FakeCoach(result: .success(drawnAndNot)), analytics: analytics)
+
+        await viewModel.generateRoutine(from: ["Back", "Biceps"].map { gymEntry($0) })
+
+        guard case let .coachGenerated(_, _, _, pictogramCount)? = analytics.events.last else {
+            Issue.record("expected coach_generated, got \(analytics.events)")
+            return
+        }
+        #expect(pictogramCount == 3)
     }
 
     @Test

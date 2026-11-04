@@ -39,8 +39,11 @@ enum AnalyticsEvent: Equatable, Sendable {
     /// son los del último agregado; `count`, cuántos quedaron (los deshechos no suman).
     case exerciseAddCompleted(category: String, metric: MetricType, fromPreset: Bool, count: Int)
     /// The AI coach produced a suggestion (first or "give me another"): which model
-    /// answered, why it fell back to on-device if it did, and how long it took (§7.5).
-    case coachGenerated(engine: CoachEngine, fallbackReason: CoachFallbackReason?, latencyMilliseconds: Int)
+    /// answered, why it fell back to on-device if it did, how long it took, and how many
+    /// of its exercises got a pictogram (§7.5).
+    case coachGenerated(
+        engine: CoachEngine, fallbackReason: CoachFallbackReason?, latencyMilliseconds: Int, pictogramCount: Int
+    )
 
     var name: String {
         switch self {
@@ -79,10 +82,11 @@ enum AnalyticsEvent: Equatable, Sendable {
                 "from_preset": fromPreset ? 1 : 0,
                 "count": count
             ]
-        case let .coachGenerated(engine, fallbackReason, latencyMilliseconds):
+        case let .coachGenerated(engine, fallbackReason, latencyMilliseconds, pictogramCount):
             var params: [String: Any] = [
                 "engine": engine.rawValue,
-                "latency_bucket": Self.latencyBucket(milliseconds: latencyMilliseconds)
+                "latency_bucket": Self.latencyBucket(milliseconds: latencyMilliseconds),
+                "pictogram_coverage": Self.pictogramCoverageBucket(count: pictogramCount)
             ]
             if let fallbackReason { params["fallback_reason"] = fallbackReason.rawValue }
             return params
@@ -97,6 +101,18 @@ enum AnalyticsEvent: Equatable, Sendable {
         case ..<4_000: return "2-4s"
         case ..<6_000: return "4-6s"
         default: return ">6s"
+        }
+    }
+
+    /// How many of a suggestion's exercises matched a pictogram, bucketed like latency.
+    /// Mostly `0` or `1-2` means name matching isn't enough and the coach should pick
+    /// from a closed catalog instead.
+    static func pictogramCoverageBucket(count: Int) -> String {
+        switch count {
+        case ..<1: return "0"
+        case ..<3: return "1-2"
+        case ..<5: return "3-4"
+        default: return "5-6"
         }
     }
 
