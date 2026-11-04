@@ -31,6 +31,7 @@ struct ContentView: View {
   @State private var showingStats = false
   @State private var showingProgressPhotos = false
   @State private var workoutToLog: IdentifiableWorkout?
+  @State private var showingRoutineScan = false
 
   @Query private var entries: [MuscleEntry]
   @Query private var customCategories: [CustomCategory]
@@ -39,6 +40,35 @@ struct ContentView: View {
   /// pinte una fila que el store ya borró (crash de `exercisesSummary`).
   private var groups: [(category: String, entries: [MuscleEntry])] {
     ContentViewModel.group(entries)
+  }
+
+  /// AI actions this device can run, in display order — the ONLY input to the bottom
+  /// bar's layout, so both / one / none are the same code path.
+  private var homeAIActions: [HomeAIAction] {
+    var actions: [HomeAIAction] = []
+    if coach.isAppleIntelligenceAvailable() { actions.append(.suggestDay) }
+    if RoutineScanSupport.availability != .unavailable { actions.append(.scanRoutine) }
+    return actions
+  }
+
+  private func perform(_ action: HomeAIAction) {
+    switch action {
+    case .suggestDay:
+      showingRoutineModal = true
+      if coach.routineSuggestion == nil {
+        Task { await coach.generateRoutine(from: entries) }
+      }
+    case .scanRoutine:
+      showingRoutineScan = true
+    }
+  }
+
+  /// Gym groups offered to the routine scan, name-sorted so the review's group menu reads in
+  /// a predictable order.
+  private var scanGymGroups: [MuscleEntry] {
+    entries
+      .filter { $0.category == ActivityCategory.gym.rawValue && !$0.isDeleted }
+      .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
   }
 
   init(context: ModelContextProtocol) {
@@ -104,42 +134,16 @@ struct ContentView: View {
         // still bounce once the content overflows — so we reach the backing UIScrollView
         // and set bounces = false. Scoped to this list via a background probe.
         .background(NoScrollBounce())
-        // Bottom stack: FAB (always) above the AI Coach button (when available).
-        // Both live in the SAME safe-area inset so the layout system positions the
-        // FAB over the coach button's REAL height — a fixed offset broke as soon as
-        // Dynamic Type grew the coach label past the guessed constant. Transparent
-        // background so the list shows through (no bar-material band).
-        .safeAreaInset(edge: .bottom) {
-          VStack(spacing: 8) {
-            AddFAB {
-              viewModel.trackAddStarted(from: .fab)
-              showingAddSheet = true
-            }
-              .frame(maxWidth: .infinity, alignment: .trailing)
-              .padding(.trailing, 20)
-            if coach.isAppleIntelligenceAvailable() {
-              Button {
-                showingRoutineModal = true
-                if coach.routineSuggestion == nil {
-                  Task { await coach.generateRoutine(from: entries) }
-                }
-              } label: {
-                HStack {
-                  Image(systemName: "sparkles")
-                  Text("ai_coach_suggest_day")
-                    .fontWeight(.medium)
-                }
-                .padding(.vertical, 10)
-                .frame(maxWidth: .infinity)
-              }
-              .buttonStyle(.borderedProminent)
-              .controlSize(.regular)
-              .tint(Color.brand)
-              .padding(.horizontal)
-              .padding(.bottom, 8)
-            }
+        // Bottom actions: AI actions side by side, "Agregar ejercicio" full width below.
+        // Transparent Liquid Glass bar on iOS 26+ (the list scrolls under it).
+        .homeActionBar(
+          aiActions: homeAIActions,
+          onAIAction: perform,
+          onAdd: {
+            viewModel.trackAddStarted(from: .fab)
+            showingAddSheet = true
           }
-        }
+        )
       }
       .navigationTitle("home_title")
       .tint(Color.brand)
@@ -240,6 +244,13 @@ struct ContentView: View {
       }
       .sheet(isPresented: $showingRoutineModal) {
         RoutineSuggestionView(viewModel: coach, entries: entries)
+      }
+      .sheet(isPresented: $showingRoutineScan) {
+        RoutineScanView(
+          scanner: RoutineScanSupport.makeScanner(),
+          gymGroups: scanGymGroups,
+          onImport: { drafts in viewModel.importScannedRoutine(drafts, groups: entries) }
+        )
       }
       .sheet(item: $workoutToLog) { item in
         HealthKitLogSheet(

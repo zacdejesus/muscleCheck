@@ -30,9 +30,12 @@ struct WorkoutEligibility {
                                   excluding excluded: Set<String> = [],
                                   restDays: Int = 1,
                                   today: Date = Date()) -> [MuscleEntry] {
-        let gym = entries.filter {
+        // One group per muscle: with "Chest" and "Pecho" both eligible the model could offer
+        // them as a "coherent pair". The survivor is the one in use, so its last session is the
+        // muscle's latest — rest is judged on the muscle, not on one of its names.
+        let gym = GroupRanking.onePerMuscle(entries.filter {
             $0.category == ActivityCategory.gym.rawValue && !$0.isDeleted
-        }
+        })
 
         let eligible = gym.filter { entry in
             guard !excluded.contains(entry.name) else { return false }

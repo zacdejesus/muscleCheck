@@ -18,9 +18,11 @@ enum AnalyticsEvent: Equatable, Sendable {
         case app, siri, healthkit
     }
 
-    /// Desde dónde se abrió el alta: dice si el FAB se ve o si la gente sigue llegando
-    /// por el empty state (§7.2).
+    /// Desde dónde se abrió el alta: dice si el botón de agregar se ve o si la gente sigue
+    /// llegando por el empty state (§7.2).
     enum AddSource: String, Sendable {
+        /// El botón principal "Agregar ejercicio" de la home. Antes era un FAB flotante; el
+        /// valor queda "fab" para no cortar la serie en Firebase.
         case fab
         case emptyState = "empty_state"
     }

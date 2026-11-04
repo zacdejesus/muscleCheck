@@ -196,6 +196,30 @@ final class ContentViewModel: ObservableObject {
     persist("Failed to delete exercise")
   }
 
+  // MARK: - Routine scan
+
+  /// Loads the reviewed drafts of a scanned routine. New groups go through
+  /// `MuscleEntryManager.addEntry` — the add screen's validation — as gym + strength, so
+  /// their exercises open in the group detail. Returns nil if the store write failed,
+  /// so the sheet can tell the user instead of showing a success that didn't happen.
+  func importScannedRoutine(_ drafts: [ScannedExerciseDraft], groups: [MuscleEntry]) -> RoutineImport.Result? {
+    do {
+      let result = try RoutineImport.apply(drafts, groups: groups) { name in
+        try muscleEntryManager.addEntry(
+          name: name,
+          category: ActivityCategory.gym.rawValue,
+          icon: ActivityCategory.gym.defaultIcon,
+          metric: .strength
+        )
+      }
+      try context.save()
+      updateCurrentEntries()
+      return result
+    } catch {
+      return nil
+    }
+  }
+
   private func persist(_ message: String) {
     do {
       try self.context.save()

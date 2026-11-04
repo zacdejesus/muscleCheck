@@ -128,6 +128,35 @@ struct WorkoutEligibilityTests {
         #expect(eligible.isEmpty)
     }
 
+    // MARK: - Same muscle in two languages
+
+    @Test
+    func theSameMuscleInTwoLanguagesIsOneCandidate() {
+        let entries = [
+            makeEntry("Chest", daysAgo: [5]),
+            makeEntry("Pecho", daysAgo: [5]),
+            makeEntry("Espalda", daysAgo: [5]),
+            makeEntry("Piernas", daysAgo: [5])
+        ]
+        let eligible = names(WorkoutEligibility.eligibleGymGroups(from: entries, today: today))
+        // Never "Chest + Pecho" as a coherent pair.
+        #expect(eligible.filter { ["Chest", "Pecho"].contains($0) }.count == 1)
+        #expect(eligible.count == 3)
+    }
+
+    @Test
+    func aMuscleTrainedUnderEitherNameIsNotRested() {
+        // "Chest" looks rested, but the same muscle was trained yesterday as "Pecho".
+        let entries = [
+            makeEntry("Chest", daysAgo: [6]),
+            makeEntry("Pecho", daysAgo: [1]),
+            makeEntry("Espalda", daysAgo: [5]),
+            makeEntry("Piernas", daysAgo: [5])
+        ]
+        let eligible = names(WorkoutEligibility.eligibleGymGroups(from: entries, today: today))
+        #expect(eligible == ["Espalda", "Piernas"])
+    }
+
     // MARK: - resolveBlocks
 
     private func gymGroups(_ names: [String]) -> [MuscleEntry] {
