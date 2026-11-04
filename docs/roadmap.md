@@ -49,6 +49,17 @@ Each bet: the stage it moves, the hypothesis, and what would kill it.
   you train most" (muscle frequency) at the bottom; drop the 8-week bar chart (the calendar
   tells the same story). Fewer destinations in the home toolbar. Touches the paywall copy
   ("Statistics" is a free item), the store listing and both platforms.
+- **Back up user data to iCloud** (4. Retention / trust): today every check, exercise and
+  progress photo lives only in the local SwiftData store, so deleting the app or moving to a
+  new iPhone wipes the user's whole history, with no way back short of restoring the entire
+  device from an iCloud backup. It happened to the developer on 2026-11-03. Plan: SwiftData
+  + CloudKit private database (`ModelConfiguration(cloudKitDatabase: .automatic)`), free for
+  everyone: losing data is not something to put behind a paywall. Preconditions: models
+  CloudKit can mirror (no `@Attribute(.unique)`, every property optional or with a default,
+  optional relationships), a migration for existing local stores, photos as
+  `.externalStorage`, and the iCloud + CloudKit capability on the app (the widget keeps
+  reading the App Group store). Android needs its own answer (Auto Backup / Drive) — out of
+  scope for this bet. Kill signal: none; this is table stakes, not an experiment.
 
 ### If the data points there
 - **Onboarding ends in a check** (2. Activation) — if the onboarding → first-check drop is
@@ -342,6 +353,11 @@ Validate `groupIndex` in range and `blocks.count == 2`; drop or trim what's inva
 *Model:* Apple's ~3B on-device model. Enough for a narrow task (common exercise knowledge +
 simple split + structured output); weak at deep reasoning — mitigated by the narrow task and
 "give me another".
+
+*Private Cloud Compute (iOS 27):* on iOS 27 the coach runs on Apple's server model, with each
+eligible group's last-4-weeks history to choose between coherent pairs and explain the choice;
+the on-device path above is the fallback (offline, over quota, slow or an invalid answer).
+Rotation stays in code. Results and the v4 prompt: `docs/feature12-prompt-tuning.md`.
 
 *Prompt tuning (done, on a real device):* see `docs/feature12-prompt-tuning.md`. Key finding:
 the model **can't rotate** (doesn't reason over history), so **rotation and variety live in

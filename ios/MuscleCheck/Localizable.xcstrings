@@ -610,6 +610,93 @@
         }
       }
     },
+    "ai_coach_model_preparing" : {
+      "comment" : "Coach error when Apple Intelligence is still downloading or updating its model.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence is still getting ready on this iPhone. Try again in a little while."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence todavía se está preparando en este iPhone. Probá de nuevo en un rato."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence est encore en préparation sur cet iPhone. Réessaie dans un moment."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence si sta ancora preparando su questo iPhone. Riprova tra poco."
+          }
+        }
+      }
+    },
+    "ai_coach_no_other_option" : {
+      "comment" : "Shown in the AI coach when \"give me another\" has no other pair of muscle groups to suggest today.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No other combination for today."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay otra combinación para hoy."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas d'autre combinaison pour aujourd'hui."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun'altra combinazione per oggi."
+          }
+        }
+      }
+    },
+    "ai_coach_retry" : {
+      "comment" : "Button on the coach error screen to ask for a suggestion again.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intentar de nuevo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprova"
+          }
+        }
+      }
+    },
     "ai_coach_suggest_day" : {
       "comment" : "Button that opens the AI coach suggested training day.",
       "extractionState" : "stale",

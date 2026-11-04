@@ -19,6 +19,9 @@
 - **Open PRs / branches:**
   - #44 Android Firebase — before merging: see events in DebugView, onboarding with clean data
     (`adb shell pm clear com.zadkiel.musclecheck`), a forced crash reaching Crashlytics.
+  - `feature/pcc-coach` AI coach on Private Cloud Compute (iOS 27) — before the PR: on the
+    iPhone, airplane mode (on-device answers, nothing half-shown), "give me another" 10× in a
+    row, see the "no other combination" notice.
   - #42 Scan a paper routine (iOS 27) — not ready: needs a real-device test on iOS 27 and English
     PR text. Design in `docs/roadmap.md` (F20); open items below.
 - **Restrict the Firebase API keys** in Google Cloud Console: iOS key → bundle ID, Android key →
@@ -49,10 +52,6 @@
       presets and coach use `TargetMuscle`); merging them ("Merge groups") is pending and only if
       analytics shows it happens to real users. Meanwhile, on the dev phone: move the exercises
       and delete the duplicate by hand.
-- [ ] **Watch CI on `xcode-27`** (2026-09-17): the workflow moved to that image and the
-      `#if compiler(>=6.4)` guards were removed, so scanning now compiles and is tested in CI.
-      GitHub marks the image as preview (Xcode 27 beta, can queue slowly): if it gets in the way,
-      go back to `macos-26` + guards, as the workflow comment explains.
 - [ ] **Archive with Crashlytics:** the foreground symbol upload is still on for archives; if
       the network hangs, the archive hangs (kill `upload-symbols` or give it a timeout).
 
@@ -64,7 +63,10 @@
   campaign links (`ct=`) per channel.
 - **Play Data safety** after #44: App activity → App interactions + Crash logs, no ad ID.
 - **App Privacy** in App Store Connect (?) — Usage Data → Product Interaction, not linked to
-  identity, no tracking.
+  identity, no tracking. With the PCC coach: confirm nothing changes (data goes to Apple, not
+  to us, and isn't stored).
+- **GA4 custom dimensions** for `coach_generated`: `engine`, `fallback_reason`,
+  `latency_bucket` — unregistered, they don't show up in reports.
 
 ## 3 · Code
 
@@ -77,3 +79,6 @@
 - **Copy:** Spanish mixes *tú* and *vos* ("Elegí otra semana", "Todavía no agregaste
   ejercicios") — unify on *tú*, like the rest of the app.
 - **CI:** add lint; later, TestFlight distribution.
+- **Crashlytics build hang:** `upload-symbols` still hangs local builds (simulator and device
+  tests) on `main`. The fix (`e67258e1`: skip the phase on simulator, block only on archive)
+  lives on `feature/scan-routine` (#42); bring it to `main` on its own.
