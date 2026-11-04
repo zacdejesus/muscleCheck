@@ -36,6 +36,9 @@ enum AnalyticsEvent: Equatable, Sendable {
     /// Una presentación del alta que terminó con al menos un alta. `category` y `metric`
     /// son los del último agregado; `count`, cuántos quedaron (los deshechos no suman).
     case exerciseAddCompleted(category: String, metric: MetricType, fromPreset: Bool, count: Int)
+    /// The AI coach produced a suggestion (first or "give me another"): which model
+    /// answered, why it fell back to on-device if it did, and how long it took (§7.5).
+    case coachGenerated(engine: CoachEngine, fallbackReason: CoachFallbackReason?, latencyMilliseconds: Int)
 
     var name: String {
         switch self {
@@ -44,6 +47,7 @@ enum AnalyticsEvent: Equatable, Sendable {
         case .activityChecked: return "activity_checked"
         case .exerciseAddStarted: return "exercise_add_started"
         case .exerciseAddCompleted: return "exercise_add_completed"
+        case .coachGenerated: return "coach_generated"
         }
     }
 
@@ -73,6 +77,24 @@ enum AnalyticsEvent: Equatable, Sendable {
                 "from_preset": fromPreset ? 1 : 0,
                 "count": count
             ]
+        case let .coachGenerated(engine, fallbackReason, latencyMilliseconds):
+            var params: [String: Any] = [
+                "engine": engine.rawValue,
+                "latency_bucket": Self.latencyBucket(milliseconds: latencyMilliseconds)
+            ]
+            if let fallbackReason { params["fallback_reason"] = fallbackReason.rawValue }
+            return params
+        }
+    }
+
+    /// Coach latency in a few buckets rather than raw milliseconds: enough to see PCC
+    /// slowing down without exploding the parameter's cardinality.
+    static func latencyBucket(milliseconds: Int) -> String {
+        switch milliseconds {
+        case ..<2_000: return "<2s"
+        case ..<4_000: return "2-4s"
+        case ..<6_000: return "4-6s"
+        default: return ">6s"
         }
     }
 

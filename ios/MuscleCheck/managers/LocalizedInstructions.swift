@@ -4,10 +4,12 @@
 //
 //  Created by Alejandro De Jesus on 24/10/2025.
 //
-//  Localized instructions/prompt for the AI Coach (Feature 12). The instruction is
-//  the tuned, on-device winner from docs/feature12-prompt-tuning.md: it does NOT ask
-//  the model to rotate or reason over history (that lives in WorkoutEligibility) — it
-//  only asks for a coherent pair + group-specific exercises.
+//  Localized instructions/prompts for the AI Coach (Feature 12), tuned on device —
+//  see docs/feature12-prompt-tuning.md. Neither asks the model to rotate (that lives
+//  in WorkoutEligibility):
+//  - On-device: only a coherent pair + group-specific exercises, no history.
+//  - Private Cloud Compute: the same, plus each group's last-4-weeks history, used
+//    only to choose between coherent pairs and to explain the choice.
 //
 
 import FoundationModels
@@ -103,7 +105,7 @@ struct LocalizedStrings {
 
     /// Warmup prompt prefix to reduce cold-start latency on first real call.
     @available(iOS 26, *)
-    static var promtPrefix: Prompt {
+    static var promptPrefix: Prompt {
         let lang = appLanguage
         switch lang {
         case "es":
@@ -114,6 +116,118 @@ struct LocalizedStrings {
             return Prompt("Gruppi disponibili (scegli per indice): 0=Schiena, 1=Bicipiti, 2=Petto, 3=Tricipiti")
         default:
             return Prompt("Available groups (pick by index): 0=Back, 1=Biceps, 2=Chest, 3=Triceps")
+        }
+    }
+
+    // MARK: - Private Cloud Compute
+
+    /// Coach rules for the Private Cloud Compute model: coherence first, the history
+    /// only as a tie-breaker. Letting "least trained" weigh in freely made it pair
+    /// whatever was neglected, coherent or not.
+    @available(iOS 26, *)
+    static var cloudCoachInstructions: Instructions {
+        switch appLanguage {
+        case "es":
+            return Instructions {
+                "Sos un entrenador de gimnasio."
+                "De la lista de grupos DISPONIBLES, elegí EXACTAMENTE 2 que formen un día coherente que se entrene junto (empuje: pecho/hombros/tríceps; tirón: espalda/bíceps; piernas: piernas/abdomen)."
+                "Elegí por índice."
+                "Primero elegí un par coherente. Solo si hay varios pares coherentes, usá el historial para decidir entre ellos (preferí los menos entrenados). Nunca sacrifiques la coherencia por el historial."
+                "El foco tiene que describir los grupos elegidos. La justificación menciona el historial y nombra los grupos por su nombre, nunca por su índice."
+                "Para CADA grupo dá 3 ejercicios que trabajen ESPECÍFICAMENTE ese músculo; nunca pongas ejercicios de otro grupo (ej: no pongas sentadillas en bíceps, ni curls en tríceps)."
+                "Respondé en español."
+            }
+        case "fr":
+            return Instructions {
+                "Tu es un coach de gym."
+                "Dans la liste des groupes DISPONIBLES, choisis EXACTEMENT 2 qui forment une journée cohérente entraînée ensemble (poussée : pectoraux/épaules/triceps ; tirage : dos/biceps ; jambes : jambes/abdos)."
+                "Choisis par index."
+                "Choisis d'abord une paire cohérente. Seulement s'il y a plusieurs paires cohérentes, utilise l'historique pour choisir entre elles (préfère les moins entraînés). Ne sacrifie jamais la cohérence pour l'historique."
+                "Le focus doit décrire les groupes choisis. La justification mentionne l'historique et désigne les groupes par leur nom, jamais par leur index."
+                "Pour CHAQUE groupe, donne 3 exercices qui ciblent SPÉCIFIQUEMENT ce muscle ; ne mets jamais d'exercices d'un autre groupe (ex : pas de squats pour les biceps, ni de curls pour les triceps)."
+                "Réponds en français."
+            }
+        case "it":
+            return Instructions {
+                "Sei un coach di palestra."
+                "Dalla lista dei gruppi DISPONIBILI, scegli ESATTAMENTE 2 che formino una giornata coerente da allenare insieme (spinta: petto/spalle/tricipiti; trazione: schiena/bicipiti; gambe: gambe/addome)."
+                "Scegli per indice."
+                "Prima scegli una coppia coerente. Solo se ci sono più coppie coerenti, usa lo storico per decidere tra loro (preferisci i meno allenati). Non sacrificare mai la coerenza per lo storico."
+                "Il focus deve descrivere i gruppi scelti. La motivazione menziona lo storico e indica i gruppi per nome, mai per indice."
+                "Per OGNI gruppo dai 3 esercizi che lavorino SPECIFICAMENTE quel muscolo; non mettere mai esercizi di un altro gruppo (es: niente squat nei bicipiti, né curl nei tricipiti)."
+                "Rispondi in italiano."
+            }
+        default:
+            return Instructions {
+                "You are a gym coach."
+                "From the list of AVAILABLE groups, pick EXACTLY 2 that make a coherent day trained together (push: chest/shoulders/triceps; pull: back/biceps; legs: legs/abs)."
+                "Pick by index."
+                "First pick a coherent pair. Only when several coherent pairs are available, use the history to choose between them (prefer the least trained). Never trade coherence for history."
+                "The focus label must describe the chosen groups. The rationale mentions the history and names the groups, never their index."
+                "For EACH group give 3 exercises that work SPECIFICALLY that muscle; never put exercises from another group (e.g. no squats under biceps, no curls under triceps)."
+                "Answer in English."
+            }
+        }
+    }
+
+    /// Per-call prompt for Private Cloud Compute: the eligible groups, one per line, as
+    /// `index=name: last trained; sessions in the last 4 weeks`.
+    static func cloudCoachPrompt(history: [CoachHistory.Line]) -> String {
+        let lines = history.map { line in
+            "\(line.index)=\(line.name): \(lastTrained(line.daysSinceLast)); \(line.sessionsInWindow)"
+        }.joined(separator: "\n")
+
+        switch appLanguage {
+        case "es":
+            return """
+            Grupos disponibles (elegí por índice; último entrenamiento; sesiones en las últimas 4 semanas):
+            \(lines)
+
+            ¿Qué día de entrenamiento (exactamente 2 grupos coherentes + 3 ejercicios cada uno) me recomendás para hoy? Escribí TODO en español: focus, ejercicios y justificación.
+            """
+        case "fr":
+            return """
+            Groupes disponibles (choisis par index ; dernier entraînement ; séances des 4 dernières semaines) :
+            \(lines)
+
+            Quelle journée d'entraînement (exactement 2 groupes cohérents + 3 exercices chacun) me recommandes-tu pour aujourd'hui ? Écris TOUT en français : focus, exercices et justification.
+            """
+        case "it":
+            return """
+            Gruppi disponibili (scegli per indice; ultimo allenamento; sessioni nelle ultime 4 settimane):
+            \(lines)
+
+            Quale giornata di allenamento (esattamente 2 gruppi coerenti + 3 esercizi ciascuno) mi consigli per oggi? Scrivi TUTTO in italiano: focus, esercizi e motivazione.
+            """
+        default:
+            return """
+            Available groups (pick by index; last trained; sessions in the last 4 weeks):
+            \(lines)
+
+            What training day (exactly 2 coherent groups + 3 exercises each) do you recommend for today? Write EVERYTHING in English: focus, exercises and rationale.
+            """
+        }
+    }
+
+    /// "yesterday", "6 days ago"… `nil` means not within the history window.
+    private static func lastTrained(_ days: Int?) -> String {
+        switch (appLanguage, days) {
+        case ("es", nil): return "no en las últimas 4 semanas"
+        case ("es", 0?): return "hoy"
+        case ("es", 1?): return "ayer"
+        case ("es", let days?): return "hace \(days) días"
+        case ("fr", nil): return "pas ces 4 dernières semaines"
+        case ("fr", 0?): return "aujourd'hui"
+        case ("fr", 1?): return "hier"
+        case ("fr", let days?): return "il y a \(days) jours"
+        case ("it", nil): return "non nelle ultime 4 settimane"
+        case ("it", 0?): return "oggi"
+        case ("it", 1?): return "ieri"
+        case ("it", let days?): return "\(days) giorni fa"
+        case (_, nil): return "not in the last 4 weeks"
+        case (_, 0?): return "today"
+        case (_, 1?): return "yesterday"
+        case (_, let days?): return "\(days) days ago"
         }
     }
 }
