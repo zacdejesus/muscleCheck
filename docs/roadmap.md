@@ -7,7 +7,7 @@
 
 ## Where we are
 
-- Live on the App Store (2.2.2) and Google Play.
+- Live on the App Store and Google Play (2.3.0).
 - Activation analytics (Phase 1) shipped on iOS in 2.2.2; Android in PR #44.
 - Few users: no dashboard will say anything statistically yet. Look for **cliffs**, not
   percentages, and pair every number with a conversation (`analytics-plan.md` §13).
@@ -112,6 +112,7 @@ The pillars, as a filter for bets rather than a to-do list:
 | 2.2.0 | Per-exercise metrics + unified add screen + FAB (F18) + exercises inside a group (F19) — shipped as 2.2.0 (2), Jul 22 |
 | 2.2.1 | Home crash fix (`exercisesSummary`) + Crashlytics diagnostics + App Intents without `fatalError` |
 | 2.2.2 | Review prompt + activation analytics (Phase 1) |
+| 2.3.0 | iOS: AI coach on Private Cloud Compute with on-device fallback, routine scanning (iOS 27), exercise pictograms, iPhone Duo layout. Android (versionCode 3): targetSdk 36, add-sheet data-loss fix, complete color scheme and TalkBack labels, paywall hidden in release until RevenueCat |
 
 ### B. Shipped features
 
