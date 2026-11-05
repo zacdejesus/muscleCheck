@@ -25,12 +25,12 @@ val hasReleaseSigning = keystoreProperties.getProperty("storeFile") != null
 
 android {
     namespace = "com.zadkiel.musclecheck"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.zadkiel.musclecheck"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         // Play's own counter (first upload = 1); the name tracks the shared
         // product version with iOS.
         versionCode = 3
