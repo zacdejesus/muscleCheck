@@ -2,7 +2,6 @@ package com.zadkiel.musclecheck.ui.onboarding
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,10 +28,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.Role
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -82,13 +88,19 @@ class OnboardingViewModel @Inject constructor(
 /** Two screens, zero permissions: show the mental model, personalize the list, get out. */
 @Composable
 fun OnboardingScreen(viewModel: OnboardingViewModel = hiltViewModel()) {
-    var step by remember { mutableStateOf(0) }
+    // Saveable, like the selection below: rotation or a process restore keeps the user's place.
+    var step by rememberSaveable { mutableIntStateOf(0) }
+    var selected by rememberSaveable(stateSaver = CategorySetSaver) { mutableStateOf(setOf(ActivityCategory.GYM)) }
     LaunchedEffect(Unit) { viewModel.trackStarted() }
+    // System back on the picker returns to the welcome step instead of closing the app.
+    BackHandler(enabled = step == 1) { step = 0 }
 
     AnimatedContent(targetState = step, label = "onboarding") { current ->
         when (current) {
             0 -> WelcomeStep(onContinue = { step = 1 })
             else -> CategoryPickerStep(
+                selected = selected,
+                onSelectedChange = { selected = it },
                 onContinue = { selected -> viewModel.complete(selected) },
                 onSkip = { viewModel.skip() },
             )
@@ -102,15 +114,20 @@ private fun WelcomeStep(onContinue: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            // No Scaffold here: keep the title off the status bar and the button off the
+            // gesture or 3-button navigation bar.
+            .safeDrawingPadding()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.weight(1f))
 
-        // Demo checklist: static preview of the core loop.
+        // Demo checklist: static preview of the core loop. Hidden from TalkBack: a fake
+        // list read aloud ("Gym, Yoga, Running") only sounds like real controls.
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .clearAndSetSemantics {}
                 .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -155,13 +172,13 @@ private fun DemoRow(
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), RoundedCornerShape(8.dp)),
+                .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = AppIcons.forKey(category.defaultIcon),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.size(18.dp),
             )
         }
@@ -177,14 +194,15 @@ private fun DemoRow(
 
 @Composable
 private fun CategoryPickerStep(
+    selected: Set<ActivityCategory>,
+    onSelectedChange: (Set<ActivityCategory>) -> Unit,
     onContinue: (Set<ActivityCategory>) -> Unit,
     onSkip: () -> Unit,
 ) {
-    var selected by remember { mutableStateOf(setOf(ActivityCategory.GYM)) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .safeDrawingPadding()
             .padding(24.dp),
     ) {
         Spacer(Modifier.height(24.dp))
@@ -213,12 +231,12 @@ private fun CategoryPickerStep(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                            if (isSelected) MaterialTheme.colorScheme.primaryContainer
                             else MaterialTheme.colorScheme.surface,
                             RoundedCornerShape(12.dp),
                         )
-                        .clickable {
-                            selected = if (isSelected) selected - category else selected + category
+                        .toggleable(value = isSelected, role = Role.Checkbox) {
+                            onSelectedChange(if (isSelected) selected - category else selected + category)
                         }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -253,3 +271,9 @@ private fun CategoryPickerStep(
         }
     }
 }
+
+/** Saves the picked categories as their names, which a Bundle can hold. */
+private val CategorySetSaver = Saver<Set<ActivityCategory>, ArrayList<String>>(
+    save = { set -> ArrayList(set.map { it.name }) },
+    restore = { names -> names.mapNotNull { name -> ActivityCategory.entries.firstOrNull { it.name == name } }.toSet() },
+)

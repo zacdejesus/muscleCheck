@@ -64,6 +64,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.material3.IconToggleButton
+import androidx.compose.foundation.layout.PaddingValues
 import com.zadkiel.musclecheck.domain.model.Exercise
 import com.zadkiel.musclecheck.domain.model.MetricType
 
@@ -90,7 +96,9 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.home_title)) },
+                title = {
+                    Text(stringResource(R.string.home_title), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                },
                 navigationIcon = {
                     TextButton(onClick = onOpenHistory) {
                         Text(stringResource(R.string.navigation_history_button))
@@ -118,7 +126,8 @@ fun HomeScreen(
             }) {
                 Icon(
                     Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.add_new_muscle_group),
+                    // Named like the sheet it opens, as on iOS.
+                    contentDescription = stringResource(R.string.add_sheet_title),
                 )
             }
         },
@@ -141,7 +150,12 @@ fun HomeScreen(
                     showAddSheet = true
                 })
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                // Bottom padding clears the FAB (56dp + 16dp margin + room), which otherwise
+                // sits on top of the last row's check.
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 88.dp),
+                ) {
                     val showHeaders = state.groups.size > 1
                     state.groups.forEach { group ->
                         if (showHeaders) {
@@ -368,7 +382,9 @@ private fun MuscleEntryRow(
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(
+                onClickLabel = if (metric.logsSomething) stringResource(R.string.a11y_open_exercises) else null,
                 onClick = onOpenDetail,
+                onLongClickLabel = stringResource(R.string.delete),
                 onLongClick = onLongPress,
             )
             .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -378,46 +394,67 @@ private fun MuscleEntryRow(
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), RoundedCornerShape(8.dp)),
+                .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = AppIcons.forKey(entry.icon),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.size(18.dp),
             )
         }
         Spacer(Modifier.width(12.dp))
-        Text(entry.name, style = MaterialTheme.typography.bodyLarge)
+        // Name and summary share the flexible width, so a long summary (French or Italian
+        // "3 exercises · Deadlift 100 kg") ellipsizes instead of squeezing the check out.
+        Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                entry.name,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+            )
 
-        // "80 kg" for a bare group, "3 ejercicios · Peso muerto 100 kg" once it has
-        // exercises — assembled here because the count needs a plural resource.
-        summary?.let { s ->
-            val label = when {
-                s.exerciseCount > 0 && s.recentName != null && s.recentValue != null ->
-                    "${pluralStringResource(R.plurals.exercise_count, s.exerciseCount, s.exerciseCount)} · " +
-                        "${s.recentName} ${s.recentValue}"
-                s.exerciseCount > 0 ->
-                    pluralStringResource(R.plurals.exercise_count, s.exerciseCount, s.exerciseCount)
-                else -> s.ownLabel
-            }
-            if (label != null) {
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            // "80 kg" for a bare group, "3 ejercicios · Peso muerto 100 kg" once it has
+            // exercises — assembled here because the count needs a plural resource.
+            summary?.let { s ->
+                val label = when {
+                    s.exerciseCount > 0 && s.recentName != null && s.recentValue != null ->
+                        "${pluralStringResource(R.plurals.exercise_count, s.exerciseCount, s.exerciseCount)} · " +
+                            "${s.recentName} ${s.recentValue}"
+                    s.exerciseCount > 0 ->
+                        pluralStringResource(R.plurals.exercise_count, s.exerciseCount, s.exerciseCount)
+                    else -> s.ownLabel
+                }
+                if (label != null) {
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                }
             }
         }
 
-        Spacer(Modifier.weight(1f))
-
-        IconButton(onClick = onToggle) {
+        // A checkbox to TalkBack, named after the activity it marks: "Chest, checkbox,
+        // Trained" instead of eight identical "Not trained yet" buttons.
+        val state = stringResource(if (entry.isChecked) R.string.checked_today else R.string.not_checked)
+        IconToggleButton(
+            checked = entry.isChecked,
+            onCheckedChange = { onToggle() },
+            modifier = Modifier.semantics {
+                contentDescription = entry.name
+                stateDescription = state
+            },
+        ) {
             Icon(
                 imageVector = if (entry.isChecked) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
-                contentDescription = stringResource(if (entry.isChecked) R.string.checked_today else R.string.not_checked),
+                contentDescription = null,
                 tint = if (entry.isChecked) accents.success else MaterialTheme.colorScheme.outline,
             )
         }
