@@ -33,8 +33,8 @@ android {
         targetSdk = 35
         // Play's own counter (first upload = 1); the name tracks the shared
         // product version with iOS.
-        versionCode = 2
-        versionName = "2.2.0"
+        versionCode = 3
+        versionName = "2.3.0"
 
         // Debug builds print analytics events to Logcat and send nothing. Building with
         // `-PanalyticsDebug` also sends them to Firebase, to watch them in DebugView (the
