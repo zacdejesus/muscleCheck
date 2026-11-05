@@ -25,16 +25,16 @@ val hasReleaseSigning = keystoreProperties.getProperty("storeFile") != null
 
 android {
     namespace = "com.zadkiel.musclecheck"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.zadkiel.musclecheck"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         // Play's own counter (first upload = 1); the name tracks the shared
         // product version with iOS.
-        versionCode = 2
-        versionName = "2.2.0"
+        versionCode = 3
+        versionName = "2.3.0"
 
         // Debug builds print analytics events to Logcat and send nothing. Building with
         // `-PanalyticsDebug` also sends them to Firebase, to watch them in DebugView (the
