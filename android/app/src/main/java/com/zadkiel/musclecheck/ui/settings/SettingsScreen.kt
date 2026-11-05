@@ -210,6 +210,7 @@ fun SettingsScreen(
                         stringResource(R.string.pro_coming_soon),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(16.dp),
                     )
                 } else {
                     Button(
