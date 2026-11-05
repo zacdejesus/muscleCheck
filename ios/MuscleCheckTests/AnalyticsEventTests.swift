@@ -18,8 +18,8 @@ struct AnalyticsEventTests {
         .activityChecked(category: ActivityCategory.gym.rawValue, metric: .strength, source: .app, secondsSinceOpen: 3),
         .exerciseAddStarted(source: .fab),
         .exerciseAddCompleted(category: ActivityCategory.yoga.rawValue, metric: .duration, fromPreset: true, count: 2),
-        .coachGenerated(engine: .privateCloud, fallbackReason: nil, latencyMilliseconds: 2_100),
-        .coachGenerated(engine: .onDevice, fallbackReason: .timeout, latencyMilliseconds: 8_900)
+        .coachGenerated(engine: .privateCloud, fallbackReason: nil, latencyMilliseconds: 2_100, pictogramCount: 4),
+        .coachGenerated(engine: .onDevice, fallbackReason: .timeout, latencyMilliseconds: 8_900, pictogramCount: 4)
     ]
 
     @Test(arguments: allEvents)
@@ -43,7 +43,7 @@ struct AnalyticsEventTests {
         #expect(AnalyticsEvent.activityChecked(category: "gym", metric: .none, source: .siri, secondsSinceOpen: nil).name == "activity_checked")
         #expect(AnalyticsEvent.exerciseAddStarted(source: .emptyState).name == "exercise_add_started")
         #expect(AnalyticsEvent.exerciseAddCompleted(category: "gym", metric: .none, fromPreset: false, count: 1).name == "exercise_add_completed")
-        #expect(AnalyticsEvent.coachGenerated(engine: .onDevice, fallbackReason: nil, latencyMilliseconds: 0).name == "coach_generated")
+        #expect(AnalyticsEvent.coachGenerated(engine: .onDevice, fallbackReason: nil, latencyMilliseconds: 0, pictogramCount: 4).name == "coach_generated")
     }
 
     @Test
@@ -91,13 +91,19 @@ struct AnalyticsEventTests {
 
     @Test
     func coachGeneratedSendsTheFallbackReasonOnlyWhenThereIsOne() {
-        let pcc = AnalyticsEvent.coachGenerated(engine: .privateCloud, fallbackReason: nil, latencyMilliseconds: 2_100)
+        let pcc = AnalyticsEvent.coachGenerated(engine: .privateCloud, fallbackReason: nil, latencyMilliseconds: 2_100, pictogramCount: 4)
         #expect(pcc.parameters["engine"] as? String == "pcc")
         #expect(pcc.parameters["fallback_reason"] == nil)
+        #expect(pcc.parameters["pictogram_coverage"] as? String == "3-4")
 
-        let fallback = AnalyticsEvent.coachGenerated(engine: .onDevice, fallbackReason: .quota, latencyMilliseconds: 3_000)
+        let fallback = AnalyticsEvent.coachGenerated(engine: .onDevice, fallbackReason: .quota, latencyMilliseconds: 3_000, pictogramCount: 4)
         #expect(fallback.parameters["engine"] as? String == "on_device")
         #expect(fallback.parameters["fallback_reason"] as? String == "quota")
+    }
+
+    @Test(arguments: [(0, "0"), (1, "1-2"), (2, "1-2"), (3, "3-4"), (4, "3-4"), (5, "5-6"), (8, "5-6")])
+    func pictogramCoverageIsBucketed(_ count: Int, _ bucket: String) {
+        #expect(AnalyticsEvent.pictogramCoverageBucket(count: count) == bucket)
     }
 
     @Test(arguments: [(0, "<2s"), (1_999, "<2s"), (2_000, "2-4s"), (5_999, "4-6s"), (6_000, ">6s"), (30_000, ">6s")])

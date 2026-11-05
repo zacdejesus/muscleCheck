@@ -98,12 +98,14 @@ final class RoutineCoachViewModel: ObservableObject {
                 self?.routineSuggestion = partial
             }
             let elapsed = (clock.now - start).components
+            let suggestion = result.suggestion
             analytics.track(.coachGenerated(
                 engine: result.engine,
                 fallbackReason: result.fallbackReason,
-                latencyMilliseconds: Int(elapsed.seconds * 1_000 + elapsed.attoseconds / 1_000_000_000_000_000)
+                latencyMilliseconds: Int(elapsed.seconds * 1_000 + elapsed.attoseconds / 1_000_000_000_000_000),
+                pictogramCount: suggestion.blocks.flatMap(\.exercises)
+                    .filter { ExerciseCatalog.motion(for: $0) != nil }.count
             ))
-            let suggestion = result.suggestion
             // The Siri-language hint is about the on-device model; PCC follows the prompt.
             if result.engine == .privateCloud { aiLanguageMismatch = false }
             routineSuggestion = suggestion

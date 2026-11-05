@@ -1,6 +1,6 @@
 //
 //  ExerciseCatalog.swift
-//  MuscleCheck — Feature: escanear rutina en papel
+//  MuscleCheck — Feature: escanear rutina en papel; also picks the AI coach's pictograms
 //
 //  Common exercises → the muscle they train (ES/EN/FR/IT). The on-device model names muscles by
 //  how a word SOUNDS: in the iPhone evaluation "Prensa" (leg press) came back as chest five
@@ -24,25 +24,68 @@ enum ExerciseCatalog {
     /// Whole-word match on folded text (case, accents and punctuation ignored); the most specific
     /// phrase wins ("press de piernas" before "press militar" before "curl").
     static func lookup(_ exercise: String) -> Lookup {
-        let folded = NameMatching.fold(exercise)
-        guard !folded.isEmpty else { return .unknown }
-        let padded = " \(folded) "
-        for entry in sortedEntries where padded.contains(" \(entry.phrase) ") {
-            return .known(entry.muscle)
-        }
-        return .unknown
+        guard let entry = bestEntry(for: exercise) else { return .unknown }
+        return .known(entry.muscle)
     }
 
-    private typealias Entry = (phrase: String, muscle: TargetMuscle?)
+    /// The pictogram for an exercise name, or nil when the most specific phrase it matches is
+    /// not one we draw. Strict on purpose: "Sentadilla búlgara" matches its own undrawn phrase
+    /// before "sentadilla", so it gets no drawing instead of the wrong one.
+    static func motion(for exercise: String) -> ExerciseMotion? {
+        bestEntry(for: exercise)?.motion
+    }
 
-    /// More words first, then longer phrases, so "curl femoral" is tried before "curl".
-    private static let sortedEntries: [Entry] = entries.sorted {
-        let lhsWords = $0.phrase.split(separator: " ").count, rhsWords = $1.phrase.split(separator: " ").count
-        return lhsWords != rhsWords ? lhsWords > rhsWords : $0.phrase.count > $1.phrase.count
+    private static func bestEntry(for exercise: String) -> Entry? {
+        let folded = NameMatching.fold(exercise)
+        guard !folded.isEmpty else { return nil }
+        let padded = " \(folded) "
+        return sortedEntries.first { padded.contains(" \($0.phrase) ") }
+    }
+
+    private typealias Entry = (phrase: String, muscle: TargetMuscle?, motion: ExerciseMotion?)
+
+    /// The muscle table plus every motion phrase (a motion's phrase replaces the same phrase in
+    /// the muscle table). More words first, then longer phrases, so "curl femoral" is tried
+    /// before "curl".
+    private static let sortedEntries: [Entry] = {
+        var byPhrase: [String: Entry] = [:]
+        for entry in entries { byPhrase[entry.phrase] = entry }
+        for motion in ExerciseMotion.allCases {
+            for phrase in motion.phrases.map(NameMatching.fold) {
+                byPhrase[phrase] = (phrase, motion.muscle, motion)
+            }
+        }
+        // The coach often pluralizes ("Bent-over rows", "Seated cable rows"): each motion
+        // phrase also matches with its last word in the plural, unless that's already a
+        // phrase of its own.
+        for motion in ExerciseMotion.allCases {
+            for phrase in motion.phrases.map(NameMatching.fold) {
+                let plural = pluralized(phrase)
+                if byPhrase[plural] == nil { byPhrase[plural] = (plural, motion.muscle, motion) }
+            }
+        }
+        return byPhrase.values.sorted(by: isMoreSpecific)
+    }()
+
+    /// English-style plural of the last word: "row" → "rows", "press" → "presses",
+    /// "crunch" → "crunches", "dips" stays. Good enough for the other languages too, whose plurals are mostly listed.
+    static func pluralized(_ phrase: String) -> String {
+        if phrase.hasSuffix("ss") || phrase.hasSuffix("ch") || phrase.hasSuffix("sh") || phrase.hasSuffix("x") {
+            return phrase + "es"
+        }
+        if phrase.hasSuffix("s") { return phrase }
+        return phrase + "s"
+    }
+
+    private static func isMoreSpecific(_ lhs: Entry, _ rhs: Entry) -> Bool {
+        let lhsWords = lhs.phrase.split(separator: " ").count, rhsWords = rhs.phrase.split(separator: " ").count
+        guard lhsWords == rhsWords else { return lhsWords > rhsWords }
+        // Ties broken by length, then alphabetically, so the order never depends on hashing.
+        return lhs.phrase.count != rhs.phrase.count ? lhs.phrase.count > rhs.phrase.count : lhs.phrase < rhs.phrase
     }
 
     private static func group(_ muscle: TargetMuscle?, _ names: [String]) -> [Entry] {
-        names.map { (NameMatching.fold($0), muscle) }
+        names.map { (NameMatching.fold($0), muscle, nil) }
     }
 
     private static let entries: [Entry] =
@@ -58,7 +101,7 @@ enum ExerciseCatalog {
             "dominadas", "dominada", "pull ups", "pull up", "pullups", "chin ups", "chin up", "jalón", "jalones",
             "jalón al pecho", "jalón tras nuca", "lat pulldown", "pulldown", "remo", "remos", "remo con barra",
             "remo con mancuerna", "row", "rows", "barbell row", "seated row", "peso muerto", "deadlift",
-            "hiperextensiones", "hiperextensión", "extensión lumbar", "pullover", "tractions", "traction",
+            "hiperextensiones", "hiperextensión", "extensión lumbar", "pullover", "straight arm pulldown", "tractions", "traction",
             "tirage", "rowing", "soulevé de terre", "lat machine", "rematore", "trazioni", "stacco",
             "stacco da terra", "pulley",
         ])
@@ -108,7 +151,7 @@ enum ExerciseCatalog {
             "encogimientos abdominales", "elevación de piernas", "elevaciones de piernas", "leg raise",
             "leg raises", "russian twist", "rueda abdominal", "ab wheel", "mountain climbers", "mountain climber",
             "escaladores", "hollow", "dead bug", "sit ups", "sit up", "oblicuos", "gainage", "crunch addominali",
-            "plank laterale", "bicicleta abdominal",
+            "plank laterale", "bicicleta abdominal", "plancha con elevación de pierna",
         ])
         + group(.forearms, [
             "curl de muñeca", "curl muñeca", "wrist curl", "wrist curls", "antebrazo", "antebrazos",

@@ -113,15 +113,19 @@ struct RoutineSuggestionView: View {
                 .font(.appHeadline)
                 .foregroundColor(Color.brand)
             ForEach(block.exercises, id: \.self) { exercise in
-                Label(exercise, systemImage: "circle.fill")
-                    .labelStyle(BulletLabelStyle())
-                    .font(.appBody)
+                ExerciseRow(name: exercise, groupIcon: groupIcon(named: block.groupName))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    /// The suggestion only keeps the group's name (it's cached for the day), so the icon is
+    /// looked up live; a group renamed or deleted since falls back to the gym icon.
+    private func groupIcon(named name: String) -> String {
+        entries.first { $0.name == name }?.icon ?? ActivityCategory.gym.defaultIcon
     }
 
     private func coachButton(title: LocalizedStringKey, systemImage: String,
@@ -143,17 +147,5 @@ struct RoutineSuggestionView: View {
         .buttonStyle(.borderedProminent)
         .tint(Color.brand)
         .disabled(viewModel.isGeneratingRoutine)
-    }
-}
-
-/// Small bullet for exercise lists (tiny dot + text).
-private struct BulletLabelStyle: LabelStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            configuration.icon
-                .font(.system(size: 5))
-                .foregroundStyle(.secondary)
-            configuration.title
-        }
     }
 }
