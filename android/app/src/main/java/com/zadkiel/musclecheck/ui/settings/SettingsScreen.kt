@@ -62,6 +62,7 @@ import com.zadkiel.musclecheck.BuildConfig
 import com.zadkiel.musclecheck.R
 import com.zadkiel.musclecheck.data.prefs.UserPreferencesRepository
 import com.zadkiel.musclecheck.data.pro.ProAccessManager
+import com.zadkiel.musclecheck.data.pro.ProStore
 import com.zadkiel.musclecheck.data.repository.MuscleRepository
 import com.zadkiel.musclecheck.domain.model.ActivityCategory
 import com.zadkiel.musclecheck.domain.model.WeightUnit
@@ -172,7 +173,7 @@ fun SettingsScreen(
                 title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.navigate_up))
                     }
                 },
             )
@@ -204,6 +205,12 @@ fun SettingsScreen(
                     TextButton(onClick = viewModel::restorePurchases) {
                         Text(stringResource(R.string.settings_restore_purchases))
                     }
+                } else if (!ProStore.purchasesEnabled) {
+                    Text(
+                        stringResource(R.string.pro_coming_soon),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 } else {
                     Button(
                         onClick = onOpenPaywall,
@@ -313,9 +320,8 @@ fun SettingsScreen(
                                 selected = state.weightUnit == unit,
                                 onClick = { viewModel.setWeightUnit(unit) },
                                 shape = SegmentedButtonDefaults.itemShape(index = index, count = WeightUnit.entries.size),
-                                // Default M3 colors paint the active segment with the
-                                // secondary container (purple) — the only off-palette
-                                // element in an otherwise blue app.
+                                // Brand-blue active segment, like the rest of the app's
+                                // selected states (M3's default is the secondary container).
                                 colors = SegmentedButtonDefaults.colors(
                                     activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                     activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,

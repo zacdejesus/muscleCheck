@@ -42,7 +42,6 @@
     <string name="stretching_lower">Stretching inferiore</string>
     <string name="stretching_full">Stretching completo</string>
     <string name="navigation_history_button">Cronologia</string>
-    <string name="add_new_muscle_group">Aggiungi gruppo muscolare</string>
     <string name="empty_state_message">Ancora niente questa settimana. Aggiungi la tua prima attività.</string>
     <string name="streak_current">settimane di fila</string>
     <string name="streak_max">Migliore</string>
@@ -183,4 +182,11 @@
         <item quantity="one">%1$d giorno di allenamento a %2$s</item>
         <item quantity="other">%1$d giorni di allenamento a %2$s</item>
     </plurals>
+
+    <!-- Accessibility and Pro availability -->
+    <string name="navigate_up">Indietro</string>
+    <string name="a11y_open_exercises">Vedi esercizi</string>
+    <string name="pro_coming_soon">Pro arriva presto su Android.</string>
+    <string name="a11y_decrease">Diminuisci %1$s</string>
+    <string name="a11y_increase">Aumenta %1$s</string>
 </resources>

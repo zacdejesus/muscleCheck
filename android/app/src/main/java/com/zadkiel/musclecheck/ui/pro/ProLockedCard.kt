@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.zadkiel.musclecheck.R
+import com.zadkiel.musclecheck.data.pro.ProStore
 
 /** Full-screen Pro upsell shown in place of a gated feature (mirrors iOS ProFeatureGate `.card`). */
 @Composable
@@ -63,8 +64,17 @@ fun ProLockedCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
-                Button(onClick = onUpgrade) {
-                    Text(stringResource(R.string.pro_unlock_button), fontWeight = FontWeight.SemiBold)
+                if (ProStore.purchasesEnabled) {
+                    Button(onClick = onUpgrade) {
+                        Text(stringResource(R.string.pro_unlock_button), fontWeight = FontWeight.SemiBold)
+                    }
+                } else {
+                    Text(
+                        stringResource(R.string.pro_coming_soon),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center,
+                    )
                 }
             }
         }
