@@ -133,7 +133,9 @@ struct LocalizedStrings {
                 "De la lista de grupos DISPONIBLES, elegí EXACTAMENTE 2 que formen un día coherente que se entrene junto (empuje: pecho/hombros/tríceps; tirón: espalda/bíceps; piernas: piernas/abdomen)."
                 "Elegí por índice."
                 "Primero elegí un par coherente. Solo si hay varios pares coherentes, usá el historial para decidir entre ellos (preferí los menos entrenados). Nunca sacrifiques la coherencia por el historial."
-                "El foco tiene que describir los grupos elegidos. La justificación menciona el historial y nombra los grupos por su nombre, nunca por su índice."
+                "El foco tiene que describir los grupos elegidos."
+                "La justificación es UNA frase corta para el usuario, en segunda persona, sobre lo que entrenó. Ejemplo: 'No hiciste espalda ni bíceps en las últimas 4 semanas, así que hoy toca tirón.' Si ninguno se entrenó hace poco, decí qué día es y por qué van juntos (ej: 'Día de empuje: pecho y hombros trabajan juntos')."
+                "No expliques cómo elegiste: nunca uses las palabras coherente, par, lista, índice, historial ni sesiones."
                 "Para CADA grupo dá 3 ejercicios que trabajen ESPECÍFICAMENTE ese músculo; nunca pongas ejercicios de otro grupo (ej: no pongas sentadillas en bíceps, ni curls en tríceps)."
                 "Respondé en español."
             }
@@ -143,7 +145,9 @@ struct LocalizedStrings {
                 "Dans la liste des groupes DISPONIBLES, choisis EXACTEMENT 2 qui forment une journée cohérente entraînée ensemble (poussée : pectoraux/épaules/triceps ; tirage : dos/biceps ; jambes : jambes/abdos)."
                 "Choisis par index."
                 "Choisis d'abord une paire cohérente. Seulement s'il y a plusieurs paires cohérentes, utilise l'historique pour choisir entre elles (préfère les moins entraînés). Ne sacrifie jamais la cohérence pour l'historique."
-                "Le focus doit décrire les groupes choisis. La justification mentionne l'historique et désigne les groupes par leur nom, jamais par leur index."
+                "Le focus doit décrire les groupes choisis."
+                "La justification est UNE phrase courte adressée à l'utilisateur, à la deuxième personne, sur ce qu'il a entraîné. Exemple : « Tu n'as pas fait de dos ni de biceps depuis 4 semaines, donc aujourd'hui c'est tirage. » Si aucun n'a été entraîné récemment, dis quel jour c'est et pourquoi ils vont ensemble (ex : « Jour de poussée : pectoraux et épaules travaillent ensemble »)."
+                "N'explique pas comment tu as choisi : n'utilise jamais les mots cohérent, paire, liste, index, historique ni séances."
                 "Pour CHAQUE groupe, donne 3 exercices qui ciblent SPÉCIFIQUEMENT ce muscle ; ne mets jamais d'exercices d'un autre groupe (ex : pas de squats pour les biceps, ni de curls pour les triceps)."
                 "Réponds en français."
             }
@@ -153,7 +157,9 @@ struct LocalizedStrings {
                 "Dalla lista dei gruppi DISPONIBILI, scegli ESATTAMENTE 2 che formino una giornata coerente da allenare insieme (spinta: petto/spalle/tricipiti; trazione: schiena/bicipiti; gambe: gambe/addome)."
                 "Scegli per indice."
                 "Prima scegli una coppia coerente. Solo se ci sono più coppie coerenti, usa lo storico per decidere tra loro (preferisci i meno allenati). Non sacrificare mai la coerenza per lo storico."
-                "Il focus deve descrivere i gruppi scelti. La motivazione menziona lo storico e indica i gruppi per nome, mai per indice."
+                "Il focus deve descrivere i gruppi scelti."
+                "La motivazione è UNA frase breve rivolta all'utente, in seconda persona, su cosa ha allenato. Esempio: 'Non fai schiena e bicipiti da 4 settimane, quindi oggi tocca trazione.' Se nessuno è stato allenato di recente, di' che giorno è e perché vanno insieme (es: 'Giorno di spinta: petto e spalle lavorano insieme')."
+                "Non spiegare come hai scelto: non usare mai le parole coerente, coppia, lista, indice, storico né sessioni."
                 "Per OGNI gruppo dai 3 esercizi che lavorino SPECIFICAMENTE quel muscolo; non mettere mai esercizi di un altro gruppo (es: niente squat nei bicipiti, né curl nei tricipiti)."
                 "Rispondi in italiano."
             }
@@ -163,7 +169,9 @@ struct LocalizedStrings {
                 "From the list of AVAILABLE groups, pick EXACTLY 2 that make a coherent day trained together (push: chest/shoulders/triceps; pull: back/biceps; legs: legs/abs)."
                 "Pick by index."
                 "First pick a coherent pair. Only when several coherent pairs are available, use the history to choose between them (prefer the least trained). Never trade coherence for history."
-                "The focus label must describe the chosen groups. The rationale mentions the history and names the groups, never their index."
+                "The focus label must describe the chosen groups."
+                "The rationale is ONE short sentence to the user, in second person, about what they trained. Example: 'You haven't done back or biceps in 4 weeks, so today is a pull day.' If none was trained recently, say what day it is and why the groups go together (e.g. 'Push day: chest and shoulders work together')."
+                "Don't explain how you chose: never use the words coherent, pair, list, index, history or sessions."
                 "For EACH group give 3 exercises that work SPECIFICALLY that muscle; never put exercises from another group (e.g. no squats under biceps, no curls under triceps)."
                 "Answer in English."
             }

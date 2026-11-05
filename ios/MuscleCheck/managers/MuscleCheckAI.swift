@@ -54,7 +54,7 @@ struct CloudWorkoutSuggestion {
     var blocks: [CloudWorkoutBlock]
     @Guide(description: "Short label for the day that describes the two chosen groups")
     var focus: String
-    @Guide(description: "One short sentence explaining why this day is suggested")
+    @Guide(description: "One short sentence to the user, in second person, on why this day given their history")
     var rationale: String
 }
 
