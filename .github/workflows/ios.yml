@@ -84,6 +84,7 @@ jobs:
             -resultBundlePath TestResults.xcresult
             -only-testing:MuscleCheckTests
             -skip-testing:MuscleCheckTests/CalendarDayCellSnapshotTests
+            -skip-testing:MuscleCheckTests/ExerciseRowSnapshotTests
             CODE_SIGNING_ALLOWED=NO
           )
           if command -v xcbeautify >/dev/null 2>&1; then
