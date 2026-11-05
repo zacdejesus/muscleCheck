@@ -50,7 +50,6 @@
 
     <!-- Home -->
     <string name="navigation_history_button">History</string>
-    <string name="add_new_muscle_group">Add new muscle group</string>
     <string name="empty_state_message">Nothing this week yet. Add your first activity.</string>
     <string name="streak_current">weeks in a row</string>
     <string name="streak_max">Best</string>
@@ -211,4 +210,11 @@
         <item quantity="one">%1$d day trained in %2$s</item>
         <item quantity="other">%1$d days trained in %2$s</item>
     </plurals>
+
+    <!-- Accessibility and Pro availability -->
+    <string name="navigate_up">Navigate up</string>
+    <string name="a11y_open_exercises">Open exercises</string>
+    <string name="pro_coming_soon">Pro is coming to Android soon.</string>
+    <string name="a11y_decrease">Decrease %1$s</string>
+    <string name="a11y_increase">Increase %1$s</string>
 </resources>

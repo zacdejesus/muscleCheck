@@ -42,7 +42,6 @@
     <string name="stretching_lower">Étirement bas</string>
     <string name="stretching_full">Étirement complet</string>
     <string name="navigation_history_button">Historique</string>
-    <string name="add_new_muscle_group">Ajouter un groupe musculaire</string>
     <string name="empty_state_message">Rien cette semaine pour l\'instant. Ajoute ta première activité.</string>
     <string name="streak_current">semaines d\'affilée</string>
     <string name="streak_max">Record</string>
@@ -183,4 +182,11 @@
         <item quantity="one">%1$d jour d\'entraînement en %2$s</item>
         <item quantity="other">%1$d jours d\'entraînement en %2$s</item>
     </plurals>
+
+    <!-- Accessibility and Pro availability -->
+    <string name="navigate_up">Retour</string>
+    <string name="a11y_open_exercises">Voir les exercices</string>
+    <string name="pro_coming_soon">Pro arrive bientôt sur Android.</string>
+    <string name="a11y_decrease">Diminuer %1$s</string>
+    <string name="a11y_increase">Augmenter %1$s</string>
 </resources>

@@ -106,7 +106,7 @@ fun ManageCategoriesScreen(
                 title = { Text(stringResource(R.string.settings_custom_categories)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.navigate_up))
                     }
                 },
             )
@@ -143,7 +143,7 @@ fun ManageCategoriesScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .background(
-                                        if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                        if (isSelected) MaterialTheme.colorScheme.primaryContainer
                                         else MaterialTheme.colorScheme.surfaceVariant,
                                         RoundedCornerShape(8.dp),
                                     )

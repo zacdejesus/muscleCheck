@@ -50,7 +50,6 @@
 
     <!-- Home -->
     <string name="navigation_history_button">Historial</string>
-    <string name="add_new_muscle_group">Agregar nuevo grupo muscular</string>
     <string name="empty_state_message">Aún no hay nada esta semana. Agrega tu primera actividad.</string>
     <string name="streak_current">semanas seguidas</string>
     <string name="streak_max">Mejor</string>
@@ -211,4 +210,11 @@
         <item quantity="one">%1$d día entrenado en %2$s</item>
         <item quantity="other">%1$d días entrenados en %2$s</item>
     </plurals>
+
+    <!-- Accessibility and Pro availability -->
+    <string name="navigate_up">Volver</string>
+    <string name="a11y_open_exercises">Ver ejercicios</string>
+    <string name="pro_coming_soon">Pro llega pronto a Android.</string>
+    <string name="a11y_decrease">Restar %1$s</string>
+    <string name="a11y_increase">Sumar %1$s</string>
 </resources>

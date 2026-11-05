@@ -34,7 +34,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import android.text.format.DateFormat
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -169,24 +172,32 @@ fun SessionLogSheet(
                     value = weightText,
                     onValueChange = { weightText = it },
                     unitLabel = weightUnit.displayLabel,
+                    label = stringResource(R.string.session_field_weight),
+                    // Whole numbers, as on iOS: the weight is saved rounded, so a "22.5"
+                    // typed here would silently come back as 23.
+                    decimals = false,
                 )
                 MetricType.DURATION -> HeroValueField(
                     value = minutesText,
                     onValueChange = { minutesText = it },
                     unitLabel = stringResource(R.string.session_unit_min),
+                    label = stringResource(R.string.session_field_duration),
                     decimals = false,
                 )
                 MetricType.DISTANCE_DURATION -> HeroValueField(
                     value = kmText,
                     onValueChange = { kmText = it },
                     unitLabel = stringResource(R.string.session_unit_km),
+                    label = stringResource(R.string.session_field_distance),
                 )
                 MetricType.NONE -> Unit
             }
 
             target.lastTrained?.let { last ->
                 val formatted = remember(last) {
-                    last.format(DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault()))
+                    // The locale's own order and punctuation for weekday, day and month.
+                    val pattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), "EEEdMMM")
+                    last.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
                 }
                 Text(
                     text = stringResource(R.string.session_last_trained, formatted),
@@ -270,6 +281,8 @@ private fun HeroValueField(
     value: String,
     onValueChange: (String) -> Unit,
     unitLabel: String,
+    /** What TalkBack reads for the field, which has no visible label. */
+    label: String,
     decimals: Boolean = true,
 ) {
     Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -300,7 +313,9 @@ private fun HeroValueField(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
             ),
-            modifier = Modifier.width(180.dp),
+            modifier = Modifier
+                .width(180.dp)
+                .semantics { contentDescription = label },
         )
         Text(
             text = unitLabel,
@@ -327,16 +342,24 @@ private fun StepperColumn(
         )
         Spacer(Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedIconButton(onClick = onDecrement, enabled = value > 0, modifier = Modifier.size(36.dp)) {
-                Icon(Icons.Filled.Remove, contentDescription = null, modifier = Modifier.size(18.dp))
+            OutlinedIconButton(onClick = onDecrement, enabled = value > 0, modifier = Modifier.size(48.dp)) {
+                Icon(
+                    Icons.Filled.Remove,
+                    contentDescription = stringResource(R.string.a11y_decrease, title),
+                    modifier = Modifier.size(20.dp),
+                )
             }
             Text(
                 text = if (value > 0) "$value" else "–",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
             )
-            OutlinedIconButton(onClick = onIncrement, modifier = Modifier.size(36.dp)) {
-                Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+            OutlinedIconButton(onClick = onIncrement, modifier = Modifier.size(48.dp)) {
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.a11y_increase, title),
+                    modifier = Modifier.size(20.dp),
+                )
             }
         }
     }

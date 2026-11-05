@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -32,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.zadkiel.musclecheck.R
@@ -82,11 +85,19 @@ fun AddEntrySheet(
     var selectedCategoryId by remember { mutableStateOf(initialCategoryId) }
     var creatingOwn by remember { mutableStateOf(false) }
     var creatingCategory by remember { mutableStateOf(false) }
+    // Only rows added while this sheet is open can be un-added. An entry that was already in
+    // the list carries training history, and one stray tap here must never delete it (iOS
+    // guards the same way in AddExerciseView). Removing those stays in the home's delete flow.
+    val idsAtOpen = remember { entries.map { it.id }.toSet() }
 
     val builtIn = remember(selectedCategoryId) { ActivityCategory.fromId(selectedCategoryId) }
     val isGym = builtIn == ActivityCategory.GYM
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    // Fully open: at half height "Done" and "create your own" sat below the fold.
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -184,6 +195,7 @@ fun AddEntrySheet(
                     items(rows, key = { it.key }) { row ->
                         PickerRowItem(
                             row = row,
+                            locked = row.existing?.id in idsAtOpen,
                             onAdd = {
                                 val preset = row.preset
                                 if (preset != null && builtIn != null) {
@@ -261,12 +273,19 @@ private data class PickerRow(
 )
 
 @Composable
-private fun PickerRowItem(row: PickerRow, onAdd: () -> Unit, onRemove: () -> Unit) {
+private fun PickerRowItem(row: PickerRow, locked: Boolean, onAdd: () -> Unit, onRemove: () -> Unit) {
     val inList = row.existing != null
+    val markColor = if (locked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { if (inList) onRemove() else onAdd() }
+            .toggleable(
+                value = inList,
+                enabled = !locked,
+                role = Role.Checkbox,
+                onValueChange = { if (inList) onRemove() else onAdd() },
+            )
+            .heightIn(min = 48.dp)
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -289,7 +308,7 @@ private fun PickerRowItem(row: PickerRow, onAdd: () -> Unit, onRemove: () -> Uni
             Icon(
                 Icons.Filled.Check,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = markColor,
                 modifier = Modifier.size(20.dp),
             )
         } else {
