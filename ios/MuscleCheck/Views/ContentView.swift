@@ -21,6 +21,7 @@ struct ContentView: View {
   private let context: ModelContextProtocol
   @Environment(\.scenePhase) private var scenePhase
   @Environment(\.requestReview) private var requestReview
+  @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   // Same key UserDefaultsManager owns; @AppStorage so the cover dismisses reactively
   // when OnboardingViewModel flips the flag.
   @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
@@ -32,6 +33,7 @@ struct ContentView: View {
   @State private var showingProgressPhotos = false
   @State private var workoutToLog: IdentifiableWorkout?
   @State private var showingRoutineScan = false
+  @State private var windowSize: CGSize = .zero
 
   @Query private var entries: [MuscleEntry]
   @Query private var customCategories: [CustomCategory]
@@ -76,7 +78,43 @@ struct ContentView: View {
         _viewModel = StateObject(wrappedValue: ContentViewModel(context: context))
     }
     
+  /// Statistics as a second column (iPhone Duo open in landscape); otherwise it's a sheet.
+  private var showsStatsPanel: Bool {
+    ContentViewModel.showsStatsPanel(
+      windowSize: windowSize,
+      isRegularWidth: horizontalSizeClass == .regular
+    )
+  }
+
   var body: some View {
+    // Equal halves: on iPhone Duo held like a book the fold becomes the column divider.
+    HStack(spacing: 0) {
+      home
+        .frame(maxWidth: .infinity)
+      if showsStatsPanel {
+        Divider()
+          .ignoresSafeArea()
+        NavigationStack {
+          StatsView()
+        }
+        .frame(maxWidth: .infinity)
+      }
+    }
+    // Split the full screen width, not the safe area, so the divider lands on the fold;
+    // each column still insets its own content from the side bars and the status bar.
+    .ignoresSafeArea(.container, edges: .horizontal)
+    .onGeometryChange(for: CGSize.self) { proxy in
+      proxy.size
+    } action: { newSize in
+      windowSize = newSize
+    }
+    // Unfolding with the Stats sheet open would show the same screen twice.
+    .onChange(of: showsStatsPanel) { _, showsPanel in
+      if showsPanel { showingStats = false }
+    }
+  }
+
+  private var home: some View {
     NavigationStack {
       VStack(spacing: 0) {
         // Fixed gap below the streak card so it never sticks to the activity list.
@@ -174,10 +212,13 @@ struct ContentView: View {
           } label: {
             Label("settings_title", systemImage: "gearshape")
           }
-          Button {
-            showingStats = true
-          } label: {
-            Label("stats_title", systemImage: "chart.bar.xaxis")
+          // Hidden while Statistics is already on screen as the second column.
+          if !showsStatsPanel {
+            Button {
+              showingStats = true
+            } label: {
+              Label("stats_title", systemImage: "chart.bar.xaxis")
+            }
           }
           Button {
             showingProgressPhotos = true

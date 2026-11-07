@@ -102,6 +102,22 @@ final class ContentViewModel: ObservableObject {
           .map { (category: $0.key, entries: $0.value) }
   }
 
+  /// Narrowest window that still fits the list and Statistics side by side at 50/50.
+  /// iPhone Duo open in landscape is ~950pt wide; open in portrait (~670pt) stays single-column.
+  static let statsPanelMinWidth: CGFloat = 800
+
+  /// Whether the home shows Statistics as a second column beside the list.
+  ///
+  /// Only for a wide landscape window — iPhone Duo open like a book, where the fold falls
+  /// between the two halves. Keyed off the window's size and size class, never the device
+  /// orientation: the inner display ignores the app's portrait lock, and the same rule
+  /// holds for a split-screen window or an iPad.
+  static func showsStatsPanel(windowSize: CGSize, isRegularWidth: Bool) -> Bool {
+    isRegularWidth
+      && windowSize.width > windowSize.height
+      && windowSize.width >= statsPanelMinWidth
+  }
+
   /// Everything the home DERIVES from the entries but doesn't render: the widget
   /// snapshot, the streak inputs and the crash-report context. The list itself is not
   /// here any more — the view reads it from `@Query`.
