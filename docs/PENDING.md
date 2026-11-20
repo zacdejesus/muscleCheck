@@ -59,6 +59,16 @@
 - **GA4 custom dimensions** for `coach_generated`: `engine`, `fallback_reason`,
   `latency_bucket` — unregistered, they don't show up in reports.
 
+### Later (unprioritized)
+
+- **Per-exercise weight, with decimals.** Log the weight lifted for each exercise, accepting
+  decimal values (today only whole numbers work), and show its progression over time. Relates
+  to F13 and F19 in `docs/roadmap.md`: keep it optional and off the check's happy path.
+- **Backfill exercises on past days.** Let users add exercises to a previous day's session, not
+  only to today. Check the History flow and the weekly check invariant before designing it.
+- **Add-exercise flow.** The current flow to add an exercise has too many steps. Rethink it,
+  keeping the weekly check's two-second invariant in mind.
+
 ## 3 · Code
 
 - **Test bug:** `OnboardingUITests` fails on intra-suite order (the `-resetOnboarding` hook
