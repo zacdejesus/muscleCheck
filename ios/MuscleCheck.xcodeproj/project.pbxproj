@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1954C6223028C405003F67DA /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 1954C6213028C405003F67DA /* SnapshotTesting */; };
 		19C99F812F942D22007BD023 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 19C99F802F942D22007BD023 /* RevenueCat */; };
+		A55A10032F0B000000000003 /* Assay in Frameworks */ = {isa = PBXBuildFile; productRef = A55A10022F0B000000000002 /* Assay */; };
 		CB1DFA832EA828AC00B2047E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA822EA828AC00B2047E /* WidgetKit.framework */; };
 		CB1DFA852EA828AC00B2047E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB1DFA842EA828AC00B2047E /* SwiftUI.framework */; };
 		CB1DFA962EA828AD00B2047E /* MuscleCheckWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CB1DFA802EA828AC00B2047E /* MuscleCheckWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -164,6 +165,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1954C6223028C405003F67DA /* SnapshotTesting in Frameworks */,
+				A55A10032F0B000000000003 /* Assay in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,6 +286,7 @@
 			name = MuscleCheckTests;
 			packageProductDependencies = (
 				1954C6213028C405003F67DA /* SnapshotTesting */,
+				A55A10022F0B000000000002 /* Assay */,
 			);
 			productName = MuscleCheckTests;
 			productReference = CBE9126C2DD93DE1001F511B /* MuscleCheckTests.xctest */;
@@ -354,6 +357,7 @@
 				CB6772D22DF48CDA00A683BC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				19C99F7F2F942D22007BD023 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 				1954C6203028C405003F67DA /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				A55A10012F0B000000000001 /* XCLocalSwiftPackageReference "../../Assay" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CBE9125B2DD93DE0001F511B /* Products */;
@@ -773,7 +777,7 @@
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = DTJLZH295U;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
 				MARKETING_VERSION = 2.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.muscleCheck.com.MuscleCheckTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -796,7 +800,7 @@
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = DTJLZH295U;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
 				MARKETING_VERSION = 2.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.muscleCheck.com.MuscleCheckTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -905,6 +909,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		A55A10012F0B000000000001 /* XCLocalSwiftPackageReference "../../Assay" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../Assay;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		1954C6203028C405003F67DA /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -942,6 +953,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 19C99F7F2F942D22007BD023 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat;
+		};
+		A55A10022F0B000000000002 /* Assay */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Assay;
 		};
 		CB6772D52DF48CDA00A683BC /* FirebaseAnalyticsCore */ = {
 			isa = XCSwiftPackageProductDependency;
