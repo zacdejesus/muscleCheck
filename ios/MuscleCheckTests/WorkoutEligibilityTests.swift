@@ -209,6 +209,61 @@ struct WorkoutEligibilityTests {
         #expect(blocks.isEmpty)
     }
 
+    // MARK: - groupsForToday
+
+    private func today(_ groups: [MuscleEntry]) -> [String] {
+        names(WorkoutEligibility.groupsForToday(groups, today: today))
+    }
+
+    @Test
+    func theMostRestedGroupsDayIsChosen() {
+        let groups = [makeEntry("Chest", daysAgo: [3]), makeEntry("Back", daysAgo: [4]),
+                      makeEntry("Triceps", daysAgo: [3]), makeEntry("Legs", daysAgo: [9]),
+                      makeEntry("Abs", daysAgo: [9])]
+        #expect(today(groups) == ["Legs", "Abs"])
+    }
+
+    @Test
+    func neverTrainedCountsAsMostRested() {
+        let groups = [makeEntry("Legs", daysAgo: [9]), makeEntry("Abs", daysAgo: [9]),
+                      makeEntry("Back"), makeEntry("Biceps", daysAgo: [5])]
+        #expect(today(groups) == ["Back", "Biceps"])
+    }
+
+    @Test
+    func aDayWithOneGroupIsSkipped() {
+        // Chest is the most rested but has no partner: the next day with two groups wins.
+        let groups = [makeEntry("Pecho", daysAgo: [12]), makeEntry("Espalda", daysAgo: [5]),
+                      makeEntry("Bíceps", daysAgo: [5]), makeEntry("Piernas", daysAgo: [3])]
+        #expect(today(groups) == ["Espalda", "Bíceps"])
+    }
+
+    @Test
+    func tiesKeepTheInputOrderAndTheWholeDayIsOffered() {
+        let groups = [makeEntry("Chest"), makeEntry("Back"), makeEntry("Shoulders"), makeEntry("Triceps")]
+        #expect(today(groups) == ["Chest", "Shoulders", "Triceps"])
+    }
+
+    @Test
+    func calvesGlutesAndForearmsJoinTheirUsualDay() {
+        let groups = [makeEntry("Forearms", daysAgo: [6]), makeEntry("Calves", daysAgo: [8]),
+                      makeEntry("Glutes", daysAgo: [8]), makeEntry("Chest", daysAgo: [2]), makeEntry("Back", daysAgo: [6])]
+        #expect(today(groups) == ["Calves", "Glutes"])
+    }
+
+    @Test
+    func freeFormAndCombinedNamesAreLeftOutWhenADayExists() {
+        let groups = [makeEntry("Upper body", daysAgo: [5]), makeEntry("Legs", daysAgo: [4]), makeEntry("Core", daysAgo: [4])]
+        #expect(today(groups) == ["Legs", "Core"])
+    }
+
+    @Test
+    func everythingMostRestedFirstWhenNoDayHasTwoGroups() {
+        let groups = [makeEntry("Chest & triceps", daysAgo: [5]), makeEntry("Back & biceps", daysAgo: [6]),
+                      makeEntry("Legs", daysAgo: [7])]
+        #expect(today(groups) == ["Legs", "Back & biceps", "Chest & triceps"])
+    }
+
     // MARK: - echoedNameMatches
 
     @Test

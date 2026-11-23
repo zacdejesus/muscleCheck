@@ -52,6 +52,34 @@ struct WorkoutEligibility {
         }
     }
 
+    /// The groups of today's training day, chosen in code: the day (push, pull, legs — the
+    /// coach instructions' table) of the most rested group whose day has at least 2 groups in
+    /// the list. Never trained counts as most rested; ties keep the input order. Returned most
+    /// rested first.
+    ///
+    /// The on-device model doesn't choose a day: it takes the first day of the instructions'
+    /// table that has groups (push whenever any push group is listed, 45/45 with a legs pair
+    /// available), and pairs across days when that one has a single group. Handing it one
+    /// day leaves it the part it does well: two groups and their exercises.
+    ///
+    /// Free-form and combined names ("Upper body", "Chest & triceps") have no day. When no
+    /// day has 2 groups, the whole list is returned, most rested first, as before.
+    static func groupsForToday(_ eligible: [MuscleEntry], today: Date = Date()) -> [MuscleEntry] {
+        let rested = eligible.enumerated().sorted { a, b in
+            let x = restDaysSinceLastSession(a.element, today: today) ?? .max
+            let y = restDaysSinceLastSession(b.element, today: today) ?? .max
+            return x != y ? x > y : a.offset < b.offset
+        }.map(\.element)
+
+        let days = rested.map { TargetMuscle.single(inName: $0.name)?.trainingDay }
+        var count: [TrainingDay: Int] = [:]
+        for case let day? in days { count[day, default: 0] += 1 }
+        guard let day = days.lazy.compactMap({ $0 }).first(where: { count[$0, default: 0] >= 2 }) else {
+            return rested
+        }
+        return zip(rested, days).filter { $0.1 == day }.map(\.0)
+    }
+
     /// Maps the model's raw `(groupIndex, exercises)` pairs back onto the eligible
     /// groups, dropping out-of-range or duplicate indices, capping exercises at 3 and
     /// blocks at 2. Version-agnostic so it's testable without FoundationModels.
@@ -111,5 +139,22 @@ struct WorkoutEligibility {
         let from = calendar.startOfDay(for: last)
         let to = calendar.startOfDay(for: today)
         return calendar.dateComponents([.day], from: from, to: to).day
+    }
+}
+
+/// The days the coach instructions describe: push (chest/shoulders/triceps), pull
+/// (back/biceps), legs (legs/abs). Calves, glutes and forearms join the day they're usually
+/// trained with.
+enum TrainingDay: Sendable {
+    case push, pull, legs
+}
+
+extension TargetMuscle {
+    var trainingDay: TrainingDay {
+        switch self {
+        case .chest, .shoulders, .triceps: return .push
+        case .back, .biceps, .forearms: return .pull
+        case .legs, .glutes, .calves, .core: return .legs
+        }
     }
 }

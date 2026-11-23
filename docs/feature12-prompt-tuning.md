@@ -152,3 +152,71 @@ noted, 3 runs per scenario. Scenarios: push yesterday, legs yesterday, all fresh
 - The rationale can misread the history: one FR run said chest and shoulders had fewer
   sessions than back and biceps, the other way round. The pair itself was valid.
 - Only EN and ES were tuned; FR and IT were smoke-tested.
+
+## On-device, revisited with PCC's lessons — 2026-11-23
+
+The on-device path is the fallback whenever PCC isn't used, and it had never had the schema
+changes that fixed PCC. Harness: the coach's prompts, schemas, options and checks copied into a
+Swift package and run under `swift test` on a Mac (macOS 27.2.1, on-device model assets
+`16.1000.0.13.103404`), through the app's streaming path at the app's options (random sampling,
+temperature 0.7), 5 samples per case. Not yet checked on an iPhone.
+
+Scoring is in code: "coherent" from the instructions' push/pull/legs table (lists with free-form
+or combined names aren't scorable), "right group" by keywords (shoulder exercises under chest,
+leg exercises under upper-body groups). An on-device model judge was tried and rejected: it
+failed 13–15 of 30 in every variant, with confused rationales.
+
+**Round 1: schema order (6 lists, 30 samples).** PCC's order on-device: each block copies its
+group's name before the exercises, the focus comes after the groups, and blocks whose name
+disagrees with their index are dropped.
+
+| Variant | Two valid groups | Exercises under the right group |
+|---|---|---|
+| Shipped | 25/30 | 10/30 |
+| PCC's schema order | 30/30 | 30/30 |
+
+It fixed both shipped failures: overhead press and lateral raises under Chest/Pecho in every
+sample of those lists, and with custom names one index picked twice ("Upper body" for both
+blocks, 5/5), which the app showed as a one-group day.
+
+**Round 2: the model never picks legs.** With a legs pair available it chose push 45/45. Eight
+runs to separate the causes (`Chest, Shoulders, Triceps, Legs, Abs` unless noted):
+
+| Run | Picks (5 samples) |
+|---|---|
+| As listed | push 5/5 |
+| List reversed (Legs, Abs first) | push 5/5 — position isn't it |
+| Instructions' table with legs first | Legs + Abs 5/5 |
+| Table legs first, list reversed | Legs 5/5, paired with a push group 3/5 |
+| No push groups (`Back, Biceps, Legs, Abs`) | Back 5/5, Back + Abs 4/5 |
+| Spanish / greedy | push 4/5 / 5/5 |
+
+**The model doesn't choose a day: it takes the first day of the instructions' table that has
+groups**, and when that day has one group it pairs across days. In the app this beats rotation:
+with chest trained yesterday, shoulders and triceps remain and the coach says push again.
+
+**Round 3: the day chosen in code (9 lists after the rotation filter, 45 samples).**
+`WorkoutEligibility.groupsForToday` picks the day of the most rested group whose day has at
+least 2 groups, and the model only gets that day's groups. Lists: all fresh, legs most rested,
+pull most rested, no push (EN and ES), unusual groups, combined names, custom names.
+
+| Variant | Two valid groups | Coherent pair | Right group | Most rested day |
+|---|---|---|---|---|
+| Model chooses the day | 45/45 | 22/35 | 42/45 | never legs, 0/10 |
+| **Day chosen in code (shipped)** | 43/45 | 38/38 | 43/45 | always |
+
+Lessons:
+- **Schema order transfers between models.** The same change fixed the same errors on the 3B
+  on-device model as on PCC.
+- **An example in the instructions is a default.** "(push: …; pull: …; legs: …)" was meant as
+  a table and read as a ranking.
+- **Again a rule in code.** The day joins rotation: what code can decide, the model isn't asked.
+
+Known limitations:
+- A day with exactly two groups sometimes gets one of them twice ("Legs and Legs", 2/45). The
+  app shows the one valid group, as before.
+- The focus label can name another day ("Push and Legs day" over Legs + Abs, 6/40). Deriving it
+  in code from the day is a possible next step (it needs localized strings).
+- Free-form and combined names have no day: lists made only of them behave as before.
+- PCC still chooses its own day; it wasn't measured for this bias (it can't be called from the
+  command line).
