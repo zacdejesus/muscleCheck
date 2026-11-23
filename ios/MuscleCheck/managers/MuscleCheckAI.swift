@@ -20,26 +20,23 @@ import Foundation
 
 /// Structured output for the on-device day suggestion. Groups are referenced by index
 /// into the numbered list we pass in the prompt — robust, no fuzzy name matching.
+///
+/// Same field order as on Private Cloud Compute, and the same block type: groups first, each
+/// copying its group's name right before the exercises, then the focus. Measured on-device
+/// (macOS 27.2.1, 30 samples at the app's options, docs/feature12-prompt-tuning.md): exercises
+/// under the right group went from 10/30 to 30/30, and the model stopped picking one index
+/// twice ("Upper body" for both blocks).
 @available(iOS 26, *)
 @Generable
 struct WorkoutSuggestion {
     // Schema field descriptions are kept language-neutral (English). The OUTPUT language
     // is set by the instructions ("Answer in <lang>"); these only describe the fields.
-    @Guide(description: "Short label for the day, e.g. 'Push', 'Pull', 'Legs'")
-    var focus: String
     @Guide(description: "Exactly 2 muscle groups that are coherent to train together today", .count(2))
-    var blocks: [WorkoutBlock]
+    var blocks: [CloudWorkoutBlock]
+    @Guide(description: "Short label for the day that describes the two chosen groups")
+    var focus: String
     @Guide(description: "One short sentence explaining why this day is suggested")
     var rationale: String
-}
-
-@available(iOS 26, *)
-@Generable
-struct WorkoutBlock {
-    @Guide(description: "Index of the chosen muscle group, from the numbered list provided")
-    var groupIndex: Int
-    @Guide(description: "Three exercises that specifically target that muscle group", .count(3))
-    var exercises: [String]
 }
 
 /// Structured output for the Private Cloud Compute day suggestion. Properties are
@@ -58,6 +55,7 @@ struct CloudWorkoutSuggestion {
     var rationale: String
 }
 
+/// One chosen group. Shared by both engines; the name is kept so PCC's schema doesn't change.
 @available(iOS 26, *)
 @Generable
 struct CloudWorkoutBlock {
@@ -175,6 +173,9 @@ final class MuscleCheckAI: RoutineSuggesting {
         eligible: [MuscleEntry],
         onPartial: ((RoutineSuggestion) -> Void)?
     ) async throws -> RoutineSuggestion {
+        // One training day, chosen in code (most rested first): left to choose, the model
+        // always took push and paired across days. Its indices refer to this list.
+        let eligible = WorkoutEligibility.groupsForToday(eligible)
         let numbered = eligible.enumerated()
             .map { "\($0.offset)=\($0.element.name)" }
             .joined(separator: ", ")
@@ -200,14 +201,18 @@ final class MuscleCheckAI: RoutineSuggesting {
     }
 
     /// Best-effort mapping of a (possibly partial) model snapshot to a
-    /// `RoutineSuggestion`. Out-of-range/duplicate indices are dropped and counts
-    /// capped by `WorkoutEligibility.resolveBlocks`.
+    /// `RoutineSuggestion`. Blocks whose copied name disagrees with their index are dropped
+    /// (a block shows once its name is complete), as are out-of-range/duplicate indices;
+    /// counts are capped by `WorkoutEligibility.resolveBlocks`.
     private static func resolve(
         _ partial: WorkoutSuggestion.PartiallyGenerated,
         eligible: [MuscleEntry]
     ) -> RoutineSuggestion {
+        let names = eligible.map(\.name)
         let raw: [(index: Int, exercises: [String])] = (partial.blocks ?? []).compactMap { block in
-            guard let index = block.groupIndex else { return nil }
+            guard let index = block.groupIndex, let name = block.groupName,
+                  WorkoutEligibility.echoedNameMatches(name, index: index, eligibleNames: names)
+            else { return nil }
             return (index: index, exercises: block.exercises ?? [])
         }
         return RoutineSuggestion(
